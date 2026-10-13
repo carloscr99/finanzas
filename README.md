@@ -69,6 +69,15 @@ Para lanzarlo a mano o ver el historial: pestaña **Actions** del repositorio �
 
 Si abres la nueva `index.html` en el mismo navegador y la misma dirección donde usabas la antigua, la app detecta los datos guardados y te ofrece subirlos directamente; pero lo normal es que la dirección cambie, así que el camino fiable es exportar e importar.
 
+## Usar en el móvil
+
+La web está pensada para usarse también desde el teléfono. Para tenerla como una app con su icono y a pantalla completa:
+
+- **Android (Chrome)**: abre la URL, menú ⋮ → "Añadir a pantalla de inicio" (o "Instalar app").
+- **iPhone (Safari)**: abre la URL, botón Compartir → "Añadir a pantalla de inicio".
+
+En el móvil, el botón **+** de la barra inferior abre la hoja de alta rápida: importe, tipo, categoría (las más usadas primero), concepto con sugerencias y fecha. Tocar un movimiento de la lista lo abre para editar o borrar. Los gráficos horizontales se muestran como listas de barras tocables, y la evolución mensual enseña seis meses (botón "Ver 12 meses" para el año completo). Al tocar una barra aparece su valor y el botón "Ver movimientos".
+
 ## Probar en local
 
 Sirve la carpeta con cualquier servidor estático y abre `http://localhost:8000`. No funciona abriendo `index.html` directamente como fichero, porque los módulos JavaScript y el login de Google necesitan `http://`.

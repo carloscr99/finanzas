@@ -4,6 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <meta name="theme-color" content="#0f172a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mis Finanzas">
@@ -80,6 +83,34 @@ td.actions{white-space:nowrap;width:1%}
 .seg button.active{background:var(--accent);color:#fff}
 tr.clickable{cursor:pointer}tr.clickable:hover td{background:#f8fafc}
 .chart-hint{font-size:12px;color:var(--muted);margin-top:8px}
+.mobile-only{display:none!important}
+.fab{position:fixed;right:24px;bottom:24px;z-index:60;width:56px;height:56px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:30px;line-height:1;box-shadow:0 10px 24px rgba(15,23,42,.25);display:flex;align-items:center;justify-content:center}
+.sheet-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:70}
+.sheet{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(560px,100%);max-height:92vh;overflow:auto;background:var(--panel);border-radius:20px 20px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));z-index:71;box-shadow:0 -10px 40px rgba(15,23,42,.25)}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.sheet-head h2{margin:0}
+.icon-btn{border:0;background:#eef2f7;width:36px;height:36px;border-radius:50%;font-size:20px;color:#334155}
+.big-amount{font-size:30px;font-weight:800;text-align:right;min-height:58px}
+.seg-full{display:flex;width:100%;margin-bottom:12px}.seg-full button{flex:1;padding:10px 6px}
+.chip-btn{border:1px solid var(--border);background:var(--soft);border-radius:999px;padding:8px 12px;font-size:13px;color:#1f2937}
+.chip-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.sheet label{margin-top:12px}.sheet .chips{gap:6px}
+.date-row{display:flex;gap:8px;align-items:center}.date-row input{flex:1}.date-row button{width:auto}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;background:#111827;color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;z-index:80;box-shadow:var(--shadow);white-space:nowrap}
+.mlist{flex-direction:column}
+.mitem{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 4px;border:0;border-bottom:1px solid var(--border);width:100%;background:transparent;text-align:left;font:inherit;color:var(--text)}
+.mitem b{display:block;font-size:14px}.mitem small{color:var(--muted);font-size:12px}
+.mitem .amt{font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}.mitem .amt.inv{color:var(--investment)}
+.mday{font-size:12px;font-weight:700;color:var(--muted);padding:12px 4px 4px;text-transform:uppercase;letter-spacing:.03em}
+.barlist{display:flex;flex-direction:column;gap:9px}
+.barrow{border:0;background:transparent;padding:0;text-align:left;font:inherit;color:var(--text);width:100%}
+.barrow .bl-head{display:flex;justify-content:space-between;gap:8px;font-size:13px}.barrow .bl-head b{font-weight:600}.barrow .bl-head span{white-space:nowrap;color:#374151;font-weight:700}
+.barrow .bl-track{height:10px;border-radius:999px;background:#eef2f7;margin-top:4px;overflow:hidden}.barrow .bl-fill{height:100%;border-radius:999px}
+.chart-pop{margin-top:8px;padding:10px 12px;border-radius:12px;background:#f8fafc;border:1px solid var(--border);font-size:13px;display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.period-compact{justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.period-nav{display:flex;align-items:center;gap:8px}.period-nav b{min-width:128px;text-align:center}.period-nav button{width:38px;min-height:38px;padding:0;font-size:20px}
+.more-list{display:flex;flex-direction:column;gap:10px}.more-list button{width:100%;justify-content:flex-start;font-size:16px;min-height:50px}
+details.panel summary{cursor:pointer;font-weight:700;font-size:17px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+details.panel summary::-webkit-details-marker{display:none}details.panel summary::after{content:"+";font-size:22px;color:var(--muted)}details.panel[open] summary::after{content:"−"}
 .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;color:var(--muted);font-size:13px}
 .legend i{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px}
 .kpi-strip{display:grid;grid-template-columns:minmax(180px,240px);gap:12px}
@@ -122,8 +153,17 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .mobile-nav{position:fixed;z-index:50;left:0;right:0;bottom:0;height:68px;padding-bottom:env(safe-area-inset-bottom);background:rgba(15,23,42,.97);display:flex;justify-content:space-around;align-items:center;border-top:1px solid #334155}
  .mobile-nav button{border:0;background:transparent;color:#94a3b8;font-size:11px;padding:7px 6px;min-width:56px}
  .mobile-nav button.active{color:#fff;font-weight:800}
+ .mobile-nav button.nav-add{background:var(--investment);color:#fff;width:52px;height:52px;min-width:52px;border-radius:50%;font-size:30px;line-height:1;padding:0;margin-top:-26px;box-shadow:0 8px 18px rgba(37,99,235,.45)}
  .panel,.card{border-radius:15px}
- .metric-value{font-size:24px}
+ .mobile-only:not([hidden]){display:block!important}.desktop-only{display:none!important}
+ .period-compact.mobile-only:not([hidden]),.mlist.mobile-only:not([hidden]){display:flex!important}
+ .summary-grid,.grid-3{grid-template-columns:1fr 1fr}
+ .card{padding:13px}.metric-label{font-size:12px}.metric-value{font-size:20px}.metric-sub{font-size:11px}
+ .chart-box{height:230px}
+ .fab{display:none}
+ .searchbar.collapsed{display:none}
+ .table-wrap.desktop-only{display:none!important}
+ .page-head p{font-size:14px}
 }
 </style>
 </head>
@@ -157,7 +197,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
       </div>
 
       <div class="panel">
-        <div class="toolbar">
+        <div class="toolbar desktop-only">
           <div>
             <label>Vista</label>
             <select id="periodMode">
@@ -169,6 +209,10 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
           <div><label>Mes</label><select id="monthFilter"></select></div>
           <div><label>Año</label><select id="yearFilter"></select></div>
           <div><button class="secondary" id="goCurrent">Periodo actual</button></div>
+        </div>
+        <div class="period-compact mobile-only" id="periodCompact">
+          <div class="seg" id="periodModeSeg"><button data-mode="month" class="active">Mes</button><button data-mode="year">Año</button><button data-mode="all">Todo</button></div>
+          <div class="period-nav"><button class="secondary" id="periodPrev" aria-label="Periodo anterior">‹</button><b id="periodLabelText"></b><button class="secondary" id="periodNext" aria-label="Periodo siguiente">›</button></div>
         </div>
       </div>
 
@@ -188,7 +232,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 
       <div class="grid-2 section-gap">
         <div class="panel">
-          <div class="chart-head"><div><h2>Evolución mensual</h2><p class="chart-sub" id="subMonthly"></p></div></div>
+          <div class="chart-head"><div><h2>Evolución mensual</h2><p class="chart-sub" id="subMonthly"></p></div><button class="secondary small mobile-only" id="monthlyToggle">Ver 12 meses</button></div>
           <div class="chart-box"><canvas id="monthlyChart"></canvas></div>
           <div class="chart-hint">Pulsa una barra para ver sus movimientos.</div>
         </div>
@@ -231,7 +275,8 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 
     <section id="page-movements" class="page">
       <div class="page-head"><div><h1>Movimientos</h1><p>Añade, busca, edita y filtra tus operaciones.</p></div></div>
-      <div class="panel">
+      <button class="primary mobile-only" id="mobileAddBtn" style="width:100%;margin-bottom:14px">+ Añadir movimiento</button>
+      <div class="panel desktop-only" id="newMovementPanel">
         <h2>Nuevo movimiento</h2>
         <div class="form-grid">
           <div><label>Fecha</label><input id="mDate" type="date"></div>
@@ -252,9 +297,9 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
       </div>
 
       <div class="panel section-gap">
-        <h2>Buscar y filtrar</h2>
+        <div class="chart-head"><h2>Buscar y filtrar</h2><button class="secondary small mobile-only" id="toggleFilters">Filtros</button></div>
         <div class="inline-note" id="filterNotice" hidden style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px"><span id="filterNoticeText"></span><button class="secondary small" id="clearFilters">Quitar filtros</button></div>
-        <div class="searchbar">
+        <div class="searchbar collapsed" id="searchbar">
           <div><label>Buscar</label><input id="searchText" placeholder="Concepto o categoría"></div>
           <div><label>Tipo</label><select id="searchType"><option value="">Todos</option><option>Ingreso</option><option>Gasto</option><option>Inversión</option></select></div>
           <div><label>Categoría</label><select id="searchCategory"><option value="">Todas</option></select></div>
@@ -264,7 +309,8 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         <div class="kpi-strip">
           <div class="kpi-mini"><span class="muted">Movimientos visibles</span><b id="visibleCount">0</b></div>
         </div>
-        <div class="table-wrap section-gap">
+        <div id="movementList" class="mlist mobile-only section-gap"></div>
+        <div class="table-wrap desktop-only section-gap">
           <table><thead><tr><th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Concepto</th><th style="text-align:right">Importe</th><th></th></tr></thead><tbody id="movementTable"></tbody></table>
         </div>
       </div>
@@ -316,18 +362,19 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         <span id="priceStatus">Cotizaciones: conectando con GitHub…</span>
         <button class="secondary small" id="refreshPrices">Sincronizar cotizaciones</button>
       </div>
-      <div class="panel">
-        <div class="form-grid">
-          <div><label>Nombre</label><input id="aName" placeholder="Ej. Fidelity MSCI World"></div>
+      <div id="assetGrid" class="asset-grid"></div>
+      <details class="panel section-gap" id="assetFormDetails">
+        <summary>Añadir activo</summary>
+        <div class="form-grid section-gap">
+          <div><label>Nombre</label><input id="aName" placeholder="Ej. Amundi Index MSCI World"></div>
           <div><label>Tipo</label><select id="aType"><option>Cuenta</option><option>Fondo</option><option>Cripto</option><option>Oro</option><option>Efectivo</option><option>Otro</option></select></div>
           <div><label>Valor actual (€)</label><input id="aValue" type="number" min="0" step="0.01" placeholder="Manual / inicial"></div>
           <div><label>Capital aportado (€)</label><input id="aInvested" type="number" min="0" step="0.01" placeholder="Opcional"></div>
           <div><label>Participaciones / títulos</label><input id="aUnits" type="number" min="0" step="0.000001" placeholder="Opcional"></div>
-          <div><label>ISIN</label><input id="aIsin" placeholder="Opcional"></div>
+          <div><label>ISIN</label><input id="aIsin" placeholder="Opcional, para cotización automática"></div>
           <div style="display:flex;align-items:end"><button class="primary" id="addAsset">Añadir activo</button></div>
         </div>
-      </div>
-      <div id="assetGrid" class="asset-grid section-gap"></div>
+      </details>
     </section>
 
     <section id="page-settings" class="page">
@@ -349,14 +396,41 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         <div class="inline-note">La web obtiene automáticamente las cotizaciones desde el archivo público <b>prices.json</b> de GitHub cada vez que la abres o pulsas “Sincronizar cotizaciones”. La fecha de cotización de cada activo se conserva por separado de la fecha/hora en la que se sincronizó y recalculó el patrimonio.</div>
       </div>
     </section>
+    <section id="page-more" class="page">
+      <div class="page-head"><div><h1>Más</h1><p>Categorías, recurrentes y ajustes.</p></div></div>
+      <div class="panel more-list">
+        <button class="secondary" data-page="categories">🏷️ Categorías</button>
+        <button class="secondary" data-page="recurring">🔁 Movimientos recurrentes</button>
+        <button class="secondary" data-page="settings">⚙️ Ajustes y copias de seguridad</button>
+      </div>
+      <div class="inline-note section-gap">Sesión iniciada como <b id="moreEmail"></b>.</div>
+    </section>
   </main>
 </div>
+
+<button class="fab" id="fabAdd" aria-label="Añadir movimiento" title="Añadir movimiento" hidden>+</button>
+<div class="sheet-backdrop" id="sheetBackdrop" hidden></div>
+<section class="sheet" id="quickSheet" hidden aria-label="Añadir movimiento">
+  <div class="sheet-head"><h2 id="qsTitle">Nuevo movimiento</h2><button type="button" class="icon-btn" id="qsClose" aria-label="Cerrar">×</button></div>
+  <label>Importe (€)</label><input id="qsAmount" class="big-amount" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off">
+  <div class="seg seg-full" id="qsType" style="margin-top:12px"><button type="button" data-type="Gasto" class="active">Gasto</button><button type="button" data-type="Ingreso">Ingreso</button><button type="button" data-type="Inversión">Inversión</button></div>
+  <label>Categoría</label><div class="chips" id="qsCats"></div>
+  <div id="qsInvest" hidden>
+    <label>Activo del patrimonio</label><select id="qsAsset"></select>
+    <label>Participaciones / títulos comprados</label><input id="qsUnits" type="text" inputmode="decimal" placeholder="Ej. 0,452" autocomplete="off">
+  </div>
+  <label>Concepto</label><input id="qsDesc" list="qsDescList" placeholder="Ej. Supermercado" autocomplete="off"><datalist id="qsDescList"></datalist>
+  <label>Fecha</label><div class="date-row"><input id="qsDate" type="date"><button type="button" class="secondary small" data-day="0">Hoy</button><button type="button" class="secondary small" data-day="-1">Ayer</button></div>
+  <div class="form-actions" style="margin-top:16px"><button type="button" class="primary" id="qsSave">Guardar</button><button type="button" class="secondary" id="qsSaveMore">Guardar y añadir otro</button><button type="button" class="danger" id="qsDelete" hidden>Borrar</button></div>
+</section>
+<div class="toast" id="toast" hidden></div>
 
 <nav class="mobile-nav" hidden>
   <button data-page="dashboard" class="active">📊<br>Inicio</button>
   <button data-page="movements">💳<br>Movimientos</button>
+  <button class="nav-add" id="navAdd" aria-label="Añadir movimiento">+</button>
   <button data-page="assets">💼<br>Patrimonio</button>
-  <button data-page="settings">⚙️<br>Ajustes</button>
+  <button data-page="more">☰<br>Más</button>
 </nav>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
@@ -462,7 +536,7 @@ async function loadInitialState(ref){
 }
 async function startApp(user){
  currentUser=user;userDocRef=doc(db,"users",user.uid);
- el("userEmail").textContent=user.email||"";el("settingsEmail").textContent=user.email||"";
+ el("userEmail").textContent=user.email||"";el("settingsEmail").textContent=user.email||"";el("moreEmail").textContent=user.email||"";
  setAuthStatus("Cargando tus datos…");
  const initial=await loadInitialState(userDocRef);
  if(initial.snap&&initial.snap.exists()){
@@ -492,7 +566,7 @@ function stopApp(){
 }
 
 // ---------- Autenticación con Google + lista de permitidos ----------
-function showAuthScreen(show){el("authScreen").hidden=!show;document.querySelector(".app").hidden=show;document.querySelector(".mobile-nav").hidden=show}
+function showAuthScreen(show){el("authScreen").hidden=!show;document.querySelector(".app").hidden=show;document.querySelector(".mobile-nav").hidden=show;el("fabAdd").hidden=show;if(show)closeQuickSheet()}
 function setAuthStatus(msg,isError=false){const n=el("authStatus");n.textContent=msg||"";n.classList.toggle("error",!!isError)}
 async function isAllowed(email){
  try{const snap=await getDoc(doc(db,"allowlist",String(email||"").toLowerCase()));return snap.exists()}
@@ -606,9 +680,11 @@ function portfolioDistributionData(){
  const tenths=rows.map(a=>Math.round(a.value/total*1000));const diff=1000-tenths.reduce((s,x)=>s+x,0);if(tenths.length)tenths[0]+=diff;
  return rows.map((a,i)=>({...a,pct:tenths[i]/10,total}));
 }
-function investmentCategoryUsesUnits(){
- if(el("mType").value!=="Inversión")return false;
- const cname=(getCat(el("mCategory").value)?.name||"").trim().toLowerCase();
+function investmentCategoryUsesUnits(type,cname){
+ if(type===undefined)type=el("mType").value;
+ if(cname===undefined)cname=getCat(el("mCategory").value)?.name||"";
+ if(type!=="Inversión")return false;
+ cname=String(cname).trim().toLowerCase();
  if(!cname)return false;
  // Pedimos participaciones/títulos cuando la categoría se corresponde con un activo cotizable del patrimonio
  // o cuando su nombre indica claramente fondo, ETF, cripto u oro. Cuentas de ahorro (Revolut, RenaultBank...) no.
@@ -793,14 +869,13 @@ function deleteCategory(id){
  if(state.movements.some(m=>m.categoryId===id)||state.recurring.some(r=>r.categoryId===id))return alert("No puedes borrar esta categoría porque se está usando en movimientos o recurrentes.");
  if(!confirm("¿Eliminar esta categoría?"))return;state.categories=state.categories.filter(c=>c.id!==id);saveState();renderAll();
 }
-function saveMovement(){
- const date=el("mDate").value,type=el("mType").value,categoryId=el("mCategory").value,description=el("mDescription").value.trim(),amount=Number(el("mAmount").value);
- const usesUnits=type==="Inversión"&&investmentCategoryUsesUnits();
- const assetId=usesUnits?el("mAsset").value:"",units=usesUnits?Number(el("mUnits").value):0;
- if(!date||!categoryId||!description||!Number.isFinite(amount)||amount<=0)return alert("Completa todos los campos con valores válidos.");
- if(usesUnits&&(!assetId||!Number.isFinite(units)||units<=0))return alert("Para esta inversión selecciona el activo e indica las participaciones o títulos comprados.");
- if(editingId){
-   const i=state.movements.findIndex(m=>m.id===editingId);
+// Guardado único de movimientos (formulario de escritorio y hoja rápida). Devuelve un mensaje de error o null.
+function persistMovement(d,id){
+ const {date,type,categoryId,description,amount,usesUnits,assetId,units}=d;
+ if(!date||!categoryId||!description||!Number.isFinite(amount)||amount<=0)return "Completa importe, categoría, concepto y fecha con valores válidos.";
+ if(usesUnits&&(!assetId||!Number.isFinite(units)||units<=0))return "Para esta inversión selecciona el activo e indica las participaciones o títulos comprados.";
+ if(id){
+   const i=state.movements.findIndex(m=>m.id===id);
    if(i>=0){
      applyInvestmentMovementToAsset(state.movements[i],-1);
      const next={...state.movements[i],date,type,categoryId,description,amount};
@@ -812,17 +887,28 @@ function saveMovement(){
    if(usesUnits){m.assetId=assetId;m.units=units}
    state.movements.push(m);applyInvestmentMovementToAsset(m,1);
  }
- editingId=null;el("cancelEdit").style.display="none";el("saveMovement").textContent="Guardar movimiento";el("mDescription").value="";el("mAmount").value="";el("mUnits").value="";
  markDataUpdate(type==="Inversión"?"movement+portfolio":"movement");
  saveState();updateYearOptions();renderAll();if(usesUnits)updateMarketPrices(false);
+ return null;
+}
+function saveMovement(){
+ const type=el("mType").value,usesUnits=type==="Inversión"&&investmentCategoryUsesUnits();
+ const err=persistMovement({date:el("mDate").value,type,categoryId:el("mCategory").value,description:el("mDescription").value.trim(),amount:Number(el("mAmount").value),usesUnits,assetId:usesUnits?el("mAsset").value:"",units:usesUnits?Number(el("mUnits").value):0},editingId);
+ if(err)return alert(err);
+ const wasEdit=!!editingId;
+ editingId=null;el("cancelEdit").style.display="none";el("saveMovement").textContent="Guardar movimiento";el("mDescription").value="";el("mAmount").value="";el("mUnits").value="";
+ toast(wasEdit?"Cambios guardados":"Movimiento guardado");
 }
 function editMovement(id){
- const m=state.movements.find(x=>x.id===id);if(!m)return;editingId=id;showPage("movements");
+ const m=state.movements.find(x=>x.id===id);if(!m)return;
+ if(isMobile()){openQuickSheet(m);return}
+ editingId=id;showPage("movements");
  el("mDate").value=m.date;el("mType").value=m.type;updateMovementCategories();el("mCategory").value=m.categoryId;updateInvestmentFields();if(m.assetId)el("mAsset").value=m.assetId;el("mUnits").value=m.units||"";el("mDescription").value=m.description;el("mAmount").value=m.amount;
  el("saveMovement").textContent="Guardar cambios";el("cancelEdit").style.display="inline-block";window.scrollTo({top:0,behavior:"smooth"});
 }
 function cancelEdit(){editingId=null;el("cancelEdit").style.display="none";el("saveMovement").textContent="Guardar movimiento";el("mDate").value=todayISO();el("mType").value="Gasto";updateMovementCategories();el("mDescription").value="";el("mAmount").value="";el("mUnits").value=""}
-function deleteMovement(id){if(!confirm("¿Eliminar este movimiento?"))return;const m=state.movements.find(x=>x.id===id);if(m)applyInvestmentMovementToAsset(m,-1);state.movements=state.movements.filter(m=>m.id!==id);markDataUpdate(m?.type==="Inversión"?"movement+portfolio":"movement");saveState();renderAll()}
+function deleteMovementById(id){const m=state.movements.find(x=>x.id===id);if(m)applyInvestmentMovementToAsset(m,-1);state.movements=state.movements.filter(x=>x.id!==id);markDataUpdate(m?.type==="Inversión"?"movement+portfolio":"movement");saveState();renderAll()}
+function deleteMovement(id){if(!confirm("¿Eliminar este movimiento?"))return;deleteMovementById(id);toast("Movimiento eliminado")}
 function movementSearchResults(){
  const q=el("searchText").value.trim().toLowerCase(),type=el("searchType").value,cat=el("searchCategory").value,from=el("searchFrom").value,to=el("searchTo").value;
  return state.movements.filter(m=>{
@@ -835,6 +921,19 @@ function renderMovements(){
  el("movementTable").innerHTML=movs.length?movs.map(m=>`<tr><td>${formatDate(m.date)}</td><td><span class="pill ${m.type}">${m.type}</span></td><td>${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")}</td><td>${escapeHtml(m.description)}</td><td class="amount">${euro.format(m.amount)}</td><td class="actions"><button class="secondary small" data-edit="${m.id}">Editar</button> <button class="danger small" data-del="${m.id}">Borrar</button></td></tr>`).join(""):`<tr><td colspan="6" class="empty">No hay movimientos.</td></tr>`;
  el("movementTable").querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editMovement(b.dataset.edit));
  el("movementTable").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>deleteMovement(b.dataset.del));
+ // Lista táctil para móvil (agrupada por día; tocar abre la hoja de edición)
+ const list=el("movementList"),LIMIT=300,shown=movs.slice(0,LIMIT);let html="",lastDate="";
+ shown.forEach(m=>{
+   if(m.date!==lastDate){lastDate=m.date;html+=`<div class="mday">${formatDate(m.date)}</div>`}
+   const cls=m.type==="Gasto"?"negative":m.type==="Ingreso"?"positive":"inv",sign=m.type==="Gasto"?"−":m.type==="Ingreso"?"+":"";
+   html+=`<button type="button" class="mitem" data-id="${m.id}"><span><b>${escapeHtml(m.description)}</b><small>${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")} · ${m.type}</small></span><span class="amt ${cls}">${sign}${euro.format(m.amount)}</span></button>`;
+ });
+ if(!html)html=`<div class="empty">No hay movimientos.</div>`;
+ if(movs.length>LIMIT)html+=`<div class="empty">Mostrando ${LIMIT} de ${movs.length}. Usa los filtros para acotar.</div>`;
+ list.innerHTML=html;
+ list.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>{const m=state.movements.find(x=>x.id===b.dataset.id);if(m)openQuickSheet(m)});
+ const nFilters=["searchText","searchType","searchCategory","searchFrom","searchTo"].filter(id=>el(id).value).length;
+ el("toggleFilters").textContent=nFilters?`Filtros (${nFilters})`:"Filtros";
 }
 
 function addRecurring(){
@@ -959,17 +1058,21 @@ function drawMonthlyChart(){
    for(let y=y0;y<=y1;y++){labels.push(String(y));rows.push(calcSummary(state.movements.filter(m=>Number(m.date.slice(0,4))===y)));ranges.push({from:`${y}-01-01`,to:`${y}-12-31`,label:`Año ${y}`})}
    sub=`Totales por año, ${y0} – ${y1}`;
  }else{
-   labels=months.map(n=>n.slice(0,3));rows=months.map((_,i)=>calcSummary(monthMovements(p.year,i+1)));ranges=months.map((n,i)=>({...monthRange(p.year,i+1),label:`${n} ${p.year}`}));
-   sub=p.mode==="month"?`Los 12 meses de ${p.year}, con ${months[p.month-1].toLowerCase()} resaltado`:`Los 12 meses de ${p.year}`;
+   let idx=months.map((_,i)=>i);
+   const compact=isMobile()&&!monthlyShowAll;
+   if(compact){const now=new Date(),endM=p.mode==="month"?p.month:(p.year===now.getFullYear()?now.getMonth()+1:12),startM=Math.max(1,endM-5);idx=[];for(let i=startM-1;i<endM;i++)idx.push(i)}
+   labels=idx.map(i=>months[i].slice(0,3));rows=idx.map(i=>calcSummary(monthMovements(p.year,i+1)));ranges=idx.map(i=>({...monthRange(p.year,i+1),label:`${months[i]} ${p.year}`}));
+   sub=compact?`${months[idx[0]]} – ${months[idx[idx.length-1]]} de ${p.year}${p.mode==="month"?", "+months[p.month-1].toLowerCase()+" resaltado":""}`:p.mode==="month"?`Los 12 meses de ${p.year}, con ${months[p.month-1].toLowerCase()} resaltado`:`Los 12 meses de ${p.year}`;
  }
  el("subMonthly").textContent=sub;
- const sel=p.mode==="month"?p.month-1:-1;
+ el("monthlyToggle").hidden=p.mode==="all";el("monthlyToggle").textContent=monthlyShowAll?"Ver 6 meses":"Ver 12 meses";
+ const sel=p.mode==="month"?labels.findIndex((_,i)=>ranges[i].from===monthRange(p.year,p.month).from):-1;
  const ds=(label,key,color,type)=>({label,data:rows.map(r=>r[key]),backgroundColor:rows.map((_,i)=>sel<0||i===sel?color:withAlpha(color,0.35)),borderRadius:3,_type:type});
  mountChart("monthlyChart",{type:"bar",data:{labels,datasets:[ds("Ingresos","income",colors.Ingreso,"Ingreso"),ds("Gastos","expense",colors.Gasto,"Gasto"),ds("Inversiones","investment",colors["Inversión"],"Inversión")]},
   options:{responsive:true,maintainAspectRatio:false,animation:{duration:250},
    plugins:{legend:{labels:{usePointStyle:true,boxWidth:8,font:{family:FONT}}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${euro.format(c.parsed.y)}`}}},
-   scales:{x:{grid:{display:false}},y:{beginAtZero:true,ticks:{callback:v=>shortNum(v)}}},
-   onClick:(e,els,chart)=>{if(!els.length)return;const {datasetIndex,index}=els[0],r=ranges[index];goToMovements({type:chart.data.datasets[datasetIndex]._type,from:r.from,to:r.to,label:r.label})},
+   scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:false}},y:{beginAtZero:true,ticks:{callback:v=>shortNum(v)}}},
+   onClick:(e,els,chart)=>{if(!els.length)return;const {datasetIndex,index}=els[0],r=ranges[index],ds=chart.data.datasets[datasetIndex];chartTap("monthlyChart",`${r.label} · ${ds.label}: ${euro.format(ds.data[index])}`,()=>goToMovements({type:ds._type,from:r.from,to:r.to,label:r.label}))},
    onHover:pointerCursor}});
 }
 function cumulativeSeries(){
@@ -988,7 +1091,7 @@ function drawSavingsChart(){
   options:{responsive:true,maintainAspectRatio:false,animation:{duration:250},
    plugins:{legend:{display:false},tooltip:{callbacks:{title:items=>{const x=series[items[0].dataIndex];return `${months[x.m-1]} ${x.y}`},label:c=>{const x=series[c.dataIndex];return[` Acumulado: ${euro.format(x.cum)}`,` Este mes: ${x.net>=0?"+":""}${euro.format(x.net)}`]}}}},
    scales:{x:{grid:{display:false}},y:{ticks:{callback:v=>shortNum(v)}}},
-   onClick:(e,els)=>{if(!els.length)return;const x=series[els[0].index],r=monthRange(x.y,x.m);goToMovements({from:r.from,to:r.to,label:`${months[x.m-1]} ${x.y}`})},
+   onClick:(e,els)=>{if(!els.length)return;const x=series[els[0].index],r=monthRange(x.y,x.m),lbl=`${months[x.m-1]} ${x.y}`;chartTap("savingsChart",`${lbl} · acumulado ${euro.format(x.cum)} (${x.net>=0?"+":""}${euro.format(x.net)} este mes)`,()=>goToMovements({from:r.from,to:r.to,label:lbl}))},
    onHover:pointerCursor}});
 }
 function drawCategoryChart(){
@@ -999,6 +1102,8 @@ function drawCategoryChart(){
  if(all.length>10)rows.push({id:"",name:`Otras (${all.length-10})`,total:all.slice(10).reduce((s,x)=>s+x.total,0)});
  const typeLabel={Gasto:"Gastos",Ingreso:"Ingresos","Inversión":"Inversiones"}[type],color={Gasto:colors.Gasto,Ingreso:colors.Ingreso,"Inversión":colors["Inversión"]}[type];
  el("subCategory").textContent=`${typeLabel} · ${periodLabel()} · ${rows.length?"total "+euro.format(total):"sin movimientos"}`;
+ if(isMobile()){renderBarList("categoryChart",rows.map(r=>({label:r.name,value:r.total,color:r.id?color:withAlpha(color,0.45),text:`${euro.format(r.total)} · ${total?pct1(r.total/total*100):"0"} %`,onClick:r.id?()=>{const pr=periodRange();goToMovements({type,categoryId:r.id,from:pr.from,to:pr.to,label:periodLabel()})}:null})),{empty:"Sin movimientos en este periodo"});return}
+ showChartCanvas("categoryChart");
  mountChart("categoryChart",{type:"bar",data:{labels:rows.map(r=>r.name),datasets:[{label:typeLabel,data:rows.map(r=>r.total),backgroundColor:rows.map(r=>r.id?color:withAlpha(color,0.45)),borderRadius:3}]},
   options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,animation:{duration:250},layout:{padding:{right:120}},
    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${euro.format(c.parsed.x)} · ${total?pct1(c.parsed.x/total*100):"0"} %`}},barValueLabels:{format:v=>`${euro.format(v)} · ${total?pct1(v/total*100):"0"} %`}},
@@ -1010,6 +1115,8 @@ function drawCategoryChart(){
 function drawPatrimonyChart(){
  const assets=portfolioDistributionData(),ref=latestPortfolioReference();
  el("subPatrimony").textContent=assets.length?`Valor actual, total ${euro.format(assets[0].total)} · actualizado ${formatDateTime(ref)}`:"Añade activos en Patrimonio para ver su distribución";
+ if(isMobile()){renderBarList("patrimonyChart",assets.map(a=>({label:a.name,value:a.value,color:"#0f172a",text:`${euro.format(a.value)} · ${pct1(a.pct)} %`})),{empty:"Sin activos"});return}
+ showChartCanvas("patrimonyChart");
  mountChart("patrimonyChart",{type:"bar",data:{labels:assets.map(a=>a.name),datasets:[{label:"Valor",data:assets.map(a=>a.value),backgroundColor:"#0f172a",borderRadius:3}]},
   options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,animation:{duration:250},layout:{padding:{right:130}},
    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${euro.format(c.parsed.x)} · ${pct1(assets[c.dataIndex].pct)} %`}},barValueLabels:{format:(v,i)=>`${euro.format(v)} · ${pct1(assets[i].pct)} %`}},
@@ -1019,6 +1126,8 @@ function drawPatrimonyChart(){
 function drawCompoundReturnChart(){
  const data=state.assets.map(a=>({name:a.name||"Activo",rate:assetAnnualizedReturn(a),invested:Number(a.invested||0),value:Number(a.value||0),since:assetInvestmentMovements(a)[0]?.date,asOf:a.updatedAt})).filter(x=>x.rate!==null&&Number.isFinite(x.rate)).sort((a,b)=>b.rate-a.rate);
  el("subReturn").textContent=data.length?"Desde la primera aportación de cada activo hasta su última cotización":"Necesito compras de inversión enlazadas a un activo con valor actual";
+ if(isMobile()){renderBarList("compoundReturnChart",data.map(d=>({label:d.name,value:d.rate*100,color:d.rate>=0?colors.Ingreso:colors.Gasto,text:`${(d.rate*100).toFixed(2).replace(".",",")} % · ${euro.format(d.value)}`})),{empty:"Sin datos de rentabilidad"});return}
+ showChartCanvas("compoundReturnChart");
  mountChart("compoundReturnChart",{type:"bar",data:{labels:data.map(d=>d.name),datasets:[{label:"Rentabilidad anualizada",data:data.map(d=>Math.round(d.rate*10000)/100),backgroundColor:data.map(d=>d.rate>=0?colors.Ingreso:colors.Gasto),borderRadius:3}]},
   options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,animation:{duration:250},layout:{padding:{right:80,left:10}},
    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const d=data[c.dataIndex];return[` ${c.parsed.x.toFixed(2).replace(".",",")} % anual`,` Aportado ${euro.format(d.invested)} · valor ${euro.format(d.value)}`,d.since?` Desde ${formatDate(d.since)} hasta ${formatDate(d.asOf)}`:""].filter(Boolean)}}},barValueLabels:{format:v=>`${v.toFixed(2).replace(".",",")} %`}},
@@ -1030,9 +1139,107 @@ function renderCharts(){
  drawMonthlyChart();drawSavingsChart();drawCategoryChart();drawPatrimonyChart();drawCompoundReturnChart();
 }
 
+// ---------- Móvil: utilidades, hoja rápida de alta, selector compacto, listas de barras ----------
+function isMobile(){return window.matchMedia("(max-width:760px)").matches}
+function isTouch(){return window.matchMedia("(hover: none)").matches}
+let toastTimer=null;
+function toast(msg){const t=el("toast");t.textContent=msg;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.hidden=true},2200)}
+function parseAmount(s){let t=String(s||"").trim().replace(/[\s€]/g,"");if(t.includes(".")&&t.includes(","))t=t.replace(/\./g,"").replace(",",".");else if(t.includes(","))t=t.replace(",",".");return t?Number(t):NaN}
+
+const qs={type:"Gasto",categoryId:"",editId:null,showAll:false,lastType:"Gasto",lastCategory:{}};
+function categoryUsage(type){const c=new Map();state.movements.forEach(m=>{if(m.type===type)c.set(m.categoryId,(c.get(m.categoryId)||0)+1)});return c}
+function qsCategories(){const usage=categoryUsage(qs.type);return state.categories.filter(c=>c.type===qs.type).sort((a,b)=>(usage.get(b.id)||0)-(usage.get(a.id)||0)||a.name.localeCompare(b.name,"es"))}
+function qsUsesUnits(){return qs.type==="Inversión"&&investmentCategoryUsesUnits(qs.type,getCat(qs.categoryId)?.name||"")}
+function renderQsCats(){
+ const cats=qsCategories(),MAX=6;
+ if(!cats.some(c=>c.id===qs.categoryId))qs.categoryId=cats[0]?.id||"";
+ const mustShow=cats.findIndex(c=>c.id===qs.categoryId)>=MAX;
+ const shown=qs.showAll||mustShow?cats:cats.slice(0,MAX);
+ el("qsCats").innerHTML=(shown.map(c=>`<button type="button" class="chip-btn${c.id===qs.categoryId?" active":""}" data-cat="${c.id}">${escapeHtml(c.name)}</button>`).join("")||`<span class="muted">No hay categorías de este tipo. Créalas en Categorías.</span>`)+(shown.length<cats.length?`<button type="button" class="chip-btn" data-more="1">Más… (${cats.length-shown.length})</button>`:"");
+ el("qsCats").querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{qs.categoryId=b.dataset.cat;renderQsCats()});
+ const more=el("qsCats").querySelector("[data-more]");if(more)more.onclick=()=>{qs.showAll=true;renderQsCats()};
+ updateQsInvest();
+}
+function updateQsInvest(){
+ const show=qsUsesUnits();el("qsInvest").hidden=!show;if(!show)return;
+ const compatible=state.assets.filter(a=>assetMarketConfig(a)),cur=el("qsAsset").value;
+ el("qsAsset").innerHTML=compatible.length?compatible.map(a=>`<option value="${a.id}">${escapeHtml(a.name)}</option>`).join(""):`<option value="">Añade primero un activo con ISIN en Patrimonio</option>`;
+ if(cur&&compatible.some(a=>a.id===cur))el("qsAsset").value=cur;else{const m=bestAssetForText(getCat(qs.categoryId)?.name||"",compatible);if(m)el("qsAsset").value=m.id}
+}
+function setQsType(type){qs.type=type;qs.showAll=false;el("qsType").querySelectorAll("button").forEach(b=>b.classList.toggle("active",b.dataset.type===type));renderQsCats()}
+function updateDescSuggestions(){
+ const seen=new Set(),out=[];
+ [...state.movements].sort((a,b)=>b.date.localeCompare(a.date)).forEach(m=>{const d=(m.description||"").trim();if(d&&!seen.has(d.toLowerCase())){seen.add(d.toLowerCase());out.push(d)}});
+ el("qsDescList").innerHTML=out.slice(0,40).map(d=>`<option value="${escapeHtml(d)}">`).join("");
+}
+function openQuickSheet(movement){
+ qs.editId=movement?movement.id:null;qs.showAll=false;
+ el("qsTitle").textContent=movement?"Editar movimiento":"Nuevo movimiento";
+ el("qsDelete").hidden=!movement;el("qsSaveMore").hidden=!!movement;el("qsSave").textContent=movement?"Guardar cambios":"Guardar";
+ el("qsAmount").value=movement?String(movement.amount).replace(".",","):"";
+ el("qsDesc").value=movement?movement.description:"";
+ el("qsDate").value=movement?movement.date:todayISO();
+ el("qsUnits").value=movement?.units?String(movement.units).replace(".",","):"";
+ const type=movement?movement.type:qs.lastType;
+ qs.categoryId=movement?movement.categoryId:(qs.lastCategory[type]||"");
+ setQsType(type);
+ if(movement?.assetId)el("qsAsset").value=movement.assetId;
+ updateDescSuggestions();
+ el("sheetBackdrop").hidden=false;el("quickSheet").hidden=false;document.body.style.overflow="hidden";
+ setTimeout(()=>el("qsAmount").focus(),60);
+}
+function closeQuickSheet(){el("sheetBackdrop").hidden=true;el("quickSheet").hidden=true;document.body.style.overflow="";qs.editId=null}
+function quickSave(keepOpen){
+ const amount=parseAmount(el("qsAmount").value),description=el("qsDesc").value.trim(),date=el("qsDate").value,type=qs.type,categoryId=qs.categoryId;
+ const usesUnits=qsUsesUnits(),assetId=usesUnits?el("qsAsset").value:"",units=usesUnits?parseAmount(el("qsUnits").value):0;
+ const wasEdit=!!qs.editId;
+ const err=persistMovement({date,type,categoryId,description,amount,usesUnits,assetId,units},qs.editId);
+ if(err)return alert(err);
+ qs.lastType=type;qs.lastCategory[type]=categoryId;
+ toast(wasEdit?"Cambios guardados":`${type} guardado: ${euro.format(amount)}`);
+ if(keepOpen){qs.editId=null;el("qsAmount").value="";el("qsDesc").value="";el("qsUnits").value="";el("qsTitle").textContent="Nuevo movimiento";el("qsDelete").hidden=true;el("qsSaveMore").hidden=false;el("qsSave").textContent="Guardar";el("qsAmount").focus()}
+ else closeQuickSheet();
+}
+function quickDelete(){if(!qs.editId||!confirm("¿Eliminar este movimiento?"))return;deleteMovementById(qs.editId);closeQuickSheet();toast("Movimiento eliminado")}
+
+function syncPeriodCompact(){
+ const p=selectedPeriod();
+ el("periodModeSeg").querySelectorAll("button").forEach(b=>b.classList.toggle("active",b.dataset.mode===p.mode));
+ el("periodLabelText").textContent=p.mode==="month"?`${months[p.month-1]} ${p.year}`:p.mode==="year"?String(p.year):"Todo el histórico";
+ el("periodPrev").disabled=el("periodNext").disabled=p.mode==="all";
+}
+function ensureYearOption(y){const sel=el("yearFilter");if(![...sel.options].some(o=>Number(o.value)===y)){const o=document.createElement("option");o.value=y;o.textContent=y;sel.appendChild(o);[...sel.options].sort((a,b)=>Number(b.value)-Number(a.value)).forEach(o=>sel.appendChild(o))}}
+function shiftPeriod(dir){
+ const p=selectedPeriod();if(p.mode==="all")return;
+ if(p.mode==="month"){let m=p.month+dir,y=p.year;if(m<1){m=12;y--}if(m>12){m=1;y++}ensureYearOption(y);el("yearFilter").value=y;el("monthFilter").value=m}
+ else{ensureYearOption(p.year+dir);el("yearFilter").value=p.year+dir}
+ updatePeriodControls();renderAll();
+}
+
+// Listas de barras en HTML (sustituyen a los gráficos horizontales en móvil) y popover táctil.
+function chartBoxFor(id){return el(id).closest(".chart-box")}
+function renderBarList(id,rows,opts){
+ const box=chartBoxFor(id);if(charts[id]){charts[id].destroy();delete charts[id]}
+ box.style.display="none";let list=box.parentElement.querySelector(".barlist");
+ if(!list){list=document.createElement("div");list.className="barlist";box.after(list)}
+ const max=Math.max(1,...rows.map(r=>Math.abs(r.value)));
+ list.innerHTML=rows.length?rows.map((r,i)=>`<button type="button" class="barrow" data-i="${i}"${r.onClick?"":" disabled"}><div class="bl-head"><b>${escapeHtml(r.label)}</b><span>${r.text}</span></div><div class="bl-track"><div class="bl-fill" style="width:${Math.round(Math.abs(r.value)/max*100)}%;background:${r.color}"></div></div></button>`).join(""):`<div class="empty">${opts?.empty||"Sin datos"}</div>`;
+ list.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>rows[b.dataset.i].onClick?.());
+}
+function showChartCanvas(id){const box=chartBoxFor(id);box.style.display="";const list=box.parentElement.querySelector(".barlist");if(list)list.remove()}
+function chartTap(id,text,action){
+ if(!isTouch()){action();return}
+ const panel=el(id).closest(".panel");let pop=panel.querySelector(".chart-pop");
+ if(!pop){pop=document.createElement("div");pop.className="chart-pop";chartBoxFor(id).after(pop)}
+ pop.innerHTML=`<span>${escapeHtml(text)}</span><span><button type="button" class="secondary small" data-go>Ver movimientos</button> <button type="button" class="secondary small" data-x aria-label="Cerrar">×</button></span>`;
+ pop.querySelector("[data-go]").onclick=()=>{pop.remove();action()};pop.querySelector("[data-x]").onclick=()=>pop.remove();
+}
+let monthlyShowAll=false;
+
 function showPage(name){
  document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id==="page-"+name));
- document.querySelectorAll("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===name));
+ const navName=["categories","recurring","settings"].includes(name)?"more":name;
+ document.querySelectorAll("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===name||(b.closest(".mobile-nav")&&b.dataset.page===navName)));
  window.scrollTo({top:0,behavior:"smooth"});
  if(name==="dashboard")setTimeout(renderCharts,20);
 }
@@ -1045,7 +1252,7 @@ function importData(file){
 function clearAll(){if(!confirm("Se borrarán todos tus datos guardados en este navegador. ¿Continuar?"))return;state=defaultState();saveState();setupPeriodSelectors();renderAll()}
 function renderAll(){
  renderCategoryList();updateMovementCategories();updateRecurringCategories();renderSearchCategories();updateInvestmentFields();
- renderSummary();renderMovements();renderRecurring();renderAssets();renderCategorySummary();renderFreshness();
+ renderSummary();renderMovements();renderRecurring();renderAssets();renderCategorySummary();renderFreshness();syncPeriodCompact();
  if(el("page-dashboard").classList.contains("active"))renderCharts();
 }
 
@@ -1060,6 +1267,22 @@ el("goCurrent").onclick=()=>{const n=new Date();el("periodMode").value="month";e
 el("exportData").onclick=exportData;el("importData").onchange=e=>importData(e.target.files[0]);el("clearAll").onclick=clearAll;
 el("catTypeToggle").querySelectorAll("[data-cattype]").forEach(b=>b.onclick=()=>{catChartType=b.dataset.cattype;el("catTypeToggle").querySelectorAll("button").forEach(x=>x.classList.toggle("active",x===b));drawCategoryChart()});
 el("clearFilters").onclick=clearMovementFilters;
+// Hoja rápida de alta, barra inferior con "+", selector compacto, filtros plegables y cambios de tamaño
+[el("navAdd"),el("fabAdd"),el("mobileAddBtn")].forEach(b=>b.onclick=()=>openQuickSheet(null));
+el("qsClose").onclick=closeQuickSheet;el("sheetBackdrop").onclick=closeQuickSheet;
+el("qsSave").onclick=()=>quickSave(false);el("qsSaveMore").onclick=()=>quickSave(true);el("qsDelete").onclick=quickDelete;
+el("qsType").querySelectorAll("[data-type]").forEach(b=>b.onclick=()=>setQsType(b.dataset.type));
+el("quickSheet").querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{el("qsDate").value=addDaysISO(todayISO(),Number(b.dataset.day))});
+el("qsDesc").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();quickSave(false)}});
+el("qsAmount").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();el("qsDesc").focus()}});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!el("quickSheet").hidden)closeQuickSheet()});
+el("periodModeSeg").querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{el("periodMode").value=b.dataset.mode;updatePeriodControls();renderAll()});
+el("periodPrev").onclick=()=>shiftPeriod(-1);el("periodNext").onclick=()=>shiftPeriod(1);
+el("toggleFilters").onclick=()=>el("searchbar").classList.toggle("collapsed");
+el("monthlyToggle").onclick=()=>{monthlyShowAll=!monthlyShowAll;drawMonthlyChart()};
+el("assetFormDetails").open=!isMobile();
+let lastMobile=isMobile(),resizeTimer=null;
+window.addEventListener("resize",()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(isMobile()!==lastMobile){lastMobile=isMobile();el("assetFormDetails").open=!lastMobile;if(el("page-dashboard").classList.contains("active"))renderCharts()}},200)});
 el("loginGoogle").onclick=login;el("logoutSidebar").onclick=logout;el("logoutSettings").onclick=logout;
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flushRemoteSave()});
 window.addEventListener("pagehide",flushRemoteSave);
