@@ -48,9 +48,13 @@ Cada vez que cambies un fichero y lo subas, Pages se vuelve a publicar solo.
 
 ## 6. Cotizaciones automáticas (`prices.json`)
 
-La app lee `prices.json` de este mismo repositorio. Para que se actualice solo, crea una tarea programada en ChatGPT (con la conexión de GitHub activada y acceso a este repositorio) con un texto como este:
+La app lee `prices.json` de este mismo repositorio. Lo actualiza solo un **workflow de GitHub Actions** (`.github/workflows/update-prices.yml`) que corre en los servidores de GitHub todos los días a las 06:00 UTC, con el ordenador apagado:
 
-> Créame una tarea programada todos los días a las 08:00 para obtener el valor liquidativo (NAV) más reciente disponible en euros de: Amundi Index MSCI World AE-C (ISIN LU0996182563), Amundi Index MSCI Emerging Markets AE-C (ISIN LU0996177134) y Neuberger Berman Short Duration Euro Bond Fund EUR I Acc (ISIN IE00BFZMJT78), y el precio de Bitcoin (BTC) en euros. Para los fondos utiliza siempre la fecha real del NAV publicado, no la de hoy si corresponde a un día anterior. Después utiliza mi conexión de GitHub para actualizar el archivo `prices.json` del repositorio `carloscr99/finanzas`, rama `main`. Lee primero el archivo existente y conserva su estructura: cada activo está bajo `assets` con su ISIN como clave. Actualiza `updatedAt`, `price`, `priceDate` y `source`. Si no encuentras de forma fiable un precio nuevo para alguno de los activos, conserva el precio anterior y no inventes datos. Envíame un resumen de los precios obtenidos.
+1. Ejecuta `scripts/update-prices.mjs`, que para cada clave de `assets` en `prices.json` consulta el valor liquidativo en el Financial Times (fondos, por ISIN) o el precio en CoinGecko (clave `BTC`).
+2. Si obtiene un precio válido, actualiza `price`, `priceDate` (fecha real del dato) y `source`. Si una fuente falla, conserva el precio anterior y lo deja anotado en el registro de la ejecución.
+3. Si `prices.json` ha cambiado, hace commit y push; GitHub Pages republica la web en un par de minutos.
+
+Para lanzarlo a mano o ver el historial: pestaña **Actions** del repositorio → "Actualizar cotizaciones" → **Run workflow**. Para añadir un fondo: crea el activo en Patrimonio con su ISIN y añade esa misma clave a `prices.json` (nombre, `price: 0`); el siguiente día ya tendrá precio. Si el fondo no aparece en el FT con `ISIN:EUR`, el script lo dirá en el registro y habrá que buscar otra fuente.
 
 **Cómo casa la app cada activo con su cotización**: por el campo ISIN del activo en Patrimonio, que debe ser exactamente la clave usada en `prices.json`. Bitcoin se reconoce por el nombre ("Bitcoin" o "BTC") y usa la clave `BTC`. Para añadir otro fondo o ETF basta con crear el activo con su ISIN y añadir esa misma clave a `prices.json` (y a la tarea de ChatGPT).
 

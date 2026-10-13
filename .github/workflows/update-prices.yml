@@ -1,0 +1,37 @@
+name: Actualizar cotizaciones
+
+on:
+  schedule:
+    # Todos los días a las 06:00 UTC (08:00 en verano / 07:00 en invierno, hora de Madrid)
+    - cron: "0 6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Preparar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Obtener precios y actualizar prices.json
+        run: node scripts/update-prices.mjs
+
+      - name: Subir el cambio si hay precios nuevos
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if git diff --quiet -- prices.json; then
+            echo "prices.json sin cambios, no se hace commit"
+          else
+            git add prices.json
+            git commit -m "Cotizaciones $(date -u +%Y-%m-%d)"
+            git push
+          fi
