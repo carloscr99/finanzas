@@ -351,12 +351,22 @@ let state=defaultState();
 let editingId=null;
 let priceUpdateInProgress=false;
 const PRICE_FEED_URL="./prices.json"; // mismo repositorio que la web (GitHub Pages)
-const MARKET_MAP={
-  "BTC":{feedKey:"BTC",label:"Bitcoin"},
-  "IE00BYX5NX33":{feedKey:"IE00BYX5NX33",label:"Fidelity MSCI World"},
-  "IE0031786696":{feedKey:"IE0031786696",label:"Vanguard Emerging Markets"},
-  "IE00B4ND3602":{feedKey:"IE00B4ND3602",label:"iShares Physical Gold"}
-};
+// Cotizaciones: cualquier activo con ISIN se busca en prices.json por su ISIN; Bitcoin por la clave "BTC".
+// El enlace entre categorías/movimientos y activos se hace por coincidencia de palabras con el nombre del activo.
+const TEXT_STOP=new Set(["fund","fondo","fondos","index","class","clase","eur","usd","acc","dist","aportacion","aportaciones","inversion","etf","the","and","los","las","del","con"]);
+function normText(s){return String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")}
+function textTokens(s){return normText(s).split(/[^a-z0-9]+/).filter(t=>t.length>=3&&!TEXT_STOP.has(t))}
+function assetMatchScore(a,txt){
+ const isin=normText(a?.isin).trim();if(isin&&txt.includes(isin))return 100;
+ const at=textTokens(a?.name),tt=new Set(textTokens(txt));if(!at.length)return 0;
+ const common=at.filter(t=>tt.has(t)).length;
+ return common>=Math.min(2,at.length)?common:0;
+}
+function bestAssetForText(txt,candidates=state.assets){
+ const t=normText(txt);let best=null,bestScore=0,tie=false;
+ for(const a of candidates){const s=assetMatchScore(a,t);if(s>bestScore){best=a;bestScore=s;tie=false}else if(s&&s===bestScore)tie=true}
+ return bestScore&&!tie?best:null;
+}
 
 function uuid(){return (crypto&&crypto.randomUUID)?crypto.randomUUID():"id-"+Date.now()+"-"+Math.random().toString(16).slice(2)}
 function todayISO(){
@@ -525,12 +535,9 @@ function formatDate(iso){if(!iso)return"—";const [y,m,d]=iso.split("-");return
 function shortNum(v){if(v>=1e6)return(v/1e6).toFixed(1)+"M";if(v>=1e3)return(v/1e3).toFixed(v>=1e4?0:1)+"k";return String(Math.round(v))}
 function getCat(id){return state.categories.find(c=>c.id===id)}
 function assetMarketConfig(a){
- const isin=String(a?.isin||"").trim().toUpperCase();if(MARKET_MAP[isin])return MARKET_MAP[isin];
- const n=String(a?.name||"").toLowerCase(),type=String(a?.type||"").toLowerCase();
- if(n.includes("bitcoin")||n==="btc"||(type==="cripto"&&n.includes("btc")))return MARKET_MAP["BTC"];
- if(n.includes("fidelity")&&n.includes("msci")&&n.includes("world"))return MARKET_MAP["IE00BYX5NX33"];
- if(n.includes("vanguard")&&n.includes("emerging"))return MARKET_MAP["IE0031786696"];
- if((n.includes("ishares")&&n.includes("gold"))||n.includes("physical gold"))return MARKET_MAP["IE00B4ND3602"];
+ const isin=String(a?.isin||"").trim().toUpperCase();if(isin)return{feedKey:isin,label:a.name||isin};
+ const n=normText(a?.name),type=normText(a?.type);
+ if(n.includes("bitcoin")||n==="btc"||(type==="cripto"&&n.includes("btc")))return{feedKey:"BTC",label:"Bitcoin"};
  return null;
 }
 function assetDisplayUnits(v){return Number(v||0).toLocaleString("es-ES",{maximumFractionDigits:6})}
@@ -538,14 +545,7 @@ function dateToMs(iso){const t=Date.parse(String(iso||"")+"T00:00:00");return Nu
 function movementAsset(m){
  if(m?.assetId){const linked=state.assets.find(a=>a.id===m.assetId);if(linked)return linked}
  if(m?.type!=="Inversión")return null;
- const cat=(getCat(m.categoryId)?.name||"").toLowerCase(),desc=String(m.description||"").toLowerCase(),txt=cat+" "+desc;
- return state.assets.find(a=>{
-   const n=String(a.name||"").toLowerCase(),isin=String(a.isin||"").toUpperCase();
-   if((txt.includes("msci world")||txt.includes("msci world index"))&&(n.includes("msci")&&n.includes("world")||isin==="IE00BYX5NX33"))return true;
-   if(txt.includes("emerging")&&(n.includes("emerging")||isin==="IE0031786696"))return true;
-   if((txt.includes("physical gold")||txt.includes("oro")||txt.includes("gold"))&&(n.includes("gold")||n.includes("oro")||isin==="IE00B4ND3602"))return true;
-   return false;
- })||null;
+ return bestAssetForText((getCat(m.categoryId)?.name||"")+" "+String(m.description||""));
 }
 function assetInvestmentMovements(asset){
  return state.movements.filter(m=>m.type==="Inversión"&&movementAsset(m)?.id===asset.id&&Number(m.amount)>0&&Number.isFinite(dateToMs(m.date))).sort((a,b)=>a.date.localeCompare(b.date));
@@ -581,10 +581,10 @@ function investmentCategoryUsesUnits(){
  if(el("mType").value!=="Inversión")return false;
  const cname=(getCat(el("mCategory").value)?.name||"").trim().toLowerCase();
  if(!cname)return false;
- // Solo pedimos participaciones/títulos para inversiones cuyo valor se calcula por cotización.
- // Santander y Trade Republic se registran como movimientos de inversión simples.
- if(cname.includes("santander")||cname.includes("trade republic"))return false;
- return cname==="fondos"||cname==="fondo"||cname.includes("fidelity")||cname.includes("msci")||cname.includes("vanguard")||cname.includes("emerging")||cname.includes("oro")||cname.includes("gold")||cname.includes("bitcoin")||cname.includes("btc");
+ // Pedimos participaciones/títulos cuando la categoría se corresponde con un activo cotizable del patrimonio
+ // o cuando su nombre indica claramente fondo, ETF, cripto u oro. Cuentas de ahorro (Revolut, RenaultBank...) no.
+ if(bestAssetForText(cname,state.assets.filter(a=>assetMarketConfig(a))))return true;
+ return /fondo|etf|indexad|bitcoin|btc|\boro\b|gold|accion|msci|world|emerging|bond|bono/.test(normText(cname));
 }
 function updateInvestmentFields(){
  const show=investmentCategoryUsesUnits();
@@ -597,18 +597,8 @@ function updateInvestmentFields(){
 }
 function autoSelectAssetForCategory(){
  if(!investmentCategoryUsesUnits()||!el("mAsset"))return;
- const cname=(getCat(el("mCategory").value)?.name||"").toLowerCase();
- const compatible=state.assets.filter(a=>assetMarketConfig(a));
- const match=compatible.find(a=>{
-   const n=(a.name||"").toLowerCase(),cfg=assetMarketConfig(a);
-   return (cname.includes("msci")&&n.includes("msci")&&n.includes("world"))
-     ||(cname.includes("fidelity")&&cfg?.feedKey==="IE00BYX5NX33")
-     ||(cname.includes("emerging")&&n.includes("emerging"))
-     ||(cname.includes("vanguard")&&cfg?.feedKey==="IE0031786696")
-     ||(cname.includes("oro")&&(n.includes("gold")||n.includes("oro")))
-     ||(cname.includes("gold")&&cfg?.feedKey==="IE00B4ND3602")
-     ||((cname.includes("bitcoin")||cname.includes("btc"))&&cfg?.feedKey==="BTC");
- });
+ const cname=getCat(el("mCategory").value)?.name||"";
+ const match=bestAssetForText(cname,state.assets.filter(a=>assetMarketConfig(a)));
  if(match)el("mAsset").value=match.id;
 }
 function applyInvestmentMovementToAsset(m,sign){
