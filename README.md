@@ -1,0 +1,80 @@
+# Mis Finanzas (online)
+
+App de finanzas personales publicada en **GitHub Pages** (gratis), con **inicio de sesión con Google** y datos guardados por usuario en **Cloud Firestore** (plan gratuito Spark de Firebase). Cada usuario solo ve sus propios datos; solo pueden entrar las cuentas que tú apuntes en una lista.
+
+Ficheros:
+
+| Fichero | Para qué sirve |
+|---|---|
+| `index.html` | La aplicación completa (HTML, CSS y JavaScript) |
+| `firebase-config.js` | Identificadores de tu proyecto de Firebase (se rellenan una vez) |
+| `firestore.rules` | Reglas de seguridad de Firestore (se pegan en la consola de Firebase) |
+| `prices.json` | Cotizaciones de BTC, fondos y oro (lo actualiza una tarea automática) |
+| `.nojekyll` | Le dice a GitHub Pages que publique los ficheros tal cual |
+
+## 1. Crear el proyecto de Firebase
+
+1. Entra en https://console.firebase.google.com con tu cuenta de Google y pulsa **Crear un proyecto**. Ponle un nombre (por ejemplo `mis-finanzas`). Desactiva Google Analytics (no hace falta).
+2. En la página principal del proyecto pulsa el icono **Web** (`</>`) para añadir una app web. Ponle un apodo cualquiera. **No** marques Firebase Hosting.
+3. Firebase te enseñará un bloque `const firebaseConfig = { ... }`. Copia los valores en `firebase-config.js` de este repositorio (apiKey, authDomain, projectId, storageBucket, messagingSenderId, appId).
+
+## 2. Activar el inicio de sesión con Google
+
+1. Menú **Compilación → Authentication → Comenzar**.
+2. Pestaña **Sign-in method** → **Google** → Habilitar. Indica el correo de asistencia del proyecto y guarda.
+3. Pestaña **Settings → Dominios autorizados** → **Añadir dominio** → escribe `carloscr99.github.io` (tu usuario de GitHub en minúsculas). `localhost` ya está añadido para pruebas.
+
+## 3. Crear la base de datos Firestore
+
+1. Menú **Compilación → Firestore Database → Crear base de datos**.
+2. Ubicación: `eur3 (europe-west)`. Modo: **producción**. Crear.
+3. Pestaña **Reglas**: borra lo que haya, pega el contenido completo de `firestore.rules` y pulsa **Publicar**.
+
+## 4. Decir quién puede entrar (lista de permitidos)
+
+1. Pestaña **Datos** → **Iniciar colección** → ID de colección: `allowlist`.
+2. ID del documento: tu correo de Gmail **en minúsculas** (por ejemplo `nombre@gmail.com`). Añade un campo `enabled` de tipo boolean con valor `true`. Guardar.
+3. Repite con cada persona que deba tener acceso. Para quitar a alguien, borra su documento.
+
+Quien no esté en la lista verá "Tu cuenta no está autorizada" al intentar entrar, y las reglas de Firestore le impiden leer o escribir nada aunque se salte la pantalla.
+
+## 5. Publicar en GitHub Pages
+
+1. Crea un repositorio **público** en GitHub (por ejemplo `finanzas`) y sube estos ficheros. Puedes hacerlo con git o arrastrándolos en la web de GitHub (**Add file → Upload files**).
+2. En el repositorio: **Settings → Pages → Build and deployment → Source: Deploy from a branch**, rama `main`, carpeta `/ (root)`. Guardar.
+3. En uno o dos minutos la web estará en `https://carloscr99.github.io/finanzas/`.
+
+Cada vez que cambies un fichero y lo subas, Pages se vuelve a publicar solo.
+
+## 6. Cotizaciones automáticas (`prices.json`)
+
+La app lee `prices.json` de este mismo repositorio. Para que se actualice solo, crea una tarea programada en ChatGPT (con la conexión de GitHub activada y acceso a este repositorio) con un texto como este:
+
+> Créame una tarea programada todos los días a las 08:00 para obtener el valor/precio más reciente disponible en euros de: Bitcoin (BTC), Fidelity MSCI World (ISIN IE00BYX5NX33), Vanguard Emerging Markets (ISIN IE0031786696), iShares Physical Gold (ISIN IE00B4ND3602). Para los fondos y ETC utiliza siempre la fecha real del NAV o cotización publicada. Después utiliza mi conexión de GitHub para actualizar el archivo `prices.json` del repositorio `carloscr99/finanzas`, rama `main`. Lee primero el archivo existente y conserva su estructura. Actualiza `updatedAt`, `price`, `priceDate` y `source`. Si no encuentras de forma fiable un precio nuevo para alguno de los activos, conserva el precio anterior y no inventes datos. Envíame un resumen de los precios obtenidos.
+
+En la app, los activos se reconocen por su ISIN (`IE00BYX5NX33`, `IE0031786696`, `IE00B4ND3602`) y Bitcoin por el nombre o `BTC`.
+
+## 7. Primer uso
+
+1. **Antes de nada**, en la versión antigua (`mis_finanzas_web_v17.html`) ve a **Ajustes → Exportar datos** y guarda el `.json`.
+2. Abre la URL de GitHub Pages y pulsa **Entrar con Google**.
+3. Ve a **Ajustes → Importar datos** y elige el `.json` exportado. Desde ese momento todo se guarda en Firestore y se sincroniza entre dispositivos.
+4. Sigue disponible **Ajustes → Exportar datos** como copia de seguridad periódica.
+
+Si abres la nueva `index.html` en el mismo navegador y la misma dirección donde usabas la antigua, la app detecta los datos guardados y te ofrece subirlos directamente; pero lo normal es que la dirección cambie, así que el camino fiable es exportar e importar.
+
+## Probar en local
+
+Sirve la carpeta con cualquier servidor estático y abre `http://localhost:8000`. No funciona abriendo `index.html` directamente como fichero, porque los módulos JavaScript y el login de Google necesitan `http://`.
+
+Opciones sin instalar nada:
+
+- Extensión **Live Server** de Visual Studio Code (botón "Go Live").
+- Si tienes Python: `python -m http.server 8000`.
+- Si tienes Node: `npx serve -l 8000 .`.
+
+## Seguridad: qué es público y qué no
+
+- Los datos de `firebase-config.js` identifican el proyecto pero no dan acceso a nada: la protección está en `firestore.rules` y en los dominios autorizados.
+- Opcional: en Google Cloud Console → **APIs y servicios → Credenciales**, restringe la clave "Browser key" a los referentes `carloscr99.github.io/*` y `localhost/*`.
+- `prices.json` es público (solo cotizaciones). Tus movimientos y patrimonio nunca pasan por GitHub.

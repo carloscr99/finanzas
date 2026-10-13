@@ -1,0 +1,30 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Un usuario está permitido si ha iniciado sesión con una cuenta de Google
+    // verificada y su correo (en minúsculas) existe como documento en /allowlist.
+    function allowed() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && exists(/databases/$(database)/documents/allowlist/$(request.auth.token.email));
+    }
+
+    // Cada usuario solo puede leer y escribir su propio documento.
+    match /users/{uid} {
+      allow read, write: if allowed() && request.auth.uid == uid;
+    }
+
+    // Cada usuario solo puede comprobar su propia entrada en la lista.
+    // La lista se edita únicamente desde la consola de Firebase.
+    match /allowlist/{email} {
+      allow read: if request.auth != null && request.auth.token.email == email;
+      allow write: if false;
+    }
+
+    // Todo lo demás, denegado.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

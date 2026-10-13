@@ -1,0 +1,30 @@
+{
+  "updatedAt": null,
+  "currency": "EUR",
+  "assets": {
+    "BTC": {
+      "name": "Bitcoin",
+      "price": 0,
+      "priceDate": null,
+      "source": ""
+    },
+    "IE00BYX5NX33": {
+      "name": "Fidelity MSCI World Index Fund EUR P Acc",
+      "price": 0,
+      "priceDate": null,
+      "source": ""
+    },
+    "IE0031786696": {
+      "name": "Vanguard Emerging Markets Stock Index Fund EUR Acc",
+      "price": 0,
+      "priceDate": null,
+      "source": ""
+    },
+    "IE00B4ND3602": {
+      "name": "iShares Physical Gold ETC",
+      "price": 0,
+      "priceDate": null,
+      "source": ""
+    }
+  }
+}
