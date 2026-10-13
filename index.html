@@ -71,7 +71,15 @@ td.actions{white-space:nowrap;width:1%}
 .chip button{border:0;background:transparent;color:#64748b;padding:0}
 .muted{color:var(--muted)}
 .empty{text-align:center;padding:24px;color:var(--muted)}
-.chart{width:100%;height:300px;display:block}
+.chart-box{position:relative;height:300px;width:100%}
+.chart-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:10px}
+.chart-head h2{margin:0 0 4px}
+.chart-sub{margin:0;color:var(--muted);font-size:13px}
+.seg{display:inline-flex;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--soft)}
+.seg button{border:0;background:transparent;padding:7px 11px;font-size:13px;font-weight:600;color:#475569}
+.seg button.active{background:var(--accent);color:#fff}
+tr.clickable{cursor:pointer}tr.clickable:hover td{background:#f8fafc}
+.chart-hint{font-size:12px;color:var(--muted);margin-top:8px}
 .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;color:var(--muted);font-size:13px}
 .legend i{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px}
 .kpi-strip{display:grid;grid-template-columns:minmax(180px,240px);gap:12px}
@@ -179,26 +187,45 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
       <div class="inline-note section-gap" id="dataFreshness">Últimas actualizaciones: sin datos todavía.</div>
 
       <div class="grid-2 section-gap">
-        <div class="panel"><h2>Evolución mensual</h2><canvas id="monthlyChart" class="chart"></canvas><div class="legend"><span><i style="background:#16803b"></i>Ingresos</span><span><i style="background:#c73737"></i>Gastos</span><span><i style="background:#2563eb"></i>Inversiones</span></div></div>
-        <div class="panel"><h2>Evolución del ahorro acumulado</h2><canvas id="savingsChart" class="chart"></canvas></div>
+        <div class="panel">
+          <div class="chart-head"><div><h2>Evolución mensual</h2><p class="chart-sub" id="subMonthly"></p></div></div>
+          <div class="chart-box"><canvas id="monthlyChart"></canvas></div>
+          <div class="chart-hint">Pulsa una barra para ver sus movimientos.</div>
+        </div>
+        <div class="panel">
+          <div class="chart-head"><div><h2>Ahorro acumulado</h2><p class="chart-sub" id="subSavings"></p></div></div>
+          <div class="chart-box"><canvas id="savingsChart"></canvas></div>
+          <div class="chart-hint">Ingresos menos gastos, sumados desde el primer movimiento. Las inversiones no se restan.</div>
+        </div>
       </div>
 
       <div class="grid-2 section-gap">
-        <div class="panel"><h2>Gasto / inversión por categoría</h2><canvas id="categoryChart" class="chart"></canvas></div>
-        <div class="panel"><h2>Distribución del patrimonio</h2><canvas id="patrimonyChart" class="chart"></canvas></div>
+        <div class="panel">
+          <div class="chart-head">
+            <div><h2>Por categoría</h2><p class="chart-sub" id="subCategory"></p></div>
+            <div class="seg" id="catTypeToggle"><button data-cattype="Gasto" class="active">Gastos</button><button data-cattype="Inversión">Inversiones</button><button data-cattype="Ingreso">Ingresos</button></div>
+          </div>
+          <div class="chart-box"><canvas id="categoryChart"></canvas></div>
+          <div class="chart-hint">Pulsa una barra para ver y editar sus movimientos.</div>
+        </div>
+        <div class="panel">
+          <div class="chart-head"><div><h2>Distribución del patrimonio</h2><p class="chart-sub" id="subPatrimony"></p></div></div>
+          <div class="chart-box"><canvas id="patrimonyChart"></canvas></div>
+        </div>
       </div>
 
       <div class="panel section-gap">
-        <h2>Rentabilidad anualizada compuesta por activo</h2>
-        <canvas id="compoundReturnChart" class="chart"></canvas>
+        <div class="chart-head"><div><h2>Rentabilidad anualizada por activo</h2><p class="chart-sub" id="subReturn"></p></div></div>
+        <div class="chart-box"><canvas id="compoundReturnChart"></canvas></div>
         <div class="inline-note">Calculada mediante XIRR: tiene en cuenta el importe y la fecha de cada aportación y el valor actual del activo. Se actualiza al añadir, editar o borrar movimientos de inversión y al cambiar el precio actual.</div>
       </div>
 
       <div class="panel section-gap">
-        <h2>Resumen por categoría</h2>
+        <div class="chart-head"><div><h2>Resumen por categoría</h2><p class="chart-sub" id="subSummary"></p></div></div>
         <div class="table-wrap">
-          <table><thead><tr><th>Categoría</th><th>Tipo</th><th style="text-align:right">Total</th><th style="text-align:right">% del tipo</th></tr></thead><tbody id="categorySummary"></tbody></table>
+          <table><thead><tr><th>Categoría</th><th>Tipo</th><th style="text-align:right">Total</th><th style="text-align:right">% del tipo</th><th style="text-align:right">Movimientos</th></tr></thead><tbody id="categorySummary"></tbody></table>
         </div>
+        <div class="chart-hint">Pulsa una fila para ver y editar sus movimientos.</div>
       </div>
     </section>
 
@@ -226,6 +253,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 
       <div class="panel section-gap">
         <h2>Buscar y filtrar</h2>
+        <div class="inline-note" id="filterNotice" hidden style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px"><span id="filterNoticeText"></span><button class="secondary small" id="clearFilters">Quitar filtros</button></div>
         <div class="searchbar">
           <div><label>Buscar</label><input id="searchText" placeholder="Concepto o categoría"></div>
           <div><label>Tipo</label><select id="searchType"><option value="">Todos</option><option>Ingreso</option><option>Gasto</option><option>Inversión</option></select></div>
@@ -331,6 +359,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
   <button data-page="settings">⚙️<br>Ajustes</button>
 </nav>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
@@ -848,59 +877,158 @@ function renderAssets(){
  el("assetGrid").querySelectorAll("[data-editasset]").forEach(b=>b.onclick=()=>{const a=state.assets.find(x=>x.id===b.dataset.editasset);if(Number(a.units)>0){const nv=prompt(`Nuevo precio por participación/título de ${a.name}:`,a.unitPrice||"");if(nv===null)return;const n=Number(String(nv).replace(",","."));if(!Number.isFinite(n)||n<0)return alert("Valor no válido.");a.unitPrice=n;a.value=Number(a.units)*n;a.updatedAt=todayISO();a.priceSource="Manual"}else{const nv=prompt(`Nuevo valor actual de ${a.name}:`,a.value);if(nv===null)return;const n=Number(String(nv).replace(",","."));if(!Number.isFinite(n)||n<0)return alert("Valor no válido.");a.value=n;a.updatedAt=todayISO();a.priceSource="Manual"}markDataUpdate("portfolio");saveState();renderAll()});
 }
 
-function renderCategorySummary(){
- const movs=periodMovements(),totals=new Map(),typeTotals={Ingreso:0,Gasto:0,"Inversión":0};
- movs.forEach(m=>{totals.set(m.categoryId,(totals.get(m.categoryId)||0)+Number(m.amount));typeTotals[m.type]+=Number(m.amount)});
- const rows=[...totals.entries()].map(([id,total])=>{const c=getCat(id),type=c?.type||"Gasto",pct=typeTotals[type]?total/typeTotals[type]*100:0;return{name:c?.name||"Sin categoría",type,total,pct}}).sort((a,b)=>b.total-a.total);
- el("categorySummary").innerHTML=rows.length?rows.map(r=>`<tr><td>${escapeHtml(r.name)}</td><td><span class="pill ${r.type}">${r.type}</span></td><td class="amount">${euro.format(r.total)}</td><td class="amount">${r.pct.toFixed(1)}%</td></tr>`).join(""):`<tr><td colspan="4" class="empty">No hay datos en este periodo.</td></tr>`;
+// ---------- Periodo seleccionado: etiqueta y rango de fechas ----------
+function monthAbbr(y,m){return `${months[m-1].slice(0,3).toLowerCase()} ${y}`}
+function firstMovementMonth(){
+ if(!state.movements.length)return null;
+ const d=state.movements.reduce((min,m)=>m.date<min?m.date:min,state.movements[0].date);
+ return{y:Number(d.slice(0,4)),m:Number(d.slice(5,7))};
+}
+function lastDayISO(y,m){return `${y}-${String(m).padStart(2,"0")}-${String(new Date(y,m,0).getDate()).padStart(2,"0")}`}
+function periodLabel(){
+ const p=selectedPeriod();
+ if(p.mode==="month")return `${months[p.month-1]} ${p.year}`;
+ if(p.mode==="year")return `Año ${p.year}`;
+ const f=firstMovementMonth(),now=new Date();
+ return f?`Todo el histórico (${monthAbbr(f.y,f.m)} – ${monthAbbr(now.getFullYear(),now.getMonth()+1)})`:"Todo el histórico";
+}
+function periodRange(){
+ const p=selectedPeriod();
+ if(p.mode==="month")return{from:`${p.year}-${String(p.month).padStart(2,"0")}-01`,to:lastDayISO(p.year,p.month)};
+ if(p.mode==="year")return{from:`${p.year}-01-01`,to:`${p.year}-12-31`};
+ return{from:"",to:""};
+}
+function monthRange(y,m){return{from:`${y}-${String(m).padStart(2,"0")}-01`,to:lastDayISO(y,m)}}
+
+// ---------- Ir a Movimientos con un filtro ya aplicado (desde gráficos y tabla) ----------
+function goToMovements(filter){
+ el("searchText").value="";el("searchType").value=filter.type||"";el("searchCategory").value=filter.categoryId||"";
+ el("searchFrom").value=filter.from||"";el("searchTo").value=filter.to||"";
+ const parts=[filter.type?filter.type+"s":"Todos los tipos",filter.categoryId?(getCat(filter.categoryId)?.name||""):"todas las categorías",filter.label||""].filter(Boolean);
+ el("filterNoticeText").textContent="Filtro aplicado desde el Dashboard: "+parts.join(" · ");
+ el("filterNotice").hidden=false;
+ showPage("movements");renderMovements();
+ setTimeout(()=>el("movementTable").scrollIntoView({behavior:"smooth",block:"start"}),80);
+}
+function clearMovementFilters(){
+ ["searchText","searchType","searchCategory","searchFrom","searchTo"].forEach(id=>el(id).value="");
+ el("filterNotice").hidden=true;renderMovements();
 }
 
-function canvasCtx(id){
- const c=el(id),ratio=window.devicePixelRatio||1,w=c.clientWidth||600,h=300;c.width=Math.round(w*ratio);c.height=Math.round(h*ratio);const ctx=c.getContext("2d");ctx.setTransform(ratio,0,0,ratio,0,0);return{ctx,w,h};
+// ---------- Tabla resumen por categoría ----------
+function renderCategorySummary(){
+ const movs=periodMovements(),totals=new Map(),counts=new Map(),typeTotals={Ingreso:0,Gasto:0,"Inversión":0};
+ movs.forEach(m=>{totals.set(m.categoryId,(totals.get(m.categoryId)||0)+Number(m.amount));counts.set(m.categoryId,(counts.get(m.categoryId)||0)+1);typeTotals[m.type]+=Number(m.amount)});
+ const rows=[...totals.entries()].map(([id,total])=>{const c=getCat(id),type=c?.type||"Gasto",pct=typeTotals[type]?total/typeTotals[type]*100:0;return{id,name:c?.name||"Sin categoría",type,total,pct,count:counts.get(id)||0}}).sort((a,b)=>b.total-a.total);
+ el("subSummary").textContent=periodLabel();
+ el("categorySummary").innerHTML=rows.length?rows.map(r=>`<tr class="clickable" data-cat="${r.id}" data-type="${r.type}" title="Ver movimientos"><td>${escapeHtml(r.name)}</td><td><span class="pill ${r.type}">${r.type}</span></td><td class="amount">${euro.format(r.total)}</td><td class="amount">${r.pct.toFixed(1)}%</td><td class="amount">${r.count}</td></tr>`).join(""):`<tr><td colspan="5" class="empty">No hay datos en este periodo.</td></tr>`;
+ el("categorySummary").querySelectorAll("tr[data-cat]").forEach(tr=>tr.onclick=()=>{const r=periodRange();goToMovements({type:tr.dataset.type,categoryId:tr.dataset.cat,from:r.from,to:r.to,label:periodLabel()})});
 }
-function drawAxes(ctx,w,h,max,pad){
- ctx.font="12px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";ctx.fillStyle="#6b7280";ctx.strokeStyle="#e5e7eb";ctx.lineWidth=1;
- for(let i=0;i<=4;i++){const y=pad.t+(h-pad.t-pad.b)-(h-pad.t-pad.b)*i/4;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();ctx.fillText(shortNum(max*i/4),4,y+4)}
+
+// ---------- Gráficos (Chart.js) ----------
+const charts={};
+const FONT="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif";
+let catChartType="Gasto";
+function mountChart(id,config){if(charts[id])charts[id].destroy();charts[id]=new Chart(el(id),config);return charts[id]}
+function withAlpha(hex,a){return hex+Math.round(a*255).toString(16).padStart(2,"0")}
+// Etiquetas largas del eje Y: se parten en dos líneas (en gráficos estrechos, líneas más cortas).
+function truncTick(v){
+ const l=String(this.getLabelForValue(v)),max=this.chart.width<620?18:32;
+ if(l.length<=max)return l;
+ const words=l.split(" "),lines=[];let cur="";
+ for(const w of words){if(cur&&(cur+" "+w).length>max){lines.push(cur);cur=w;if(lines.length===2)break}else cur=cur?cur+" "+w:w}
+ if(lines.length<2&&cur)lines.push(cur);
+ if(lines.length===2&&lines.join(" ").length<l.length)lines[1]=lines[1].length>max-1?lines[1].slice(0,max-1)+"…":lines[1]+"…";
+ return lines;
 }
-function drawBar(ctx,x,val,max,top,ch,bw,color){const bh=max?(val/max)*ch:0;ctx.fillStyle=color;ctx.fillRect(x-bw/2,top+ch-bh,bw,bh)}
+function pointerCursor(e,els){if(e?.native?.target)e.native.target.style.cursor=els.length?"pointer":"default"}
+function pct1(v){return v.toFixed(1).replace(".",",")}
+// Escribe el valor al final de cada barra horizontal.
+const barValueLabels={id:"barValueLabels",afterDatasetsDraw(chart,args,opts){
+ if(!opts||!opts.format)return;const {ctx}=chart;
+ chart.data.datasets.forEach((ds,di)=>{const meta=chart.getDatasetMeta(di);if(meta.hidden)return;
+  meta.data.forEach((bar,i)=>{const v=ds.data[i];if(v==null)return;ctx.save();ctx.font="600 12px "+FONT;ctx.fillStyle="#374151";ctx.textBaseline="middle";
+   if(v<0){ctx.textAlign="right";ctx.fillText(opts.format(v,i),bar.x-6,bar.y)}else{ctx.textAlign="left";ctx.fillText(opts.format(v,i),bar.x+6,bar.y)}
+   ctx.restore()})})}};
+
 function drawMonthlyChart(){
- const {ctx,w,h}=canvasCtx("monthlyChart"),p=selectedPeriod(),year=p.mode==="all"?new Date().getFullYear():p.year;
- const data=months.map((name,i)=>{const s=calcSummary(monthMovements(year,i+1));return{name:name.slice(0,3),...s}});
- const max=Math.max(1,...data.flatMap(d=>[d.income,d.expense,d.investment])),pad={l:44,r:12,t:16,b:36},cw=w-pad.l-pad.r,ch=h-pad.t-pad.b;ctx.clearRect(0,0,w,h);drawAxes(ctx,w,h,max,pad);
- const gw=cw/12,bw=Math.max(3,Math.min(9,gw/5));data.forEach((d,i)=>{const x=pad.l+i*gw+gw/2;drawBar(ctx,x-bw*1.2,d.income,max,pad.t,ch,bw,colors.Ingreso);drawBar(ctx,x,d.expense,max,pad.t,ch,bw,colors.Gasto);drawBar(ctx,x+bw*1.2,d.investment,max,pad.t,ch,bw,colors["Inversión"]);ctx.fillStyle="#6b7280";ctx.textAlign="center";ctx.fillText(d.name,x,h-12)});ctx.textAlign="start";
+ const p=selectedPeriod();let labels,rows,ranges,sub;
+ if(p.mode==="all"){
+   const f=firstMovementMonth(),now=new Date(),y0=f?f.y:now.getFullYear(),y1=Math.max(now.getFullYear(),...state.movements.map(m=>Number(m.date.slice(0,4))));
+   labels=[];rows=[];ranges=[];
+   for(let y=y0;y<=y1;y++){labels.push(String(y));rows.push(calcSummary(state.movements.filter(m=>Number(m.date.slice(0,4))===y)));ranges.push({from:`${y}-01-01`,to:`${y}-12-31`,label:`Año ${y}`})}
+   sub=`Totales por año, ${y0} – ${y1}`;
+ }else{
+   labels=months.map(n=>n.slice(0,3));rows=months.map((_,i)=>calcSummary(monthMovements(p.year,i+1)));ranges=months.map((n,i)=>({...monthRange(p.year,i+1),label:`${n} ${p.year}`}));
+   sub=p.mode==="month"?`Los 12 meses de ${p.year}, con ${months[p.month-1].toLowerCase()} resaltado`:`Los 12 meses de ${p.year}`;
+ }
+ el("subMonthly").textContent=sub;
+ const sel=p.mode==="month"?p.month-1:-1;
+ const ds=(label,key,color,type)=>({label,data:rows.map(r=>r[key]),backgroundColor:rows.map((_,i)=>sel<0||i===sel?color:withAlpha(color,0.35)),borderRadius:3,_type:type});
+ mountChart("monthlyChart",{type:"bar",data:{labels,datasets:[ds("Ingresos","income",colors.Ingreso,"Ingreso"),ds("Gastos","expense",colors.Gasto,"Gasto"),ds("Inversiones","investment",colors["Inversión"],"Inversión")]},
+  options:{responsive:true,maintainAspectRatio:false,animation:{duration:250},
+   plugins:{legend:{labels:{usePointStyle:true,boxWidth:8,font:{family:FONT}}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${euro.format(c.parsed.y)}`}}},
+   scales:{x:{grid:{display:false}},y:{beginAtZero:true,ticks:{callback:v=>shortNum(v)}}},
+   onClick:(e,els,chart)=>{if(!els.length)return;const {datasetIndex,index}=els[0],r=ranges[index];goToMovements({type:chart.data.datasets[datasetIndex]._type,from:r.from,to:r.to,label:r.label})},
+   onHover:pointerCursor}});
 }
-function last12MonthKeys(){
- const out=[],d=new Date();d.setDate(1);for(let i=11;i>=0;i--){const x=new Date(d.getFullYear(),d.getMonth()-i,1);out.push({y:x.getFullYear(),m:x.getMonth()+1,label:months[x.getMonth()].slice(0,3)});}return out;
+function cumulativeSeries(){
+ const f=firstMovementMonth();if(!f)return[];
+ const now=new Date(),endY=now.getFullYear(),endM=now.getMonth()+1,out=[];let cum=0,y=f.y,m=f.m;
+ while(y<endY||(y===endY&&m<=endM)){const s=calcSummary(monthMovements(y,m));cum+=s.income-s.expense;out.push({y,m,net:s.income-s.expense,cum});m++;if(m>12){m=1;y++}}
+ return out;
 }
 function drawSavingsChart(){
- const {ctx,w,h}=canvasCtx("savingsChart"),keys=last12MonthKeys();let cum=0;const data=keys.map(k=>{const s=calcSummary(monthMovements(k.y,k.m));cum+=s.income-s.expense;return{label:k.label,v:cum}});
- const vals=data.map(d=>d.v),min=Math.min(0,...vals),max=Math.max(1,...vals),pad={l:54,r:14,t:18,b:38},cw=w-pad.l-pad.r,ch=h-pad.t-pad.b,range=max-min||1;ctx.clearRect(0,0,w,h);
- ctx.font="12px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";ctx.strokeStyle="#e5e7eb";ctx.fillStyle="#6b7280";for(let i=0;i<=4;i++){const v=min+(max-min)*i/4,y=pad.t+ch-(v-min)/range*ch;ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(w-pad.r,y);ctx.stroke();ctx.fillText(shortNum(v),4,y+4)}
- ctx.strokeStyle="#0f172a";ctx.lineWidth=2;ctx.beginPath();data.forEach((d,i)=>{const x=pad.l+(cw*(i/(data.length-1||1))),y=pad.t+ch-(d.v-min)/range*ch;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke();
- data.forEach((d,i)=>{const x=pad.l+(cw*(i/(data.length-1||1)));ctx.fillStyle="#6b7280";ctx.textAlign="center";ctx.fillText(d.label,x,h-12)});ctx.textAlign="start";
+ const p=selectedPeriod(),all=cumulativeSeries();
+ const series=p.mode==="all"?all:all.filter(x=>x.y===p.year);
+ el("subSavings").textContent=!all.length?"Sin movimientos todavía":p.mode==="all"?`Acumulado desde ${monthAbbr(all[0].y,all[0].m)} hasta hoy`:`Acumulado desde ${monthAbbr(all[0].y,all[0].m)}, mostrando ${p.year}`;
+ const labels=series.map(x=>p.mode==="all"?`${months[x.m-1].slice(0,3)} ${String(x.y).slice(2)}`:months[x.m-1].slice(0,3));
+ const sel=p.mode==="month"?series.findIndex(x=>x.m===p.month):-1;
+ mountChart("savingsChart",{type:"line",data:{labels,datasets:[{label:"Ahorro acumulado",data:series.map(x=>x.cum),borderColor:"#0f172a",backgroundColor:withAlpha("#0f172a",0.08),fill:true,tension:0.25,pointRadius:series.map((_,i)=>i===sel?5:2),pointBackgroundColor:series.map((_,i)=>i===sel?"#2563eb":"#0f172a")}]},
+  options:{responsive:true,maintainAspectRatio:false,animation:{duration:250},
+   plugins:{legend:{display:false},tooltip:{callbacks:{title:items=>{const x=series[items[0].dataIndex];return `${months[x.m-1]} ${x.y}`},label:c=>{const x=series[c.dataIndex];return[` Acumulado: ${euro.format(x.cum)}`,` Este mes: ${x.net>=0?"+":""}${euro.format(x.net)}`]}}}},
+   scales:{x:{grid:{display:false}},y:{ticks:{callback:v=>shortNum(v)}}},
+   onClick:(e,els)=>{if(!els.length)return;const x=series[els[0].index],r=monthRange(x.y,x.m);goToMovements({from:r.from,to:r.to,label:`${months[x.m-1]} ${x.y}`})},
+   onHover:pointerCursor}});
 }
 function drawCategoryChart(){
- const {ctx,w,h}=canvasCtx("categoryChart"),movs=periodMovements().filter(m=>m.type==="Gasto"||m.type==="Inversión"),tot=new Map();
- movs.forEach(m=>{const n=getCat(m.categoryId)?.name||"Sin categoría";tot.set(n,(tot.get(n)||0)+Number(m.amount))});
- const data=[...tot.entries()].map(([name,total])=>({name,total})).sort((a,b)=>b.total-a.total).slice(0,8);ctx.clearRect(0,0,w,h);
- if(!data.length){ctx.fillStyle="#6b7280";ctx.font="14px sans-serif";ctx.textAlign="center";ctx.fillText("No hay gastos ni inversiones.",w/2,h/2);ctx.textAlign="start";return}
- const compact=w<520,max=Math.max(...data.map(d=>d.total),1),pad={l:compact?104:120,r:compact?92:112,t:12,b:18},cw=Math.max(60,w-pad.l-pad.r),rh=(h-pad.t-pad.b)/data.length;ctx.font="12px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";
- data.forEach((d,i)=>{const y=pad.t+i*rh+rh*.2,bh=rh*.55,bw=cw*d.total/max,label=d.name.length>(compact?13:16)?d.name.slice(0,compact?11:14)+"…":d.name,value=euro.format(d.total);ctx.fillStyle="#eef2f7";ctx.fillRect(pad.l,y,cw,bh);ctx.fillStyle="#334155";ctx.fillRect(pad.l,y,bw,bh);ctx.fillStyle="#4b5563";ctx.textAlign="right";ctx.fillText(label,pad.l-8,y+bh*.78);ctx.fillStyle="#374151";ctx.font="600 12px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";ctx.textAlign="right";ctx.fillText(value,w-8,y+bh*.78);ctx.font="12px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif"});ctx.textAlign="start";
+ const type=catChartType,tot=new Map();
+ periodMovements().filter(m=>m.type===type).forEach(m=>tot.set(m.categoryId,(tot.get(m.categoryId)||0)+Number(m.amount)));
+ const all=[...tot.entries()].map(([id,total])=>({id,name:getCat(id)?.name||"Sin categoría",total})).sort((a,b)=>b.total-a.total);
+ const total=all.reduce((s,x)=>s+x.total,0),rows=all.slice(0,10);
+ if(all.length>10)rows.push({id:"",name:`Otras (${all.length-10})`,total:all.slice(10).reduce((s,x)=>s+x.total,0)});
+ const typeLabel={Gasto:"Gastos",Ingreso:"Ingresos","Inversión":"Inversiones"}[type],color={Gasto:colors.Gasto,Ingreso:colors.Ingreso,"Inversión":colors["Inversión"]}[type];
+ el("subCategory").textContent=`${typeLabel} · ${periodLabel()} · ${rows.length?"total "+euro.format(total):"sin movimientos"}`;
+ mountChart("categoryChart",{type:"bar",data:{labels:rows.map(r=>r.name),datasets:[{label:typeLabel,data:rows.map(r=>r.total),backgroundColor:rows.map(r=>r.id?color:withAlpha(color,0.45)),borderRadius:3}]},
+  options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,animation:{duration:250},layout:{padding:{right:120}},
+   plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${euro.format(c.parsed.x)} · ${total?pct1(c.parsed.x/total*100):"0"} %`}},barValueLabels:{format:v=>`${euro.format(v)} · ${total?pct1(v/total*100):"0"} %`}},
+   scales:{x:{beginAtZero:true,ticks:{callback:v=>shortNum(v)},grid:{display:false}},y:{ticks:{autoSkip:false,callback:truncTick}}},
+   onClick:(e,els)=>{if(!els.length)return;const r=rows[els[0].index],pr=periodRange();goToMovements({type,categoryId:r.id||"",from:pr.from,to:pr.to,label:periodLabel()})},
+   onHover:pointerCursor},
+  plugins:[barValueLabels]});
 }
 function drawPatrimonyChart(){
- const {ctx,w,h}=canvasCtx("patrimonyChart"),assets=portfolioDistributionData();ctx.clearRect(0,0,w,h);
- if(!assets.length){ctx.fillStyle="#6b7280";ctx.font="14px sans-serif";ctx.textAlign="center";ctx.fillText("Añade activos en Patrimonio para ver su distribución.",w/2,h/2);ctx.textAlign="start";return}
- const compact=w<520,pad={l:compact?112:145,r:compact?122:150,t:18,b:18},cw=Math.max(54,w-pad.l-pad.r),rh=(h-pad.t-pad.b)/assets.length;ctx.font="12px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";
- assets.forEach((a,i)=>{const y=pad.t+i*rh+rh*.18,bh=Math.min(36,rh*.55),bw=cw*a.pct/100,label=a.name.length>(compact?15:20)?a.name.slice(0,compact?13:18)+"…":a.name,value=`${euro.format(a.value)} · ${a.pct.toFixed(1).replace(".",",")}%`;ctx.fillStyle="#eef2f7";ctx.fillRect(pad.l,y,cw,bh);ctx.fillStyle="#0f172a";ctx.fillRect(pad.l,y,bw,bh);ctx.fillStyle="#4b5563";ctx.textAlign="right";ctx.fillText(label,pad.l-8,y+bh*.72);ctx.fillStyle="#374151";ctx.font="600 12px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";ctx.textAlign="right";ctx.fillText(value,w-8,y+bh*.72);ctx.font="12px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif"});ctx.textAlign="start";
+ const assets=portfolioDistributionData(),ref=latestPortfolioReference();
+ el("subPatrimony").textContent=assets.length?`Valor actual, total ${euro.format(assets[0].total)} · actualizado ${formatDateTime(ref)}`:"Añade activos en Patrimonio para ver su distribución";
+ mountChart("patrimonyChart",{type:"bar",data:{labels:assets.map(a=>a.name),datasets:[{label:"Valor",data:assets.map(a=>a.value),backgroundColor:"#0f172a",borderRadius:3}]},
+  options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,animation:{duration:250},layout:{padding:{right:130}},
+   plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${euro.format(c.parsed.x)} · ${pct1(assets[c.dataIndex].pct)} %`}},barValueLabels:{format:(v,i)=>`${euro.format(v)} · ${pct1(assets[i].pct)} %`}},
+   scales:{x:{beginAtZero:true,ticks:{callback:v=>shortNum(v)},grid:{display:false}},y:{ticks:{autoSkip:false,callback:truncTick}}}},
+  plugins:[barValueLabels]});
 }
 function drawCompoundReturnChart(){
- const {ctx,w,h}=canvasCtx("compoundReturnChart"),data=state.assets.map(a=>({name:a.name||"Activo",rate:assetAnnualizedReturn(a)})).filter(x=>x.rate!==null&&Number.isFinite(x.rate)).sort((a,b)=>b.rate-a.rate);ctx.clearRect(0,0,w,h);
- if(!data.length){ctx.fillStyle="#6b7280";ctx.font="14px sans-serif";ctx.textAlign="center";ctx.fillText("Necesito movimientos de inversión con fecha y un valor actual para calcular la rentabilidad anualizada.",w/2,h/2);ctx.textAlign="start";return}
- const compact=w<520,vals=data.map(d=>d.rate*100),min=Math.min(0,...vals),max=Math.max(0,...vals),span=Math.max(1,max-min),pad={l:compact?118:155,r:compact?66:78,t:18,b:18},cw=Math.max(60,w-pad.l-pad.r),rh=(h-pad.t-pad.b)/data.length,zeroX=pad.l+cw*((0-min)/span);ctx.font="12px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";
- ctx.strokeStyle="#cbd5e1";ctx.beginPath();ctx.moveTo(zeroX,pad.t);ctx.lineTo(zeroX,h-pad.b);ctx.stroke();
- data.forEach((d,i)=>{const pct=d.rate*100,y=pad.t+i*rh+rh*.18,bh=Math.min(36,rh*.55),xVal=pad.l+cw*((pct-min)/span),x=Math.min(zeroX,xVal),bw=Math.max(2,Math.abs(xVal-zeroX)),label=d.name.length>(compact?16:22)?d.name.slice(0,compact?14:20)+"…":d.name,value=`${pct.toFixed(2).replace(".",",")} %`;ctx.fillStyle=pct>=0?"#16803b":"#c73737";ctx.fillRect(x,y,bw,bh);ctx.fillStyle="#4b5563";ctx.textAlign="right";ctx.fillText(label,pad.l-8,y+bh*.72);ctx.fillStyle=pct>=0?"#166534":"#991b1b";ctx.font="600 12px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif";ctx.textAlign="right";ctx.fillText(value,w-8,y+bh*.72);ctx.font="12px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif"});ctx.textAlign="start";
+ const data=state.assets.map(a=>({name:a.name||"Activo",rate:assetAnnualizedReturn(a),invested:Number(a.invested||0),value:Number(a.value||0),since:assetInvestmentMovements(a)[0]?.date,asOf:a.updatedAt})).filter(x=>x.rate!==null&&Number.isFinite(x.rate)).sort((a,b)=>b.rate-a.rate);
+ el("subReturn").textContent=data.length?"Desde la primera aportación de cada activo hasta su última cotización":"Necesito compras de inversión enlazadas a un activo con valor actual";
+ mountChart("compoundReturnChart",{type:"bar",data:{labels:data.map(d=>d.name),datasets:[{label:"Rentabilidad anualizada",data:data.map(d=>Math.round(d.rate*10000)/100),backgroundColor:data.map(d=>d.rate>=0?colors.Ingreso:colors.Gasto),borderRadius:3}]},
+  options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,animation:{duration:250},layout:{padding:{right:80,left:10}},
+   plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const d=data[c.dataIndex];return[` ${c.parsed.x.toFixed(2).replace(".",",")} % anual`,` Aportado ${euro.format(d.invested)} · valor ${euro.format(d.value)}`,d.since?` Desde ${formatDate(d.since)} hasta ${formatDate(d.asOf)}`:""].filter(Boolean)}}},barValueLabels:{format:v=>`${v.toFixed(2).replace(".",",")} %`}},
+   scales:{x:{ticks:{callback:v=>v+" %"},grid:{color:"#e5e7eb"}},y:{ticks:{autoSkip:false,callback:truncTick}}}},
+  plugins:[barValueLabels]});
 }
-function renderCharts(){drawMonthlyChart();drawSavingsChart();drawCategoryChart();drawPatrimonyChart();drawCompoundReturnChart()}
+function renderCharts(){
+ if(typeof Chart==="undefined"){document.querySelectorAll(".chart-sub").forEach(n=>n.textContent="No se ha podido cargar la librería de gráficos (sin conexión).");return}
+ drawMonthlyChart();drawSavingsChart();drawCategoryChart();drawPatrimonyChart();drawCompoundReturnChart();
+}
 
 function showPage(name){
  document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id==="page-"+name));
@@ -928,9 +1056,10 @@ el("addCategory").onclick=addCategory;el("saveMovement").onclick=saveMovement;el
 el("addRecurring").onclick=addRecurring;el("generateRecurring").onclick=()=>generateRecurring(true);el("addAsset").onclick=addAsset;el("refreshPrices").onclick=()=>updateMarketPrices(true);
 el("periodMode").onchange=()=>{updatePeriodControls();renderAll()};el("monthFilter").onchange=renderAll;el("yearFilter").onchange=renderAll;
 el("goCurrent").onclick=()=>{const n=new Date();el("periodMode").value="month";el("monthFilter").value=n.getMonth()+1;updateYearOptions();el("yearFilter").value=n.getFullYear();updatePeriodControls();renderAll()};
-["searchText","searchType","searchCategory","searchFrom","searchTo"].forEach(id=>el(id).addEventListener(id==="searchText"?"input":"change",renderMovements));
+["searchText","searchType","searchCategory","searchFrom","searchTo"].forEach(id=>el(id).addEventListener(id==="searchText"?"input":"change",()=>{el("filterNotice").hidden=true;renderMovements()}));
 el("exportData").onclick=exportData;el("importData").onchange=e=>importData(e.target.files[0]);el("clearAll").onclick=clearAll;
-window.addEventListener("resize",()=>{if(el("page-dashboard").classList.contains("active"))renderCharts()});
+el("catTypeToggle").querySelectorAll("[data-cattype]").forEach(b=>b.onclick=()=>{catChartType=b.dataset.cattype;el("catTypeToggle").querySelectorAll("button").forEach(x=>x.classList.toggle("active",x===b));drawCategoryChart()});
+el("clearFilters").onclick=clearMovementFilters;
 el("loginGoogle").onclick=login;el("logoutSidebar").onclick=logout;el("logoutSettings").onclick=logout;
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flushRemoteSave()});
 window.addEventListener("pagehide",flushRemoteSave);
