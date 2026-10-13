@@ -1,2 +1,5 @@
 # Configuración local del editor / Claude Code
 .claude/
+
+# Datos personales: ficheros de importación/exportación de la app. NUNCA subir al repositorio público.
+mis-finanzas-*.json
