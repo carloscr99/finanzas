@@ -99,9 +99,19 @@ Opciones sin instalar nada:
 
 Cuando un recurrente de Inversión apunta a un fondo con ISIN (por ejemplo "Compra Amundi MSCI World"), la app no sabe cuántas participaciones compró MyInvestor. Las **estima** con la última cotización (importe ÷ precio), las suma al activo y marca el movimiento con «≈ … part. (estimadas)». Cuando llega una cotización con fecha igual o posterior a la compra, recalcula las participaciones con ese precio y las da por definitivas. Si el extracto dice otra cifra, edita el movimiento y escribe las participaciones reales.
 
-## Presupuestos mensuales por categoría
+## Presupuesto mensual por categoría (sección propia)
 
-En Categorías → "Presupuestos mensuales de gasto" hay una tabla con cada categoría de gasto, su **media mensual** (gasto total entre los meses completos del histórico), lo gastado el último mes completo y una casilla de presupuesto. «Rellenar con mi media» pone en todas la media redondeada a 5 € hacia arriba; también se pueden escribir a mano (vacío = sin presupuesto). El Dashboard muestra el panel "Presupuesto de gastos" con una barra por categoría (verde, naranja a partir del 80 %, rojo si se pasa), el total del periodo y lo gastado en categorías sin presupuesto; en «Año» compara con el presupuesto × 12. Si no hay presupuestos, el panel ofrece crearlos con la media histórica. Se guardan en `budgets` (categoría → €/mes).
+La sección **Presupuesto** (sidebar en escritorio; página "Más" en móvil) tiene su propio navegador de meses y muestra: presupuestado, gastado (más lo gastado en categorías sin presupuesto), disponible o excedido, y el **ritmo** (euros al día gastados y cuánto se puede gastar al día en lo que queda de mes). Debajo, una barra por categoría (verde, naranja a partir del 80 %, rojo si se pasa) que lleva a sus movimientos, y la lista de categorías sin presupuesto con gasto ese mes.
+
+En «Ajustar presupuestos» está la tabla con cada categoría de gasto, su tipo, la media y el máximo de los últimos 12 meses completos, la **propuesta** y la casilla editable (vacía = sin presupuesto). La propuesta se calcula así:
+
+- **Fijo (recurrente)**: hay un recurrente de gasto en esa categoría → su importe mensual (semanales × 52/12, anuales / 12), redondeado al euro.
+- **Habitual**: gasto en 6 o más de los últimos 12 meses → el mayor entre la media y la mediana de esos 12 meses.
+- **Irregular**: gasto en 2 a 5 de los últimos 12 meses → el gasto del año repartido entre 12.
+- **Sin datos suficientes**: 1 mes o menos → sin propuesta. Tampoco se propone si sale por debajo de 10 € (salvo fijos).
+- Redondeo hacia arriba a 5 € por debajo de 100 € y a 10 € a partir de 100 €.
+
+«Rellenar con la propuesta» aplica la propuesta a todas las categorías que la tienen; «Quitar todos» borra los presupuestos. Se guardan en `budgets` (categoría → €/mes).
 
 ## Deudas en el patrimonio
 

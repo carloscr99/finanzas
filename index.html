@@ -258,6 +258,8 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
   <symbol id="i-trend" viewBox="0 0 24 24"><path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></symbol>
   <symbol id="i-funnel" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"/></symbol>
+  <symbol id="i-gauge" viewBox="0 0 24 24"><path d="m12 14 3.5-3.5"/><path d="M4.93 19.07A10 10 0 1 1 19.07 19.07"/></symbol>
+  <symbol id="i-caret-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
 </svg>
 <div id="authScreen" class="auth-screen">
   <div class="auth-card">
@@ -278,6 +280,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
       <button data-page="categories"><svg class="ico" aria-hidden="true"><use href="#i-tag"/></svg>Categorías</button>
       <button data-page="recurring"><svg class="ico" aria-hidden="true"><use href="#i-repeat"/></svg>Recurrentes</button>
       <button data-page="assets"><svg class="ico" aria-hidden="true"><use href="#i-pie"/></svg>Patrimonio</button>
+      <button data-page="budget"><svg class="ico" aria-hidden="true"><use href="#i-gauge"/></svg>Presupuesto</button>
       <button data-page="settings"><svg class="ico" aria-hidden="true"><use href="#i-gear"/></svg>Ajustes</button>
     </nav>
     <div class="user-box"><span id="userEmail"></span><button id="logoutSidebar">Cerrar sesión</button></div>
@@ -314,12 +317,6 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         <div class="card expense"><div class="metric-label">Gastos</div><div class="metric-value" id="sumExpense">0 €</div><div class="metric-sub" id="cmpExpense">—</div></div>
         <div class="card investment"><div class="metric-label">Inversiones</div><div class="metric-value" id="sumInvestment">0 €</div><div class="metric-sub" id="cmpInvestment">—</div></div>
         <div class="card"><div class="metric-label">Liquidez restante</div><div class="metric-value" id="sumBalance">0 €</div><div class="metric-sub" id="cmpBalance">—</div></div>
-      </div>
-
-      <div class="panel section-gap" id="budgetPanel">
-        <div class="chart-head"><div><h2>Presupuesto de gastos</h2><p class="chart-sub" id="subBudget"></p></div><button class="secondary small" id="budgetSetup">Ajustar presupuestos</button></div>
-        <div id="budgetList" class="barlist"></div>
-        <div class="chart-hint" id="budgetHint"></div>
       </div>
 
       <div class="grid-3">
@@ -442,11 +439,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         </div>
         <div id="categoryList" class="chips section-gap"></div>
       </div>
-      <div class="panel section-gap" id="budgetsPanel">
-        <div class="chart-head"><div><h2>Presupuestos mensuales de gasto</h2><p class="chart-sub" id="subBudgets"></p></div><div class="footer-tools"><button class="secondary small" id="budgetFillAvg">Rellenar con mi media</button><button class="secondary small" id="budgetClearAll">Quitar todos</button></div></div>
-        <div class="inline-note">La media mensual sale de todo tu histórico de meses completos. El presupuesto se guarda al cambiar la casilla; déjala vacía para no presupuestar esa categoría. En «Año» el Dashboard compara con el presupuesto × 12.</div>
-        <div class="table-wrap section-gap"><table><thead><tr><th>Categoría</th><th style="text-align:right">Media mensual</th><th style="text-align:right">Último mes completo</th><th style="text-align:right">Presupuesto (€/mes)</th></tr></thead><tbody id="budgetTable"></tbody></table></div>
-      </div>
+
     </section>
 
     <section id="page-recurring" class="page">
@@ -532,6 +525,33 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         <div class="inline-note">La web obtiene automáticamente las cotizaciones desde el archivo público <b>prices.json</b> de GitHub cada vez que la abres o pulsas “Sincronizar cotizaciones”. La fecha de cotización de cada activo se conserva por separado de la fecha/hora en la que se sincronizó y recalculó el patrimonio.</div>
       </div>
     </section>
+    <section id="page-budget" class="page">
+      <div class="page-head"><div><h1>Presupuesto</h1><p>Cuánto quieres gastar al mes por categoría y cómo vas.</p></div></div>
+      <div class="panel">
+        <div class="period-compact" style="display:flex">
+          <div class="period-nav"><button class="secondary" id="bpPrev" aria-label="Mes anterior"><svg class="ico sm" aria-hidden="true"><use href="#i-caret-left"/></svg></button><b id="bpLabel"></b><button class="secondary" id="bpNext" aria-label="Mes siguiente"><svg class="ico sm" aria-hidden="true"><use href="#i-caret-right"/></svg></button></div>
+          <button class="secondary small" id="bpToday">Este mes</button>
+        </div>
+      </div>
+      <div class="summary-grid section-gap" id="bpCards">
+        <div class="card"><div class="metric-label">Presupuestado</div><div class="metric-value" id="bpBudget">0 €</div><div class="metric-sub" id="bpBudgetSub">—</div></div>
+        <div class="card expense"><div class="metric-label">Gastado</div><div class="metric-value" id="bpSpent">0 €</div><div class="metric-sub" id="bpSpentSub">—</div></div>
+        <div class="card"><div class="metric-label" id="bpLeftLabel">Disponible</div><div class="metric-value" id="bpLeft">0 €</div><div class="metric-sub" id="bpLeftSub">—</div></div>
+        <div class="card"><div class="metric-label">Ritmo</div><div class="metric-value" id="bpPace">—</div><div class="metric-sub" id="bpPaceSub">—</div></div>
+      </div>
+      <div class="panel">
+        <div class="chart-head"><div><h2>Por categoría</h2><p class="chart-sub" id="subBudget"></p></div></div>
+        <div id="budgetList" class="barlist"></div>
+        <div class="chart-hint" id="budgetHint"></div>
+      </div>
+      <details class="panel section-gap" id="budgetsPanel">
+        <summary>Ajustar presupuestos</summary>
+        <p class="chart-sub section-gap" id="subBudgets"></p>
+        <div class="inline-note section-gap">La <b>propuesta</b> sale de tu histórico: en las categorías con recurrente, el importe del recurrente (fijo); en las habituales (gasto en 6 o más de los últimos 12 meses), el mayor entre la media y la mediana de esos meses; en las irregulares (2 a 5 meses), el gasto del último año repartido entre 12; sin propuesta cuando hay 1 mes o menos, o sale por debajo de 10 €. Se redondea hacia arriba. La casilla se guarda al cambiarla; vacía = sin presupuesto.</div>
+        <div class="footer-tools section-gap"><button class="secondary small" id="budgetFillAvg">Rellenar con la propuesta</button><button class="secondary small" id="budgetClearAll">Quitar todos</button></div>
+        <div class="table-wrap section-gap"><table><thead><tr><th>Categoría</th><th>Tipo</th><th style="text-align:right">Media 12 m</th><th style="text-align:right">Máx. 12 m</th><th style="text-align:right">Propuesta</th><th style="text-align:right">Presupuesto (€/mes)</th></tr></thead><tbody id="budgetTable"></tbody></table></div>
+      </details>
+    </section>
     <section id="page-more" class="page">
       <div class="page-head"><div><h1>Más</h1><p>Cuenta, categorías, recurrentes y ajustes.</p></div></div>
       <div class="panel account-row">
@@ -541,6 +561,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
       <div class="panel more-list section-gap">
         <button class="more-item" data-page="categories"><svg class="ico" aria-hidden="true"><use href="#i-tag"/></svg><span>Categorías</span><svg class="ico sm caret" aria-hidden="true"><use href="#i-caret-right"/></svg></button>
         <button class="more-item" data-page="recurring"><svg class="ico" aria-hidden="true"><use href="#i-repeat"/></svg><span>Movimientos recurrentes</span><svg class="ico sm caret" aria-hidden="true"><use href="#i-caret-right"/></svg></button>
+        <button class="more-item" data-page="budget"><svg class="ico" aria-hidden="true"><use href="#i-gauge"/></svg><span>Presupuesto mensual</span><svg class="ico sm caret" aria-hidden="true"><use href="#i-caret-right"/></svg></button>
         <button class="more-item" data-page="settings"><svg class="ico" aria-hidden="true"><use href="#i-gear"/></svg><span>Ajustes y copias de seguridad</span><svg class="ico sm caret" aria-hidden="true"><use href="#i-caret-right"/></svg></button>
       </div>
       <div class="panel more-list section-gap">
@@ -1348,57 +1369,75 @@ function clearMovementFilters(){
 }
 
 // ---------- Tabla resumen por categoría ----------
-// ---------- Presupuestos mensuales por categoría de gasto ----------
-// Media histórica: gasto de cada categoría dividido entre los meses completos transcurridos desde el primer movimiento.
-function completeMonthsRange(){
- const f=firstMovementMonth();if(!f)return null;
- const now=new Date();let y=now.getFullYear(),m=now.getMonth();if(m===0){m=12;y--} // último mes completo = el anterior al actual
- const months=(y-f.y)*12+(m-f.m)+1;
- return months>0?{from:`${f.y}-${String(f.m).padStart(2,"0")}-01`,to:lastDayISO(y,m),months,lastY:y,lastM:m}:null;
-}
-function monthlyAverageByCategory(){
- const r=completeMonthsRange(),avg=new Map(),last=new Map();if(!r)return{avg,last,months:0,lastLabel:""};
- state.movements.forEach(mv=>{
-   if(mv.type!=="Gasto")return;
-   if(mv.date>=r.from&&mv.date<=r.to)avg.set(mv.categoryId,(avg.get(mv.categoryId)||0)+Number(mv.amount||0));
-   if(Number(mv.date.slice(0,4))===r.lastY&&Number(mv.date.slice(5,7))===r.lastM)last.set(mv.categoryId,(last.get(mv.categoryId)||0)+Number(mv.amount||0));
+// ---------- Presupuestos mensuales por categoría de gasto (sección propia) ----------
+const bp={y:new Date().getFullYear(),m:new Date().getMonth()+1}; // mes que se muestra en la sección Presupuesto
+function monthlyEquivalent(r){const a=Number(r.amount)||0;return r.frequency==="weekly"?a*52/12:r.frequency==="yearly"?a/12:a}
+function roundBudget(v){return v<100?Math.ceil(v/5)*5:Math.ceil(v/10)*10}
+// Estadísticas de los últimos 12 meses completos por categoría de gasto y propuesta de presupuesto.
+function budgetStats(){
+ const now=new Date();let y=now.getFullYear(),m=now.getMonth();if(m===0){m=12;y--} // último mes completo
+ const keys=[];for(let i=11;i>=0;i--){let yy=y,mm=m-i;while(mm<=0){mm+=12;yy--}keys.push(`${yy}-${String(mm).padStart(2,"0")}`)}
+ const f=firstMovementMonth(),firstKey=f?`${f.y}-${String(f.m).padStart(2,"0")}`:keys[0];
+ const avail=keys.filter(k=>k>=firstKey),byCat=new Map();
+ state.movements.forEach(mv=>{if(mv.type!=="Gasto")return;const k=mv.date.slice(0,7);if(!avail.includes(k))return;if(!byCat.has(mv.categoryId))byCat.set(mv.categoryId,new Map());const mm=byCat.get(mv.categoryId);mm.set(k,(mm.get(k)||0)+Number(mv.amount||0))});
+ const fixed=new Map();state.recurring.filter(r=>r.type==="Gasto"&&r.active!==false).forEach(r=>fixed.set(r.categoryId,(fixed.get(r.categoryId)||0)+monthlyEquivalent(r)));
+ const out=new Map();
+ state.categories.filter(c=>c.type==="Gasto").forEach(c=>{
+   const mm=byCat.get(c.id)||new Map(),vals=avail.map(k=>mm.get(k)||0),n=avail.length||1;
+   const total=vals.reduce((a,b)=>a+b,0),mean=total/n,sorted=[...vals].sort((a,b)=>a-b),median=sorted.length?(sorted.length%2?sorted[(sorted.length-1)/2]:(sorted[sorted.length/2-1]+sorted[sorted.length/2])/2):0;
+   const months=vals.filter(v=>v>0).length,max=Math.max(0,...vals);
+   let kind,proposal=null;
+   if(fixed.has(c.id)){kind="Fijo (recurrente)";proposal=Math.ceil(fixed.get(c.id))}
+   else if(months>=6){kind="Habitual";proposal=roundBudget(Math.max(mean,median))}
+   else if(months>=2){kind="Irregular";proposal=roundBudget(mean)}
+   else kind="Sin datos suficientes";
+   if(proposal!==null&&proposal<10&&!fixed.has(c.id))proposal=null;
+   out.set(c.id,{mean,median,max,months,kind,proposal});
  });
- avg.forEach((v,k)=>avg.set(k,v/r.months));
- return{avg,last,months:r.months,lastLabel:`${months[r.lastM-1]} ${r.lastY}`};
+ return{stats:out,months:avail.length,from:avail[0],to:avail[avail.length-1]};
 }
-function suggestedBudget(avg){return Math.ceil(avg/5)*5} // redondeo a 5 € hacia arriba
-function fillBudgetsFromAverage(){
- const {avg}=monthlyAverageByCategory();let n=0;state.budgets=state.budgets||{};
- state.categories.filter(c=>c.type==="Gasto").forEach(c=>{const a=avg.get(c.id)||0;if(a>0){state.budgets[c.id]=suggestedBudget(a);n++}});
+function fillBudgetsFromProposal(){
+ const {stats}=budgetStats();let n=0;state.budgets=state.budgets||{};
+ stats.forEach((st,id)=>{if(st.proposal!==null){state.budgets[id]=st.proposal;n++}});
  return n;
 }
+function monthLabelKey(k){return `${months[Number(k.slice(5,7))-1].slice(0,3)} ${k.slice(2,4)}`}
 function renderBudgetTable(){
- const {avg,last,months,lastLabel}=monthlyAverageByCategory(),cats=state.categories.filter(c=>c.type==="Gasto").sort((a,b)=>(avg.get(b.id)||0)-(avg.get(a.id)||0)||a.name.localeCompare(b.name,"es"));
- el("subBudgets").textContent=months?`Media de ${intFmt.format(months)} meses completos · último mes completo: ${lastLabel}`:"Todavía no hay meses completos de histórico";
- el("budgetTable").innerHTML=cats.length?cats.map(c=>{const b=state.budgets?.[c.id];return`<tr><td>${escapeHtml(c.name)}</td><td class="amount muted">${euro.format(avg.get(c.id)||0)}</td><td class="amount muted">${euro.format(last.get(c.id)||0)}</td><td class="amount" style="width:160px"><input type="number" min="0" step="5" inputmode="decimal" data-budget="${c.id}" value="${b!=null?b:""}" placeholder="—" style="text-align:right"></td></tr>`}).join(""):`<tr><td colspan="4" class="empty">No hay categorías de gasto.</td></tr>`;
+ const {stats,months:n,from,to}=budgetStats();
+ const cats=state.categories.filter(c=>c.type==="Gasto").sort((a,b)=>(stats.get(b.id)?.mean||0)-(stats.get(a.id)?.mean||0)||a.name.localeCompare(b.name,"es"));
+ el("subBudgets").textContent=n?`Últimos ${n} meses completos (${monthLabelKey(from)} – ${monthLabelKey(to)})`:"Todavía no hay meses completos de histórico";
+ el("budgetTable").innerHTML=cats.length?cats.map(c=>{const st=stats.get(c.id),b=state.budgets?.[c.id];return`<tr><td>${escapeHtml(c.name)}</td><td class="muted">${st.kind}</td><td class="amount muted">${euro.format(st.mean)}</td><td class="amount muted">${euro.format(st.max)}</td><td class="amount">${st.proposal===null?"—":euro.format(st.proposal)}</td><td class="amount" style="width:150px"><input type="number" min="0" step="5" inputmode="decimal" data-budget="${c.id}" value="${b!=null?b:""}" placeholder="—" style="text-align:right"></td></tr>`}).join(""):`<tr><td colspan="6" class="empty">No hay categorías de gasto.</td></tr>`;
  el("budgetTable").querySelectorAll("[data-budget]").forEach(inp=>inp.onchange=()=>{const v=Number(String(inp.value).replace(",","."));state.budgets=state.budgets||{};if(inp.value===""||!Number.isFinite(v)||v<=0)delete state.budgets[inp.dataset.budget];else state.budgets[inp.dataset.budget]=Math.round(v*100)/100;saveState();renderBudgets();toast("Presupuesto guardado")});
 }
 function renderBudgets(){
- const p=selectedPeriod(),budgets=state.budgets||{},ids=Object.keys(budgets).filter(id=>getCat(id)&&budgets[id]>0);
+ const budgets=state.budgets||{},ids=Object.keys(budgets).filter(id=>getCat(id)&&budgets[id]>0);
+ const label=`${months[bp.m-1]} ${bp.y}`,r=monthRange(bp.y,bp.m);el("bpLabel").textContent=label;
+ const today=todayISO(),isCurrent=today.slice(0,7)===r.from.slice(0,7),isPast=r.to<today,daysInMonth=new Date(bp.y,bp.m,0).getDate(),dayOfMonth=isCurrent?Number(today.slice(8,10)):daysInMonth;
+ const movs=monthMovements(bp.y,bp.m).filter(m=>m.type==="Gasto"),spent=new Map();movs.forEach(m=>spent.set(m.categoryId,(spent.get(m.categoryId)||0)+Number(m.amount||0)));
  const list=el("budgetList"),hint=el("budgetHint"),sub=el("subBudget");
  if(!ids.length){
-   sub.textContent="Sin presupuestos todavía";
-   list.innerHTML=`<div class="empty-state"><svg class="ico" aria-hidden="true"><use href="#i-tag"/></svg><p>Crea presupuestos mensuales por categoría a partir de lo que gastas de media. Luego podrás ajustarlos en Categorías.</p><button type="button" class="primary" id="budgetCreateAvg">Crear presupuestos con mi media histórica</button></div>`;
-   const b=el("budgetCreateAvg");if(b)b.onclick=async()=>{const n=fillBudgetsFromAverage();if(!n)return uiAlert("No hay histórico de gastos suficiente para calcular medias.");saveState();renderAll();toast(`${n} presupuestos creados`)};
+   el("bpCards").hidden=true;sub.textContent="Sin presupuestos todavía";
+   list.innerHTML=`<div class="empty-state"><svg class="ico" aria-hidden="true"><use href="#i-gauge"/></svg><p>Define cuánto quieres gastar al mes en cada categoría. Puedes partir de una propuesta calculada con tu histórico y ajustarla después en «Ajustar presupuestos».</p><button type="button" class="primary" id="budgetCreateAvg">Crear presupuestos con la propuesta</button></div>`;
+   const b=el("budgetCreateAvg");if(b)b.onclick=()=>{const n=fillBudgetsFromProposal();if(!n)return uiAlert("No hay histórico de gastos suficiente para proponer presupuestos. Escríbelos a mano en «Ajustar presupuestos».");saveState();renderAll();el("budgetsPanel").open=true;toast(`${n} presupuestos creados`)};
    hint.textContent="";return;
  }
- if(p.mode==="all"){sub.textContent="Elige «Mes» o «Año» para comparar con el presupuesto";list.innerHTML="";hint.textContent="";return}
- const factor=p.mode==="year"?12:1,movs=periodMovements().filter(m=>m.type==="Gasto"),spent=new Map();
- movs.forEach(m=>spent.set(m.categoryId,(spent.get(m.categoryId)||0)+Number(m.amount||0)));
- const rows=ids.map(id=>{const budget=budgets[id]*factor,s=spent.get(id)||0;return{id,name:getCat(id).name,budget,spent:s,pct:budget?s/budget*100:0}}).sort((a,b)=>b.pct-a.pct);
- const totalB=rows.reduce((a,r)=>a+r.budget,0),totalS=rows.reduce((a,r)=>a+r.spent,0),other=movs.filter(m=>!budgets[m.categoryId]).reduce((a,m)=>a+Number(m.amount||0),0);
- const pr=periodRange();
- sub.textContent=`${periodLabel()} · ${euro.format(totalS)} de ${euro.format(totalB)} (${pct1(totalB?totalS/totalB*100:0)} %)${totalS>totalB?` · ${euro.format(totalS-totalB)} por encima`:` · quedan ${euro.format(totalB-totalS)}`}`;
- list.innerHTML=rows.map(r=>{const over=r.spent>r.budget,warn=!over&&r.pct>=80,color=over?"var(--expense)":warn?"var(--warning)":"var(--income)";
-  return`<button type="button" class="barrow" data-cat="${r.id}"><div class="bl-head"><b>${escapeHtml(r.name)}</b><span>${euro.format(r.spent)} de ${euro.format(r.budget)} · ${over?`+${euro.format(r.spent-r.budget)}`:pct1(r.pct)+" %"}</span></div><div class="bl-track"><div class="bl-fill" style="width:${Math.min(100,Math.round(r.pct))}%;background:${color}"></div></div></button>`}).join("");
- list.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>goToMovements({type:"Gasto",categoryId:b.dataset.cat,from:pr.from,to:pr.to,label:periodLabel()}));
- hint.textContent=other>0?`Además, ${euro.format(other)} en categorías sin presupuesto. Pulsa una barra para ver sus movimientos.`:"Pulsa una barra para ver sus movimientos.";
+ el("bpCards").hidden=false;
+ const rows=ids.map(id=>{const budget=budgets[id],sp=spent.get(id)||0;return{id,name:getCat(id).name,budget,spent:sp,pct:budget?sp/budget*100:0}}).sort((a,b)=>b.pct-a.pct);
+ const totalB=rows.reduce((a,x)=>a+x.budget,0),totalS=rows.reduce((a,x)=>a+x.spent,0),other=movs.filter(m=>!budgets[m.categoryId]).reduce((a,m)=>a+Number(m.amount||0),0),allSpent=totalS+other,left=totalB-totalS;
+ el("bpBudget").textContent=euro.format(totalB);el("bpBudgetSub").textContent=`${rows.length} categoría${rows.length===1?"":"s"} con presupuesto`;
+ el("bpSpent").textContent=euro.format(totalS);el("bpSpentSub").textContent=other>0?`+ ${euro.format(other)} en categorías sin presupuesto`:"Solo categorías con presupuesto";
+ el("bpLeftLabel").textContent=left>=0?"Disponible":"Excedido";el("bpLeft").textContent=euro.format(Math.abs(left));el("bpLeft").className="metric-value "+(left>=0?"positive":"negative");
+ el("bpLeftSub").textContent=`${pct1(totalB?totalS/totalB*100:0)} % del presupuesto${isPast?" · mes cerrado":""}`;
+ if(isCurrent){const daysLeft=daysInMonth-dayOfMonth,perDay=allSpent/dayOfMonth;el("bpPace").textContent=`${euro.format(perDay)}/día`;el("bpPaceSub").textContent=daysLeft>0?(left>0?`Puedes gastar ${euro.format(left/daysLeft)}/día los ${daysLeft} días que quedan`:`Sin margen para los ${daysLeft} días que quedan`):"Último día del mes"}
+ else{el("bpPace").textContent=`${euro.format(allSpent/daysInMonth)}/día`;el("bpPaceSub").textContent=isPast?"Media diaria del mes":"Mes futuro"}
+ sub.textContent=`${label} · ${euro.format(totalS)} de ${euro.format(totalB)}`;
+ list.innerHTML=rows.map(x=>{const over=x.spent>x.budget,warn=!over&&x.pct>=80,color=over?"var(--expense)":warn?"var(--warning)":"var(--income)";
+  return`<button type="button" class="barrow" data-cat="${x.id}"><div class="bl-head"><b>${escapeHtml(x.name)}</b><span>${euro.format(x.spent)} de ${euro.format(x.budget)} · ${over?`+${euro.format(x.spent-x.budget)}`:pct1(x.pct)+" %"}</span></div><div class="bl-track"><div class="bl-fill" style="width:${Math.min(100,Math.round(x.pct))}%;background:${color}"></div></div></button>`}).join("");
+ list.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>goToMovements({type:"Gasto",categoryId:b.dataset.cat,from:r.from,to:r.to,label}));
+ const noBudget=[...spent.entries()].filter(([id])=>!budgets[id]).sort((a,b)=>b[1]-a[1]).map(([id,v])=>`${getCat(id)?.name||"Sin categoría"} ${euro.format(v)}`);
+ hint.textContent=noBudget.length?`Sin presupuesto este mes: ${noBudget.join(" · ")}. Pulsa una barra para ver sus movimientos.`:"Pulsa una barra para ver sus movimientos.";
 }
+function shiftBudgetMonth(dir){let m=bp.m+dir,y=bp.y;if(m<1){m=12;y--}if(m>12){m=1;y++}bp.y=y;bp.m=m;renderBudgets()}
 function renderCategorySummary(){
  const movs=periodMovements(),totals=new Map(),counts=new Map(),typeTotals={Ingreso:0,Gasto:0,"Inversión":0};
  movs.forEach(m=>{totals.set(m.categoryId,(totals.get(m.categoryId)||0)+Number(m.amount));counts.set(m.categoryId,(counts.get(m.categoryId)||0)+1);typeTotals[m.type]+=Number(m.amount)});
@@ -1669,7 +1708,7 @@ let monthlyShowAll=false;
 
 function showPage(name){
  document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id==="page-"+name));
- const navName=["categories","recurring","settings"].includes(name)?"more":name;
+ const navName=["categories","recurring","settings","budget"].includes(name)?"more":name;
  document.querySelectorAll("[data-page]").forEach(b=>{
    const inNav=!!b.closest(".mobile-nav"),active=b.dataset.page===name||(inNav&&b.dataset.page===navName);
    b.classList.toggle("active",active);
@@ -1696,8 +1735,8 @@ document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>showPage(b.dat
 el("mDate").value=todayISO();el("rStartDate").value=todayISO();setupPeriodSelectors();updatePeriodControls();
 el("mType").onchange=()=>{updateMovementCategories();updateInvestmentFields()};el("mCategory").onchange=()=>{updateInvestmentFields();autoSelectAssetForCategory()};el("rType").onchange=updateRecurringCategories;
 el("addCategory").onclick=addCategory;
-el("budgetSetup").onclick=()=>{showPage("categories");setTimeout(()=>el("budgetsPanel").scrollIntoView({behavior:"smooth",block:"start"}),80)};
-el("budgetFillAvg").onclick=async()=>{if(!(await uiConfirm("Se sustituirán los presupuestos actuales por la media mensual de tu histórico, redondeada a 5 €.",{title:"¿Rellenar con la media?",confirmText:"Rellenar"})))return;const n=fillBudgetsFromAverage();saveState();renderAll();toast(`${n} presupuestos rellenados`)};
+el("bpPrev").onclick=()=>shiftBudgetMonth(-1);el("bpNext").onclick=()=>shiftBudgetMonth(1);el("bpToday").onclick=()=>{const n=new Date();bp.y=n.getFullYear();bp.m=n.getMonth()+1;renderBudgets()};
+el("budgetFillAvg").onclick=async()=>{if(!(await uiConfirm("Se sustituirán los presupuestos actuales por la propuesta calculada con tu histórico. Las categorías sin propuesta se quedan como están.",{title:"¿Rellenar con la propuesta?",confirmText:"Rellenar"})))return;const n=fillBudgetsFromProposal();saveState();renderAll();toast(`${n} presupuestos rellenados`)};
 el("budgetClearAll").onclick=async()=>{if(!(await uiConfirm("Se quitarán todos los presupuestos. Los movimientos no cambian.",{title:"¿Quitar presupuestos?",danger:true,confirmText:"Quitar"})))return;state.budgets={};saveState();renderAll();toast("Presupuestos eliminados")};el("saveMovement").onclick=saveMovement;el("cancelEdit").onclick=cancelEdit;
 el("addRecurring").onclick=addRecurring;el("doTransfer").onclick=doTransfer;el("generateRecurring").onclick=()=>generateRecurring(true);el("addAsset").onclick=addAsset;el("refreshPrices").onclick=()=>updateMarketPrices(true);
 el("periodMode").onchange=()=>{updatePeriodControls();renderAll()};el("monthFilter").onchange=renderAll;el("yearFilter").onchange=renderAll;
