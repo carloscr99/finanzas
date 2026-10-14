@@ -2,7 +2,7 @@
 // y también sin conexión. Los datos (Firestore), el login (Google) y las cotizaciones (prices.json) nunca pasan por aquí.
 //
 // Sube la versión de CACHE cada vez que cambie la lista PRECACHE (por ejemplo al actualizar Chart.js o Firebase).
-const CACHE = "finanzas-v1";
+const CACHE = "finanzas-v2";
 const PRECACHE = [
   "./",
   "./index.html",
@@ -11,6 +11,7 @@ const PRECACHE = [
   "./icon-192.png",
   "./icon-512.png",
   "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js",
+  "https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.14.5/sweetalert2.all.min.js",
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js",
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js",
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js"
@@ -41,7 +42,7 @@ self.addEventListener("fetch", event => {
   const sameOrigin = url.origin === self.location.origin;
   const isShellFile = sameOrigin && /\/(index\.html|firebase-config\.js|manifest\.webmanifest|icon-192\.png|icon-512\.png)$/.test(url.pathname);
   const isNavigation = req.mode === "navigate";
-  const isCdn = CACHE_FIRST_HOSTS.includes(url.hostname) && /firebasejs\/|chart\.umd/.test(url.pathname);
+  const isCdn = CACHE_FIRST_HOSTS.includes(url.hostname) && /firebasejs\/|chart\.umd|sweetalert2/.test(url.pathname);
 
   // Página e índice: red primero (así llegan las actualizaciones), caché si no hay conexión.
   if (isNavigation || (isShellFile && /index\.html$|firebase-config\.js$/.test(url.pathname))) {

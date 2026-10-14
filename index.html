@@ -153,6 +153,11 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 .spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border-strong);border-top-color:var(--investment);border-radius:50%;vertical-align:-3px;margin-right:8px;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .auth-logo{width:72px;height:72px;border-radius:18px;margin-bottom:12px}
+/* Diálogos (SweetAlert2) con la tipografía y los tokens de la app */
+.swal2-popup{font-family:inherit!important;border-radius:var(--radius)!important;box-shadow:var(--shadow)!important}
+.swal2-title{font-size:20px!important;font-weight:700!important}.swal2-html-container{font-size:15px!important;line-height:1.5!important}
+.swal2-styled{min-height:44px!important;border-radius:10px!important;font-weight:700!important;box-shadow:none!important}
+.swal2-input{border-radius:10px!important;font-size:18px!important;text-align:center;font-variant-numeric:tabular-nums}
 .barlist{display:flex;flex-direction:column;gap:9px}
 .barrow{border:0;background:transparent;padding:0;text-align:left;font:inherit;color:var(--text);width:100%}
 .barrow .bl-head{display:flex;justify-content:space-between;gap:8px;font-size:13px}.barrow .bl-head b{font-weight:600}.barrow .bl-head span{white-space:nowrap;color:var(--text);font-weight:700}
@@ -552,6 +557,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 </nav>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.14.5/sweetalert2.all.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
@@ -631,6 +637,23 @@ function normalizeState(s){
     }
   };
 }
+// ---------- Diálogos: SweetAlert2 con los colores del tema; si la librería no carga (sin conexión), diálogos nativos ----------
+function swalBase(){
+ if(!window.Swal)return null;
+ return Swal.mixin({background:tok("--panel"),color:tok("--text"),confirmButtonColor:tok("--investment"),cancelButtonColor:tok("--muted"),reverseButtons:true,heightAuto:false,scrollbarPadding:false});
+}
+async function uiAlert(msg,opts={}){const S=swalBase();if(!S){alert(msg);return}await S.fire({title:opts.title||"",text:msg,icon:opts.icon||"info",confirmButtonText:opts.confirmText||"Entendido"})}
+function uiError(msg,title="Revisa los datos"){return uiAlert(msg,{icon:"error",title})}
+async function uiConfirm(msg,opts={}){
+ const S=swalBase();if(!S)return confirm((opts.title?opts.title+" ":"")+msg);
+ const r=await S.fire({title:opts.title||"¿Seguro?",text:msg,icon:opts.icon||(opts.danger?"warning":"question"),showCancelButton:true,confirmButtonText:opts.confirmText||"Sí, continuar",cancelButtonText:"Cancelar",confirmButtonColor:opts.danger?tok("--danger"):tok("--investment"),focusCancel:!!opts.danger});
+ return r.isConfirmed;
+}
+async function uiPrompt(msg,def,opts={}){
+ const S=swalBase();if(!S)return prompt(msg,def);
+ const r=await S.fire({title:opts.title||"",text:msg,input:"text",inputValue:def==null?"":String(def),inputAttributes:{inputmode:"decimal",autocomplete:"off"},showCancelButton:true,confirmButtonText:opts.confirmText||"Guardar",cancelButtonText:"Cancelar"});
+ return r.isConfirmed?r.value:null;
+}
 // ---------- Persistencia en Firestore (un documento users/{uid} con todo el estado) ----------
 let currentUser=null,userDocRef=null,unsubscribeSnapshot=null,remoteSaveTimer=null;
 function cleanForFirestore(s){return JSON.parse(JSON.stringify(s))} // elimina undefined, que Firestore no admite
@@ -644,7 +667,7 @@ function flushRemoteSave(){
  clearTimeout(remoteSaveTimer);remoteSaveTimer=null;
  setDoc(userDocRef,cleanForFirestore(state)).catch(err=>{
    console.error("Error guardando en Firestore",err);
-   alert("No se han podido guardar los cambios en tu cuenta ("+(err.code||err.message)+"). Exporta tus datos por seguridad.");
+   uiAlert("No se han podido guardar los cambios en tu cuenta ("+(err.code||err.message)+"). Exporta tus datos por seguridad.",{icon:"error",title:"Error al guardar"});
  });
 }
 function readLegacyLocalState(){
@@ -673,7 +696,7 @@ async function startApp(user){
    state=normalizeState(initial.snap.data());
  }else{
    const legacy=readLegacyLocalState();
-   if(initial.serverChecked&&legacy&&confirm("Hay datos de la versión anterior guardados en este navegador. ¿Quieres subirlos a tu cuenta?"))state=legacy;
+   if(initial.serverChecked&&legacy&&await uiConfirm("Hay datos de la versión anterior guardados en este navegador. ¿Quieres subirlos a tu cuenta?",{title:"Datos antiguos",confirmText:"Sí, subirlos"}))state=legacy;
    else state=defaultState();
    if(initial.serverChecked)saveState(); // cuenta nueva: crea el documento
  }
@@ -728,7 +751,7 @@ async function login(){
    }
  }
 }
-async function logout(){if(!confirm("¿Cerrar sesión?"))return;stopApp();await signOut(auth)}
+async function logout(){if(!(await uiConfirm("Tendrás que volver a entrar con Google la próxima vez.",{title:"¿Cerrar sesión?",confirmText:"Cerrar sesión"})))return;stopApp();await signOut(auth)}
 async function enterApp(user){
  el("loginGoogle").hidden=true;el("authRetry").hidden=true;
  setAuthStatus("Comprobando acceso…",false,true);
@@ -922,13 +945,13 @@ function renderTransferForm(){
  const name=id=>state.assets.find(a=>a.id===id)?.name||"(cuenta borrada)";
  el("transferList").innerHTML=rows.length?`<h3>Últimos traspasos</h3>`+rows.map(t=>`<div class="chip" style="width:100%;justify-content:space-between;margin-bottom:6px"><span>${formatDate(t.date)} · ${escapeHtml(name(t.fromId))} → ${escapeHtml(name(t.toId))}</span><b>${euro.format(t.amount)}</b></div>`).join(""):"";
 }
-function doTransfer(){
+async function doTransfer(){
  const fromId=el("tFrom").value,toId=el("tTo").value,amount=Number(el("tAmount").value),date=el("tDate").value||todayISO();
  const from=state.assets.find(a=>a.id===fromId),to=state.assets.find(a=>a.id===toId);
- if(!from||!to)return alert("Elige la cuenta de origen y la de destino.");
- if(from.id===to.id)return alert("Origen y destino no pueden ser la misma cuenta.");
- if(!Number.isFinite(amount)||amount<=0)return alert("Indica un importe válido.");
- if(!confirm(`¿Traspasar ${euro.format(amount)} de ${from.name} a ${to.name}?`))return;
+ if(!from||!to)return uiError("Elige la cuenta de origen y la de destino.");
+ if(from.id===to.id)return uiError("Origen y destino no pueden ser la misma cuenta.");
+ if(!Number.isFinite(amount)||amount<=0)return uiError("Indica un importe válido.");
+ if(!(await uiConfirm(`${euro.format(amount)} de ${from.name} a ${to.name}. No cuenta como ingreso, gasto ni inversión.`,{title:"¿Registrar traspaso?",confirmText:"Traspasar"})))return;
  applyTransferToAsset(from,-amount);applyTransferToAsset(to,amount);
  state.transfers=state.transfers||[];state.transfers.push({id:uuid(),date,fromId,toId,amount,createdAt:nowISO()});
  if(state.transfers.length>200)state.transfers=state.transfers.slice(-200);
@@ -972,13 +995,13 @@ async function updateMarketPrices(showAlert=false){
      const newest=priceDates.length?priceDates[priceDates.length-1]:null;
      status.textContent=`Cotizaciones: sincronizadas ${formatDateTime(syncAt)} · fichero GitHub ${formatDateTime(feedAt)}${newest?` · cotización más reciente ${formatDate(newest)}`:""}.`;
    }
-   if(showAlert)alert(`Cotizaciones sincronizadas desde GitHub. ${changed} activo${changed===1?"":"s"} actualizado${changed===1?"":"s"}.`);
+   if(showAlert)uiAlert(`Cotizaciones sincronizadas desde GitHub. ${changed} activo${changed===1?"":"s"} actualizado${changed===1?"":"s"}.`);
  }catch(err){
    if(status){
      const last=state.meta?.lastPricesSyncAt;
      status.textContent=`Cotizaciones: no se pudo conectar con GitHub${last?` · última sincronización correcta ${formatDateTime(last)}`:""}.`;
    }
-   if(showAlert)alert("No se han podido sincronizar las cotizaciones desde GitHub. Se mantienen los últimos precios guardados.");
+   if(showAlert)uiAlert("No se han podido sincronizar las cotizaciones desde GitHub. Se mantienen los últimos precios guardados.",{icon:"warning",title:"Sin conexión con GitHub"});
  }finally{
    priceUpdateInProgress=false;
  }
@@ -1082,13 +1105,13 @@ function renderCategoryList(){
  el("categoryList").querySelectorAll("[data-delcat]").forEach(b=>b.onclick=()=>deleteCategory(b.dataset.delcat));
 }
 function addCategory(){
- const name=el("cName").value.trim(),type=el("cType").value;if(!name)return alert("Escribe un nombre.");
- if(state.categories.some(c=>c.type===type&&c.name.toLowerCase()===name.toLowerCase()))return alert("Esa categoría ya existe.");
+ const name=el("cName").value.trim(),type=el("cType").value;if(!name)return uiError("Escribe un nombre.");
+ if(state.categories.some(c=>c.type===type&&c.name.toLowerCase()===name.toLowerCase()))return uiError("Esa categoría ya existe.");
  state.categories.push({id:uuid(),type,name});el("cName").value="";saveState();renderAll();
 }
-function deleteCategory(id){
- if(state.movements.some(m=>m.categoryId===id)||state.recurring.some(r=>r.categoryId===id))return alert("No puedes borrar esta categoría porque se está usando en movimientos o recurrentes.");
- if(!confirm("¿Eliminar esta categoría?"))return;state.categories=state.categories.filter(c=>c.id!==id);saveState();renderAll();
+async function deleteCategory(id){
+ if(state.movements.some(m=>m.categoryId===id)||state.recurring.some(r=>r.categoryId===id))return uiError("No puedes borrar esta categoría porque se está usando en movimientos o recurrentes.");
+ if(!(await uiConfirm("Solo se pueden borrar categorías sin movimientos ni recurrentes.",{title:"¿Eliminar esta categoría?",danger:true,confirmText:"Eliminar"})))return;state.categories=state.categories.filter(c=>c.id!==id);saveState();renderAll();
 }
 // Guardado único de movimientos (formulario de escritorio y hoja rápida). Devuelve un mensaje de error o null.
 function persistMovement(d,id){
@@ -1115,7 +1138,7 @@ function persistMovement(d,id){
 function saveMovement(){
  const type=el("mType").value,usesUnits=type==="Inversión"&&investmentCategoryUsesUnits();
  const err=persistMovement({date:el("mDate").value,type,categoryId:el("mCategory").value,description:el("mDescription").value.trim(),amount:Number(el("mAmount").value),usesUnits,assetId:usesUnits?el("mAsset").value:"",units:usesUnits?Number(el("mUnits").value):0},editingId);
- if(err)return alert(err);
+ if(err)return uiError(err);
  const wasEdit=!!editingId;
  editingId=null;el("cancelEdit").style.display="none";el("saveMovement").textContent="Guardar movimiento";el("mDescription").value="";el("mAmount").value="";el("mUnits").value="";
  toast(wasEdit?"Cambios guardados":"Movimiento guardado");
@@ -1129,7 +1152,7 @@ function editMovement(id){
 }
 function cancelEdit(){editingId=null;el("cancelEdit").style.display="none";el("saveMovement").textContent="Guardar movimiento";el("mDate").value=todayISO();el("mType").value="Gasto";updateMovementCategories();el("mDescription").value="";el("mAmount").value="";el("mUnits").value=""}
 function deleteMovementById(id){const m=state.movements.find(x=>x.id===id);if(m)applyInvestmentMovementToAsset(m,-1);state.movements=state.movements.filter(x=>x.id!==id);markDataUpdate(m?.type==="Inversión"?"movement+portfolio":"movement");saveState();renderAll()}
-function deleteMovement(id){if(!confirm("¿Eliminar este movimiento?"))return;deleteMovementById(id);toast("Movimiento eliminado")}
+async function deleteMovement(id){if(!(await uiConfirm("Esta acción no se puede deshacer.",{title:"¿Eliminar este movimiento?",danger:true,confirmText:"Eliminar"})))return;deleteMovementById(id);toast("Movimiento eliminado")}
 function movementSearchResults(){
  const q=el("searchText").value.trim().toLowerCase(),type=el("searchType").value,cat=el("searchCategory").value,from=el("searchFrom").value,to=el("searchTo").value;
  return state.movements.filter(m=>{
@@ -1143,11 +1166,11 @@ function updateBulkCategories(){
  el("bulkCategory").innerHTML=cats.length?cats.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join(""):`<option value="">Crea antes una categoría de este tipo en Categorías</option>`;
 }
 function toggleBulkPanel(show){el("bulkPanel").hidden=!show;if(show)updateBulkCategories()}
-function bulkRecategorize(){
+async function bulkRecategorize(){
  const movs=movementSearchResults(),type=el("bulkType").value,categoryId=el("bulkCategory").value,cat=getCat(categoryId);
- if(!movs.length)return alert("No hay movimientos visibles. Usa el buscador y los filtros para elegirlos.");
- if(!cat)return alert("Elige la nueva categoría.");
- if(!confirm(`¿Pasar ${intFmt.format(movs.length)} movimiento${movs.length===1?"":"s"} a ${type} › ${cat.name}? Los saldos del patrimonio no cambian.`))return;
+ if(!movs.length)return uiError("No hay movimientos visibles. Usa el buscador y los filtros para elegirlos.");
+ if(!cat)return uiError("Elige la nueva categoría.");
+ if(!(await uiConfirm(`${intFmt.format(movs.length)} movimiento${movs.length===1?"":"s"} pasarán a ${type} › ${cat.name}. Los saldos del patrimonio no cambian.`,{title:"¿Cambiar categoría?",confirmText:"Aplicar"})))return;
  const ids=new Set(movs.map(m=>m.id));
  state.movements.forEach(m=>{if(!ids.has(m.id))return;if(m.assetId&&m.units>0)applyInvestmentMovementToAsset(m,-1);delete m.assetId;delete m.units;m.type=type;m.categoryId=categoryId});
  markDataUpdate("movement");saveState();toggleBulkPanel(false);renderAll();
@@ -1177,7 +1200,7 @@ function renderMovements(){
 
 function addRecurring(){
  const type=el("rType").value,categoryId=el("rCategory").value,description=el("rDescription").value.trim(),amount=Number(el("rAmount").value),frequency=el("rFrequency").value,startDate=el("rStartDate").value;
- if(!categoryId||!description||!startDate||!Number.isFinite(amount)||amount<=0)return alert("Completa todos los campos.");
+ if(!categoryId||!description||!startDate||!Number.isFinite(amount)||amount<=0)return uiError("Completa todos los campos.");
  state.recurring.push({id:uuid(),type,categoryId,description,amount,frequency,nextDate:startDate,active:true});
  el("rDescription").value="";el("rAmount").value="";saveState();renderAll();
 }
@@ -1192,20 +1215,20 @@ function generateRecurring(showAlert=false){
    }
  });
  if(created){markDataUpdate("movement");saveState();updateYearOptions();renderAll()}
- if(showAlert)alert(created?`Se han generado ${created} movimiento${created===1?"":"s"} pendiente${created===1?"":"s"}.`:"No había movimientos pendientes.");
+ if(showAlert)uiAlert(created?`Se han generado ${created} movimiento${created===1?"":"s"} pendiente${created===1?"":"s"}.`:"No había movimientos pendientes.");
 }
 function renderRecurring(){
  const rows=[...state.recurring].sort((a,b)=>(a.nextDate||"").localeCompare(b.nextDate||""));
  el("recurringTable").innerHTML=rows.length?rows.map(r=>`<tr><td>${escapeHtml(r.description)}</td><td><span class="pill ${r.type}">${r.type}</span></td><td>${escapeHtml(getCat(r.categoryId)?.name||"Sin categoría")}</td><td>${euro.format(r.amount)}</td><td>${freqLabel(r.frequency)}</td><td>${formatDate(r.nextDate)}</td><td class="actions"><button class="secondary small" data-toggle="${r.id}">${r.active===false?"Activar":"Pausar"}</button> <button class="danger small" data-delrec="${r.id}">Borrar</button></td></tr>`).join(""):`<tr><td colspan="7" class="empty">No hay recurrentes.</td></tr>`;
  el("recurringTable").querySelectorAll("[data-toggle]").forEach(b=>b.onclick=()=>{const r=state.recurring.find(x=>x.id===b.dataset.toggle);r.active=r.active===false?true:false;saveState();renderAll()});
- el("recurringTable").querySelectorAll("[data-delrec]").forEach(b=>b.onclick=()=>{if(confirm("¿Eliminar este recurrente?")){state.recurring=state.recurring.filter(x=>x.id!==b.dataset.delrec);saveState();renderAll()}});
+ el("recurringTable").querySelectorAll("[data-delrec]").forEach(b=>b.onclick=async()=>{if(await uiConfirm("Dejará de generarse; los movimientos ya creados se conservan.",{title:"¿Eliminar este recurrente?",danger:true,confirmText:"Eliminar"})){state.recurring=state.recurring.filter(x=>x.id!==b.dataset.delrec);saveState();renderAll()}});
 }
 
 function addAsset(){
  const name=el("aName").value.trim(),type=el("aType").value,value=Number(el("aValue").value||0),invested=el("aInvested").value===""?0:Number(el("aInvested").value),units=el("aUnits").value===""?0:Number(el("aUnits").value),isin=el("aIsin").value.trim().toUpperCase();
- if(!name||!Number.isFinite(value)||value<0||!Number.isFinite(invested)||invested<0||!Number.isFinite(units)||units<0)return alert("Completa los datos correctamente.");
+ if(!name||!Number.isFinite(value)||value<0||!Number.isFinite(invested)||invested<0||!Number.isFinite(units)||units<0)return uiError("Completa los datos correctamente.");
  const asset={id:uuid(),name,type,value,invested,units,isin,createdAt:todayISO()};
- if(isCurrentAccount(asset)){if(state.assets.some(isCurrentAccount))return alert("Ya hay una cuenta corriente. Actualiza su saldo con «Actualizar manualmente» o bórrala antes.");setAccountReference(asset,value,todayISO())}
+ if(isCurrentAccount(asset)){if(state.assets.some(isCurrentAccount))return uiError("Ya hay una cuenta corriente. Actualiza su saldo con «Actualizar manualmente» o bórrala antes.");setAccountReference(asset,value,todayISO())}
  state.assets.push(asset);["aName","aValue","aInvested","aUnits","aIsin"].forEach(id=>el(id).value="");markDataUpdate("portfolio");saveState();renderAll();updateMarketPrices(false);
 }
 function renderAssets(){
@@ -1214,8 +1237,8 @@ function renderAssets(){
  el("assetTotal").textContent=euro.format(total);el("assetInvested").textContent=euro.format(invested);el("assetGain").textContent=euro.format(gain);el("assetGain").classList.toggle("negative",gain<0);el("assetGain").classList.toggle("positive",gain>=0);el("assetTotalCount").textContent=state.assets.length;
  el("assetLastUpdate").textContent=portfolioRef?`Actualizado ${formatDateTime(portfolioRef)}`:(state.assets.length?"Pendiente de registrar actualización":"Sin patrimonio");
  el("assetGrid").innerHTML=state.assets.length?state.assets.map(a=>{const g=Number(a.value)-Number(a.invested||0),units=Number(a.units||0),price=Number(a.unitPrice||0),meta=units>0?`<div class="sub">${assetDisplayUnits(units)} participaciones/títulos${price>0?` · ${euro.format(price)} / ud.`:""}</div>`:"",irr=assetAnnualizedReturn(a),irrHtml=irr===null?`<div class="sub">Rentabilidad anualizada: —${assetInvestmentMovements(a).length&&!(Number(a.units)>0)?" (las aportaciones registradas no cuadran con el capital aportado)":""}</div>`:`<div class="sub ${irr<0?"negative":"positive"}">Rentabilidad anualizada: ${(irr*100).toFixed(2).replace(".",",")} %</div>`,priceInfo=isCurrentAccount(a)?`<div class="sub">Saldo calculado: referencia ${euro.format(a.refBalance||0)} el ${formatDate(a.refDate)} más los movimientos posteriores</div>`:a.updatedAt?`<div class="sub">Cotización: ${formatDate(a.updatedAt)}${a.priceSource?` · ${escapeHtml(a.priceSource)}`:""}</div>`:"";return`<div class="asset-card"><span class="badge">${escapeHtml(a.type)}</span><h3>${escapeHtml(a.name)}</h3><div class="big">${euro.format(a.value)}</div>${isCurrentAccount(a)?"":`<div class="sub">Aportado: ${euro.format(a.invested||0)}</div>${meta}<div class="sub ${g<0?"negative":"positive"}">Diferencia: ${euro.format(g)}</div>${irrHtml}`}${priceInfo}<div class="form-actions"><button class="secondary small" data-editasset="${a.id}">Actualizar manualmente</button><button class="danger small" data-delasset="${a.id}">Borrar</button></div></div>`}).join(""):`<div class="empty" style="grid-column:1/-1">No has añadido activos.</div>`;
- el("assetGrid").querySelectorAll("[data-delasset]").forEach(b=>b.onclick=()=>{if(confirm("¿Eliminar este activo?")){state.assets=state.assets.filter(x=>x.id!==b.dataset.delasset);markDataUpdate("portfolio");saveState();renderAll()}});
- el("assetGrid").querySelectorAll("[data-editasset]").forEach(b=>b.onclick=()=>{const a=state.assets.find(x=>x.id===b.dataset.editasset);if(isCurrentAccount(a)){const calc=currentAccountValue(a);const nv=prompt(`Saldo real de ${a.name} hoy (la app calcula ${euro.format(calc)}):`,calc.toFixed(2));if(nv===null)return;const n=Number(String(nv).replace(",","."));if(!Number.isFinite(n))return alert("Valor no válido.");const diff=n-calc;setAccountReference(a,n,todayISO());markDataUpdate("portfolio");saveState();renderAll();toast(Math.abs(diff)<0.005?"Saldo confirmado: cuadra con lo registrado":`Nueva referencia. Diferencia con lo registrado: ${diff>0?"+":""}${euro.format(diff)}`);return}if(Number(a.units)>0){const nv=prompt(`Nuevo precio por participación/título de ${a.name}:`,a.unitPrice||"");if(nv===null)return;const n=Number(String(nv).replace(",","."));if(!Number.isFinite(n)||n<0)return alert("Valor no válido.");a.unitPrice=n;a.value=Number(a.units)*n;a.updatedAt=todayISO();a.priceSource="Manual"}else{const nv=prompt(`Nuevo valor actual de ${a.name}:`,a.value);if(nv===null)return;const n=Number(String(nv).replace(",","."));if(!Number.isFinite(n)||n<0)return alert("Valor no válido.");a.value=n;a.updatedAt=todayISO();a.priceSource="Manual"}markDataUpdate("portfolio");saveState();renderAll()});
+ el("assetGrid").querySelectorAll("[data-delasset]").forEach(b=>b.onclick=async()=>{if(await uiConfirm("Desaparecerá del patrimonio; los movimientos no se tocan.",{title:"¿Eliminar este activo?",danger:true,confirmText:"Eliminar"})){state.assets=state.assets.filter(x=>x.id!==b.dataset.delasset);markDataUpdate("portfolio");saveState();renderAll()}});
+ el("assetGrid").querySelectorAll("[data-editasset]").forEach(b=>b.onclick=async()=>{const a=state.assets.find(x=>x.id===b.dataset.editasset);if(isCurrentAccount(a)){const calc=currentAccountValue(a);const nv=await uiPrompt(`Saldo real de ${a.name} hoy (la app calcula ${euro.format(calc)}):`,calc.toFixed(2));if(nv===null)return;const n=Number(String(nv).replace(",","."));if(!Number.isFinite(n))return uiError("Valor no válido.");const diff=n-calc;setAccountReference(a,n,todayISO());markDataUpdate("portfolio");saveState();renderAll();toast(Math.abs(diff)<0.005?"Saldo confirmado: cuadra con lo registrado":`Nueva referencia. Diferencia con lo registrado: ${diff>0?"+":""}${euro.format(diff)}`);return}if(Number(a.units)>0){const nv=await uiPrompt(`Nuevo precio por participación/título de ${a.name}:`,a.unitPrice||"");if(nv===null)return;const n=Number(String(nv).replace(",","."));if(!Number.isFinite(n)||n<0)return uiError("Valor no válido.");a.unitPrice=n;a.value=Number(a.units)*n;a.updatedAt=todayISO();a.priceSource="Manual"}else{const nv=await uiPrompt(`Nuevo valor actual de ${a.name}:`,a.value);if(nv===null)return;const n=Number(String(nv).replace(",","."));if(!Number.isFinite(n)||n<0)return uiError("Valor no válido.");a.value=n;a.updatedAt=todayISO();a.priceSource="Manual"}markDataUpdate("portfolio");saveState();renderAll()});
 }
 
 // ---------- Periodo seleccionado: etiqueta y rango de fechas ----------
@@ -1459,13 +1482,13 @@ function quickSave(keepOpen){
  const usesUnits=qsUsesUnits(),assetId=usesUnits?el("qsAsset").value:"",units=usesUnits?parseAmount(el("qsUnits").value):0;
  const wasEdit=!!qs.editId;
  const err=persistMovement({date,type,categoryId,description,amount,usesUnits,assetId,units},qs.editId);
- if(err)return alert(err);
+ if(err)return uiError(err);
  qs.lastType=type;qs.lastCategory[type]=categoryId;
  toast(wasEdit?"Cambios guardados":`${type} guardado: ${euro.format(amount)}`);
  if(keepOpen){qs.editId=null;el("qsAmount").value="";el("qsDesc").value="";el("qsUnits").value="";el("qsTitle").textContent="Nuevo movimiento";el("qsDelete").hidden=true;el("qsSaveMore").hidden=false;el("qsSave").textContent="Guardar";el("qsAmount").focus()}
  else closeQuickSheet();
 }
-function quickDelete(){if(!qs.editId||!confirm("¿Eliminar este movimiento?"))return;deleteMovementById(qs.editId);closeQuickSheet();toast("Movimiento eliminado")}
+async function quickDelete(){if(!qs.editId)return;if(!(await uiConfirm("Esta acción no se puede deshacer.",{title:"¿Eliminar este movimiento?",danger:true,confirmText:"Eliminar"})))return;deleteMovementById(qs.editId);closeQuickSheet();toast("Movimiento eliminado")}
 
 function syncPeriodCompact(){
  const p=selectedPeriod();
@@ -1516,9 +1539,9 @@ function exportData(){
  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=`mis-finanzas-${todayISO()}.json`;a.click();URL.revokeObjectURL(url);
 }
 function importData(file){
- if(!file)return;const r=new FileReader();r.onload=()=>{try{state=normalizeState(JSON.parse(r.result));markDataUpdate("movement+portfolio");saveState();updateYearOptions();generateRecurring(false);renderAll();updateMarketPrices(false);alert("Datos importados correctamente.")}catch{alert("Archivo no válido.")}};r.readAsText(file);
+ if(!file)return;const r=new FileReader();r.onload=()=>{try{state=normalizeState(JSON.parse(r.result));markDataUpdate("movement+portfolio");saveState();updateYearOptions();generateRecurring(false);renderAll();updateMarketPrices(false);uiAlert("Datos importados correctamente.",{icon:"success",title:"Importación"})}catch{uiError("Archivo no válido.","Importación")}};r.readAsText(file);
 }
-function clearAll(){if(!confirm("Se borrarán todos tus datos guardados en este navegador. ¿Continuar?"))return;state=defaultState();saveState();setupPeriodSelectors();renderAll()}
+async function clearAll(){if(!(await uiConfirm("Se borrarán movimientos, categorías, recurrentes y patrimonio de tu cuenta. Exporta antes una copia.",{title:"¿Borrar todos los datos?",danger:true,confirmText:"Borrar todo"})))return;state=defaultState();saveState();setupPeriodSelectors();renderAll()}
 function renderAll(){
  refreshDerivedAssets();renderTransferForm();
  renderCategoryList();updateMovementCategories();updateRecurringCategories();renderSearchCategories();updateInvestmentFields();
