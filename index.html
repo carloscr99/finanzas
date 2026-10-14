@@ -541,7 +541,15 @@ const db=initializeFirestore(firebaseApp,{localCache:persistentLocalCache({tabMa
 
 (() => {
 const LEGACY_STORAGE_KEY="controlFinanzas_v1"; // clave de la versión anterior (solo lectura, para migrar)
-const euro=new Intl.NumberFormat("es-ES",{style:"currency",currency:"EUR"});
+// Importes con punto de miles también en cifras de 4 dígitos (2.952,70 €): el español de Intl no lo pone por defecto.
+// useGrouping:"always" lo fuerza en navegadores modernos; si el navegador lo ignora, se usa el formato alemán (idéntico al español).
+function makeEuro(){
+ let f=new Intl.NumberFormat("es-ES",{style:"currency",currency:"EUR",useGrouping:"always"});
+ if(!f.format(1234).includes("."))f=new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR"});
+ return f;
+}
+const euro=makeEuro();
+const intFmt=new Intl.NumberFormat("de-DE",{maximumFractionDigits:0}); // 1.370 (recuento de movimientos)
 const months=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const colors={Ingreso:"#16803b",Gasto:"#c73737","Inversión":"#2563eb"}; // se refresca desde los tokens CSS en renderCharts (modo claro/oscuro)
 function tok(name){return getComputedStyle(document.documentElement).getPropertyValue(name).trim()}
@@ -1051,7 +1059,7 @@ function movementSearchResults(){
  }).sort((a,b)=>b.date.localeCompare(a.date));
 }
 function renderMovements(){
- const movs=movementSearchResults();el("visibleCount").textContent=movs.length;
+ const movs=movementSearchResults();el("visibleCount").textContent=intFmt.format(movs.length);
  el("movementTable").innerHTML=movs.length?movs.map(m=>`<tr><td>${formatDate(m.date)}</td><td><span class="pill ${m.type}">${m.type}</span></td><td>${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")}</td><td>${escapeHtml(m.description)}</td><td class="amount">${euro.format(m.amount)}</td><td class="actions"><button class="secondary small" data-edit="${m.id}">Editar</button> <button class="danger small" data-del="${m.id}">Borrar</button></td></tr>`).join(""):`<tr><td colspan="6" class="empty">No hay movimientos.</td></tr>`;
  el("movementTable").querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editMovement(b.dataset.edit));
  el("movementTable").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>deleteMovement(b.dataset.del));
@@ -1064,7 +1072,7 @@ function renderMovements(){
    html+=`<button type="button" class="mitem" data-id="${m.id}"><span class="mico ${t.k}"><svg class="ico sm" aria-hidden="true"><use href="#${t.icon}"/></svg></span><span class="mtext"><b>${escapeHtml(m.description)}</b><small>${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")} · ${m.type}</small></span><span class="amt ${t.cls}">${t.sign}${euro.format(m.amount)}</span></button>`;
  });
  if(!html)html=`<div class="empty-state"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg><p>${state.movements.length?"Ningún movimiento coincide con los filtros.":"Todavía no hay movimientos."}</p><button type="button" class="primary" data-empty-add>Añadir movimiento</button></div>`;
- if(movs.length>LIMIT)html+=`<div class="empty">Mostrando ${LIMIT} de ${movs.length}. Usa los filtros para acotar.</div>`;
+ if(movs.length>LIMIT)html+=`<div class="empty">Mostrando ${intFmt.format(LIMIT)} de ${intFmt.format(movs.length)}. Usa los filtros para acotar.</div>`;
  list.innerHTML=html;
  list.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>{const m=state.movements.find(x=>x.id===b.dataset.id);if(m)openQuickSheet(m)});
  const emptyAdd=list.querySelector("[data-empty-add]");if(emptyAdd)emptyAdd.onclick=()=>openQuickSheet(null);
@@ -1156,7 +1164,7 @@ function renderCategorySummary(){
  movs.forEach(m=>{totals.set(m.categoryId,(totals.get(m.categoryId)||0)+Number(m.amount));counts.set(m.categoryId,(counts.get(m.categoryId)||0)+1);typeTotals[m.type]+=Number(m.amount)});
  const rows=[...totals.entries()].map(([id,total])=>{const c=getCat(id),type=c?.type||"Gasto",pct=typeTotals[type]?total/typeTotals[type]*100:0;return{id,name:c?.name||"Sin categoría",type,total,pct,count:counts.get(id)||0}}).sort((a,b)=>b.total-a.total);
  el("subSummary").textContent=periodLabel();
- el("categorySummary").innerHTML=rows.length?rows.map(r=>`<tr class="clickable" data-cat="${r.id}" data-type="${r.type}" title="Ver movimientos"><td>${escapeHtml(r.name)}</td><td><span class="pill ${r.type}">${r.type}</span></td><td class="amount">${euro.format(r.total)}</td><td class="amount">${r.pct.toFixed(1)}%</td><td class="amount">${r.count}</td></tr>`).join(""):`<tr><td colspan="5" class="empty">No hay datos en este periodo.</td></tr>`;
+ el("categorySummary").innerHTML=rows.length?rows.map(r=>`<tr class="clickable" data-cat="${r.id}" data-type="${r.type}" title="Ver movimientos"><td>${escapeHtml(r.name)}</td><td><span class="pill ${r.type}">${r.type}</span></td><td class="amount">${euro.format(r.total)}</td><td class="amount">${r.pct.toFixed(1).replace(".",",")} %</td><td class="amount">${intFmt.format(r.count)}</td></tr>`).join(""):`<tr><td colspan="5" class="empty">No hay datos en este periodo.</td></tr>`;
  el("categorySummary").querySelectorAll("tr[data-cat]").forEach(tr=>tr.onclick=()=>{const r=periodRange();goToMovements({type:tr.dataset.type,categoryId:tr.dataset.cat,from:r.from,to:r.to,label:periodLabel()})});
 }
 
