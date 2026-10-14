@@ -397,6 +397,16 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         <div class="kpi-strip">
           <div class="kpi-mini"><span class="muted">Movimientos visibles</span><b id="visibleCount">0</b></div>
         </div>
+        <div class="footer-tools section-gap"><button class="secondary small" id="bulkToggle">Cambiar categoría de los visibles…</button></div>
+        <div id="bulkPanel" class="inline-note section-gap" hidden>
+          <b>Cambiar tipo y categoría de todos los movimientos visibles</b>
+          <div class="grid-3 section-gap">
+            <div><label>Nuevo tipo</label><select id="bulkType"><option>Gasto</option><option>Ingreso</option><option>Inversión</option></select></div>
+            <div><label>Nueva categoría</label><select id="bulkCategory"></select></div>
+            <div style="display:flex;align-items:end;gap:8px"><button class="primary" id="bulkApply">Aplicar</button><button class="secondary" id="bulkCancel">Cancelar</button></div>
+          </div>
+          <div class="section-gap">Se cambian solo el tipo y la categoría; los saldos de las cuentas del patrimonio no se tocan (sirve para corregir el histórico). Las compras de fondos con participaciones pierden su enlace con el activo.</div>
+        </div>
         <div id="movementList" class="mlist mobile-only section-gap"></div>
         <div class="table-wrap desktop-only section-gap">
           <table><thead><tr><th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Concepto</th><th style="text-align:right">Importe</th><th></th></tr></thead><tbody id="movementTable"></tbody></table>
@@ -1090,7 +1100,7 @@ function persistMovement(d,id){
    if(i>=0){
      applyInvestmentMovementToAsset(state.movements[i],-1);
      const next={...state.movements[i],date,type,categoryId,description,amount};
-     if(usesUnits){next.assetId=assetId;next.units=units}else{delete next.assetId;delete next.units;linkSavingsAccount(next)}
+     if(usesUnits){next.assetId=assetId;next.units=units}else{const wasLinked=!!state.movements[i].assetId;delete next.assetId;delete next.units;if(wasLinked)linkSavingsAccount(next)}
      state.movements[i]=next;applyInvestmentMovementToAsset(next,1);
    }
  }else{
@@ -1126,6 +1136,22 @@ function movementSearchResults(){
    const c=getCat(m.categoryId)?.name||"";
    return(!q||(m.description+" "+c).toLowerCase().includes(q))&&(!type||m.type===type)&&(!cat||m.categoryId===cat)&&(!from||m.date>=from)&&(!to||m.date<=to);
  }).sort((a,b)=>b.date.localeCompare(a.date));
+}
+// ---------- Cambio de tipo y categoría en bloque (sobre el resultado del filtro) ----------
+function updateBulkCategories(){
+ const type=el("bulkType").value,cats=state.categories.filter(c=>c.type===type).sort((a,b)=>a.name.localeCompare(b.name,"es"));
+ el("bulkCategory").innerHTML=cats.length?cats.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join(""):`<option value="">Crea antes una categoría de este tipo en Categorías</option>`;
+}
+function toggleBulkPanel(show){el("bulkPanel").hidden=!show;if(show)updateBulkCategories()}
+function bulkRecategorize(){
+ const movs=movementSearchResults(),type=el("bulkType").value,categoryId=el("bulkCategory").value,cat=getCat(categoryId);
+ if(!movs.length)return alert("No hay movimientos visibles. Usa el buscador y los filtros para elegirlos.");
+ if(!cat)return alert("Elige la nueva categoría.");
+ if(!confirm(`¿Pasar ${intFmt.format(movs.length)} movimiento${movs.length===1?"":"s"} a ${type} › ${cat.name}? Los saldos del patrimonio no cambian.`))return;
+ const ids=new Set(movs.map(m=>m.id));
+ state.movements.forEach(m=>{if(!ids.has(m.id))return;if(m.assetId&&m.units>0)applyInvestmentMovementToAsset(m,-1);delete m.assetId;delete m.units;m.type=type;m.categoryId=categoryId});
+ markDataUpdate("movement");saveState();toggleBulkPanel(false);renderAll();
+ toast(`${intFmt.format(movs.length)} movimientos pasados a ${type} › ${cat.name}`);
 }
 function renderMovements(){
  const movs=movementSearchResults();el("visibleCount").textContent=intFmt.format(movs.length);
@@ -1511,6 +1537,7 @@ el("goCurrent").onclick=()=>{const n=new Date();el("periodMode").value="month";e
 el("exportData").onclick=exportData;el("importData").onchange=e=>importData(e.target.files[0]);el("clearAll").onclick=clearAll;
 el("catTypeToggle").querySelectorAll("[data-cattype]").forEach(b=>b.onclick=()=>{catChartType=b.dataset.cattype;el("catTypeToggle").querySelectorAll("button").forEach(x=>x.classList.toggle("active",x===b));drawCategoryChart()});
 el("clearFilters").onclick=clearMovementFilters;
+el("bulkToggle").onclick=()=>toggleBulkPanel(el("bulkPanel").hidden);el("bulkCancel").onclick=()=>toggleBulkPanel(false);el("bulkType").onchange=updateBulkCategories;el("bulkApply").onclick=bulkRecategorize;
 // Hoja rápida de alta, barra inferior con "+", selector compacto, filtros plegables y cambios de tamaño
 [el("navAdd"),el("fabAdd"),el("mobileAddBtn")].forEach(b=>b.onclick=()=>openQuickSheet(null));
 el("qsClose").onclick=closeQuickSheet;el("sheetBackdrop").onclick=closeQuickSheet;

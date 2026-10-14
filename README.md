@@ -90,6 +90,10 @@ Opciones sin instalar nada:
 - Si tienes Python: `python -m http.server 8000`.
 - Si tienes Node: `npx serve -l 8000 .`.
 
+## Corregir el histórico: cambiar categoría en bloque
+
+En Movimientos, filtra los apuntes que quieras corregir (texto, tipo, categoría, fechas) y pulsa «Cambiar categoría de los visibles…»: eliges el nuevo tipo y la nueva categoría y se aplican a todos los visibles de una vez. Solo cambia tipo y categoría; los saldos del patrimonio no se tocan, así que sirve para reclasificar el histórico sin duplicar importes en las cuentas. Si el movimiento sale de una categoría de Inversión con participaciones, pierde el enlace con el fondo.
+
 ## Patrimonio: cuenta corriente, cuentas de ahorro y traspasos
 
 - **Cuenta corriente** (tipo de activo, solo puede haber una): se da de alta con el saldo real de hoy y desde entonces la app lo recalcula sola: saldo de referencia + ingresos − gastos − inversiones registrados a partir de esa fecha. «Actualizar manualmente» fija el saldo real del banco como nueva referencia y avisa de la diferencia con lo registrado (dinero que ha entrado o salido sin apuntarse).
