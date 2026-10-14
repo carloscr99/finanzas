@@ -109,6 +109,14 @@ En Movimientos, filtra los apuntes que quieras corregir (texto, tipo, categoría
 - **Cuentas de ahorro** (tipo Cuenta): un movimiento de Inversión cuya categoría coincide con el nombre de la cuenta (RenaultBank, Trade Republic…) suma su importe al saldo y al aportado de esa cuenta, también cuando lo genera un recurrente. Las cuentas, depósitos y seguros cuentan en el patrimonio total pero no en «capital invertido» ni en la rentabilidad, que solo miran los fondos con ISIN y cripto.
 - **Traspasos entre cuentas** (Patrimonio → «Traspaso entre cuentas»): mueven dinero entre dos cuentas sin contar como ingreso, gasto ni inversión. Sirven para el camino de vuelta (un depósito que vence y vuelve a la cuenta corriente) o entre cuentas de ahorro; quedan listados los últimos. Un traspaso equivocado se deshace registrando el inverso.
 
+## Límites de Firebase y tamaño de los datos
+
+Todo el estado se guarda en un único documento de Firestore (`users/{uid}`), que tiene un **límite de 1 MiB**. Ajustes muestra "Tamaño de tus datos": el JSON compacto del estado, que es una buena aproximación de lo que mide Firestore, con el porcentaje del límite y una estimación de meses de margen (a 45 movimientos al mes, unos 180 bytes cada uno). A 14/10/2026 ocupaba unos 250 KB. El aviso cambia a naranja a partir del 70 % y a rojo a partir del 90 %.
+
+Cuando se acerque al límite, el plan es sacar `movements` a una subcolección (`users/{uid}/movements/{id}`), cargarla al abrir y escribir solo el movimiento que cambia; el resto del documento (categorías, recurrentes, patrimonio, meta) seguiría igual. Alternativa más sencilla: exportar los años antiguos a un JSON y borrarlos de la app.
+
+Otras cuotas del plan gratuito (Spark): 50.000 lecturas y 20.000 escrituras al día, 1 GiB de almacenamiento; un solo usuario no se acerca. No hay copias de seguridad automáticas: exporta el JSON desde Ajustes de vez en cuando. El estado del proyecto, las decisiones y lo pendiente están en `docs/ESTADO-PROYECTO.md`.
+
 ## Seguridad: qué es público y qué no
 
 - Los datos de `firebase-config.js` identifican el proyecto pero no dan acceso a nada: la protección está en `firestore.rules` y en los dominios autorizados.

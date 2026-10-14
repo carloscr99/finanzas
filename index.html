@@ -505,6 +505,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
       <div class="panel">
         <h2>Cuenta</h2>
         <p class="muted">Sesión iniciada como <b id="settingsEmail"></b>. Tus datos se guardan en tu cuenta (Firebase) y se sincronizan entre tus dispositivos.</p>
+        <div class="inline-note" id="dataSize" style="margin-bottom:12px">Calculando el tamaño de tus datos…</div>
         <div class="footer-tools"><button class="secondary" id="logoutSettings">Cerrar sesión</button></div>
         <hr>
         <h2>Copia de seguridad</h2>
@@ -1122,6 +1123,16 @@ function renderSummary(){
  const all=calcSummary(state.movements);el("cumulativeSavings").textContent=euro.format(all.income-all.expense);
 }
 
+// Tamaño aproximado del documento de Firestore (límite 1 MiB): se mide como el JSON compacto del estado.
+function renderDataSize(){
+ const node=el("dataSize");if(!node)return;
+ const bytes=new Blob([JSON.stringify(cleanForFirestore(state))]).size,limit=1024*1024,pct=bytes/limit*100;
+ const kb=Math.round(bytes/1024),n=state.movements.length,perMov=n?bytes/n:180,monthsLeft=Math.max(0,Math.floor((limit-bytes)/(perMov*45)));
+ const level=pct>=90?"peligro":pct>=70?"aviso":"ok";
+ node.style.color=level==="ok"?"":level==="aviso"?"var(--warning)":"var(--danger)";
+ node.innerHTML=`<b>Tamaño de tus datos:</b> ${intFmt.format(kb)} KB de 1.024 KB (${pct.toFixed(1).replace(".",",")} %) · ${intFmt.format(n)} movimientos, ${state.assets.length} activos, ${(()=>{const h=(state.meta?.netWorthHistory||[]).length;return `${intFmt.format(h)} punto${h===1?"":"s"} de patrimonio`})()}. `+
+  (level==="ok"?`A unos 45 movimientos al mes, margen para unos ${intFmt.format(monthsLeft)} meses.`:level==="aviso"?`Queda menos del 30 %: conviene planificar el paso de los movimientos a una subcolección (ver README).`:`Queda menos del 10 %: hay que mover los movimientos a una subcolección antes de que falle el guardado.`);
+}
 function renderFreshness(){
  const mov=latestMovementReference(),port=latestPortfolioReference(),prices=state.meta?.lastPricesSyncAt;
  const node=el("dataFreshness");if(node)node.innerHTML=`<b>Últimas actualizaciones</b> · Movimientos: ${formatDateTime(mov)} · Patrimonio: ${formatDateTime(port)} · Cotizaciones: ${formatDateTime(prices)}`;
@@ -1608,7 +1619,7 @@ async function clearAll(){if(!(await uiConfirm("Se borrarán movimientos, catego
 function renderAll(){
  refreshDerivedAssets();renderTransferForm();
  renderCategoryList();updateMovementCategories();updateRecurringCategories();renderSearchCategories();updateInvestmentFields();
- renderSummary();renderMovements();renderRecurring();renderAssets();renderCategorySummary();renderFreshness();syncPeriodCompact();
+ renderSummary();renderMovements();renderRecurring();renderAssets();renderCategorySummary();renderFreshness();renderDataSize();syncPeriodCompact();
  if(el("page-dashboard").classList.contains("active"))renderCharts();
 }
 
