@@ -313,7 +313,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 
       <div class="grid-3">
         <div class="card"><div class="metric-label">Rentabilidad de los fondos</div><div class="metric-value" id="portfolioReturn">0 €</div><div class="metric-sub" id="portfolioReturnPct">0,0 % sobre lo aportado</div><div class="metric-sub">Solo fondos con ISIN y cripto</div></div>
-        <div class="card"><div class="metric-label">Patrimonio actual</div><div class="metric-value" id="netWorth">0 €</div><div class="metric-sub" id="assetCount">0 activos</div><div class="metric-sub" id="portfolioUpdateDashboard">Sin actualizar</div></div>
+        <div class="card"><div class="metric-label">Patrimonio actual</div><div class="metric-value" id="netWorth">0 €</div><div class="metric-sub" id="assetCount">0 activos</div><div class="metric-sub" id="currentAccountNote" hidden></div><div class="metric-sub" id="portfolioUpdateDashboard">Sin actualizar</div></div>
         <div class="card"><div class="metric-label">Ahorro acumulado</div><div class="metric-value" id="cumulativeSavings">0 €</div><div class="metric-sub">Ingresos − gastos</div></div>
       </div>
       <div class="inline-note section-gap" id="dataFreshness">Últimas actualizaciones: sin datos todavía.</div>
@@ -451,12 +451,25 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         <button class="secondary small" id="refreshPrices">Sincronizar cotizaciones</button>
       </div>
       <div id="assetGrid" class="asset-grid"></div>
+      <details class="panel section-gap" id="transferDetails">
+        <summary>Traspaso entre cuentas</summary>
+        <div class="inline-note section-gap">Mueve dinero entre tus cuentas sin que cuente como ingreso, gasto ni inversión: resta en la de origen y suma en la de destino. Para la cuenta corriente, el saldo de referencia se ajusta solo. Lo que sale de la cuenta corriente hacia una cuenta de ahorro se registra como <b>movimiento de Inversión</b> con la categoría de esa cuenta (así cuenta como ahorro); el traspaso es para el camino de vuelta o entre cuentas de ahorro.</div>
+        <div class="form-grid-4 section-gap">
+          <div><label>Origen</label><select id="tFrom"></select></div>
+          <div><label>Destino</label><select id="tTo"></select></div>
+          <div><label>Importe (€)</label><input id="tAmount" type="number" min="0" step="0.01" placeholder="0,00"></div>
+          <div><label>Fecha</label><input id="tDate" type="date"></div>
+        </div>
+        <div class="form-actions"><button class="primary" id="doTransfer">Registrar traspaso</button></div>
+        <div id="transferList" class="section-gap"></div>
+      </details>
       <details class="panel section-gap" id="assetFormDetails">
         <summary>Añadir activo</summary>
         <div class="form-grid section-gap">
           <div><label>Nombre</label><input id="aName" placeholder="Ej. Amundi Index MSCI World"></div>
-          <div><label>Tipo</label><select id="aType"><option>Cuenta</option><option>Fondo</option><option>Cripto</option><option>Oro</option><option>Efectivo</option><option>Otro</option></select></div>
+          <div><label>Tipo</label><select id="aType"><option>Cuenta</option><option>Cuenta corriente</option><option>Fondo</option><option>Cripto</option><option>Oro</option><option>Efectivo</option><option>Otro</option></select></div>
           <div><label>Valor actual (€)</label><input id="aValue" type="number" min="0" step="0.01" placeholder="Manual / inicial"></div>
+          <div id="aCurrentNote" class="inline-note" hidden style="grid-column:1/-1">Cuenta corriente: el valor que pongas es el <b>saldo real de hoy</b>. A partir de ahora la app lo moverá sola con cada ingreso, gasto e inversión que registres. Cuando mires el banco, usa «Actualizar manualmente» para fijar el saldo real como nueva referencia.</div>
           <div><label>Capital aportado (€)</label><input id="aInvested" type="number" min="0" step="0.01" placeholder="Opcional"></div>
           <div><label>Participaciones / títulos</label><input id="aUnits" type="number" min="0" step="0.000001" placeholder="Opcional"></div>
           <div><label>ISIN</label><input id="aIsin" placeholder="Opcional, para cotización automática"></div>
@@ -588,7 +601,7 @@ function defaultState(){return{
     {id:uuid(),type:"Gasto",name:"Restaurantes"},{id:uuid(),type:"Gasto",name:"Transporte"},
     {id:uuid(),type:"Gasto",name:"Ocio"},{id:uuid(),type:"Inversión",name:"Fondos"},
     {id:uuid(),type:"Inversión",name:"Bitcoin"},{id:uuid(),type:"Inversión",name:"Oro"}
-  ],movements:[],recurring:[],assets:[],
+  ],movements:[],recurring:[],assets:[],transfers:[],
   meta:{lastMovementUpdateAt:null,lastPortfolioUpdateAt:null,lastPricesSyncAt:null,lastPriceFeedUpdateAt:null,lastDataUpdateAt:null}
 }}
 function normalizeState(s){
@@ -598,6 +611,7 @@ function normalizeState(s){
     movements:Array.isArray(s?.movements)?s.movements:[],
     recurring:Array.isArray(s?.recurring)?s.recurring:[],
     assets:Array.isArray(s?.assets)?s.assets:[],
+    transfers:Array.isArray(s?.transfers)?s.transfers:[],
     meta:{
       lastMovementUpdateAt:s?.meta?.lastMovementUpdateAt||null,
       lastPortfolioUpdateAt:s?.meta?.lastPortfolioUpdateAt||null,
@@ -860,8 +874,55 @@ function autoSelectAssetForCategory(){
 function applyInvestmentMovementToAsset(m,sign){
  if(m?.type!=="Inversión"||!m.assetId)return;const a=state.assets.find(x=>x.id===m.assetId);if(!a)return;
  a.invested=Math.max(0,Number(a.invested||0)+sign*Number(m.amount||0));
+ if(!assetMarketConfig(a)){a.value=Math.max(0,Number(a.value||0)+sign*Number(m.amount||0));return} // cuenta de ahorro: el dinero entra tal cual
  a.units=Math.max(0,Number(a.units||0)+sign*Number(m.units||0));
  if(Number(a.unitPrice)>0&&Number.isFinite(Number(a.units)))a.value=Number(a.units)*Number(a.unitPrice);
+}
+// ---------- Cuenta corriente: saldo calculado desde una referencia ----------
+// value = saldo de referencia + (ingresos − gastos − inversiones) registrados desde la fecha de referencia.
+// refDayNet guarda lo que ya había apuntado ese mismo día al fijar la referencia, para no contarlo dos veces.
+function isCurrentAccount(a){return String(a?.type||"")==="Cuenta corriente"}
+function savingsAccounts(){return state.assets.filter(a=>!assetMarketConfig(a)&&!isCurrentAccount(a))}
+function movementNet(m){const v=Number(m.amount)||0;return m.type==="Ingreso"?v:-v}
+function netOnDate(date){return state.movements.filter(m=>m.date===date).reduce((s,m)=>s+movementNet(m),0)}
+function netSince(date){return state.movements.filter(m=>m.date>=date).reduce((s,m)=>s+movementNet(m),0)}
+function setAccountReference(a,balance,date){a.refBalance=Number(balance)||0;a.refDate=date||todayISO();a.refDayNet=netOnDate(a.refDate);a.updatedAt=a.refDate;a.priceSource="Saldo real";refreshDerivedAssets()}
+function currentAccountValue(a){return Number(a.refBalance||0)+netSince(a.refDate||todayISO())-Number(a.refDayNet||0)}
+function refreshDerivedAssets(){state.assets.forEach(a=>{if(isCurrentAccount(a)){if(a.refDate==null)setAccountReference(a,a.value,a.createdAt||todayISO());a.value=currentAccountValue(a);a.invested=a.value}})}
+// Un movimiento de Inversión cuya categoría coincide con una cuenta de ahorro (RenaultBank, Trade Republic…) queda enlazado a ella.
+function linkSavingsAccount(m){
+ if(m.type!=="Inversión"||m.units>0)return null;
+ const a=bestAssetForText((getCat(m.categoryId)?.name||"")+" "+String(m.description||""),savingsAccounts());
+ if(a)m.assetId=a.id;else delete m.assetId;
+ return a;
+}
+// ---------- Traspasos entre cuentas (no son ingreso, gasto ni inversión) ----------
+function transferableAssets(){return state.assets.filter(a=>!assetMarketConfig(a))}
+function applyTransferToAsset(a,delta){
+ if(isCurrentAccount(a)){a.refBalance=Number(a.refBalance||0)+delta;a.value=currentAccountValue(a);a.invested=a.value}
+ else{a.value=Math.max(0,Number(a.value||0)+delta);a.invested=Math.max(0,Number(a.invested||0)+delta)}
+ a.updatedAt=todayISO();
+}
+function renderTransferForm(){
+ const opts=transferableAssets().map(a=>`<option value="${a.id}">${escapeHtml(a.name)} (${euro.format(a.value||0)})</option>`).join("");
+ ["tFrom","tTo"].forEach(id=>{const sel=el(id),cur=sel.value;sel.innerHTML=opts||`<option value="">Añade primero cuentas en Patrimonio</option>`;if(cur&&[...sel.options].some(o=>o.value===cur))sel.value=cur});
+ if(el("tTo").options.length>1&&el("tTo").value===el("tFrom").value)el("tTo").selectedIndex=1;
+ if(!el("tDate").value)el("tDate").value=todayISO();
+ const rows=[...(state.transfers||[])].sort((a,b)=>b.date.localeCompare(a.date)||b.createdAt.localeCompare(a.createdAt)).slice(0,8);
+ const name=id=>state.assets.find(a=>a.id===id)?.name||"(cuenta borrada)";
+ el("transferList").innerHTML=rows.length?`<h3>Últimos traspasos</h3>`+rows.map(t=>`<div class="chip" style="width:100%;justify-content:space-between;margin-bottom:6px"><span>${formatDate(t.date)} · ${escapeHtml(name(t.fromId))} → ${escapeHtml(name(t.toId))}</span><b>${euro.format(t.amount)}</b></div>`).join(""):"";
+}
+function doTransfer(){
+ const fromId=el("tFrom").value,toId=el("tTo").value,amount=Number(el("tAmount").value),date=el("tDate").value||todayISO();
+ const from=state.assets.find(a=>a.id===fromId),to=state.assets.find(a=>a.id===toId);
+ if(!from||!to)return alert("Elige la cuenta de origen y la de destino.");
+ if(from.id===to.id)return alert("Origen y destino no pueden ser la misma cuenta.");
+ if(!Number.isFinite(amount)||amount<=0)return alert("Indica un importe válido.");
+ if(!confirm(`¿Traspasar ${euro.format(amount)} de ${from.name} a ${to.name}?`))return;
+ applyTransferToAsset(from,-amount);applyTransferToAsset(to,amount);
+ state.transfers=state.transfers||[];state.transfers.push({id:uuid(),date,fromId,toId,amount,createdAt:nowISO()});
+ if(state.transfers.length>200)state.transfers=state.transfers.slice(-200);
+ el("tAmount").value="";markDataUpdate("portfolio");saveState();renderAll();toast("Traspaso registrado");
 }
 async function updateMarketPrices(showAlert=false){
  if(priceUpdateInProgress)return;
@@ -983,6 +1044,7 @@ function renderSummary(){
  el("portfolioReturn").classList.toggle("negative",portfolioGain<0);el("portfolioReturn").classList.toggle("positive",portfolioGain>=0);
  el("portfolioReturnPct").textContent=invested?`${portfolioPct>=0?"+":""}${portfolioPct.toFixed(1).replace(".",",")} % sobre lo aportado`:"Sin capital aportado";
  el("netWorth").textContent=euro.format(nw);el("assetCount").textContent=`${state.assets.length} activo${state.assets.length===1?"":"s"}`;
+ const cc=state.assets.find(isCurrentAccount);el("currentAccountNote").hidden=!cc;if(cc)el("currentAccountNote").textContent=`Cuenta corriente: ${euro.format(cc.value||0)}`;
  const portfolioRef=latestPortfolioReference();
  el("portfolioUpdateDashboard").textContent=portfolioRef?`Actualizado ${formatDateTime(portfolioRef)}`:(state.assets.length?"Pendiente de registrar actualización":"Sin patrimonio");
  const all=calcSummary(state.movements);el("cumulativeSavings").textContent=euro.format(all.income-all.expense);
@@ -1028,12 +1090,12 @@ function persistMovement(d,id){
    if(i>=0){
      applyInvestmentMovementToAsset(state.movements[i],-1);
      const next={...state.movements[i],date,type,categoryId,description,amount};
-     if(usesUnits){next.assetId=assetId;next.units=units}else{delete next.assetId;delete next.units}
+     if(usesUnits){next.assetId=assetId;next.units=units}else{delete next.assetId;delete next.units;linkSavingsAccount(next)}
      state.movements[i]=next;applyInvestmentMovementToAsset(next,1);
    }
  }else{
    const m={id:uuid(),date,type,categoryId,description,amount};
-   if(usesUnits){m.assetId=assetId;m.units=units}
+   if(usesUnits){m.assetId=assetId;m.units=units}else linkSavingsAccount(m);
    state.movements.push(m);applyInvestmentMovementToAsset(m,1);
  }
  markDataUpdate(type==="Inversión"?"movement+portfolio":"movement");
@@ -1099,7 +1161,7 @@ function generateRecurring(showAlert=false){
    let guard=0;
    while(r.nextDate&&r.nextDate<=today&&guard<500){
      const exists=state.movements.some(m=>m.recurringId===r.id&&m.recurrenceDate===r.nextDate);
-     if(!exists){state.movements.push({id:uuid(),date:r.nextDate,type:r.type,categoryId:r.categoryId,description:r.description,amount:Number(r.amount),recurringId:r.id,recurrenceDate:r.nextDate});created++}
+     if(!exists){const m={id:uuid(),date:r.nextDate,type:r.type,categoryId:r.categoryId,description:r.description,amount:Number(r.amount),recurringId:r.id,recurrenceDate:r.nextDate};if(linkSavingsAccount(m))applyInvestmentMovementToAsset(m,1);state.movements.push(m);created++}
      r.nextDate=nextDate(r.nextDate,r.frequency);guard++;
    }
  });
@@ -1116,16 +1178,18 @@ function renderRecurring(){
 function addAsset(){
  const name=el("aName").value.trim(),type=el("aType").value,value=Number(el("aValue").value||0),invested=el("aInvested").value===""?0:Number(el("aInvested").value),units=el("aUnits").value===""?0:Number(el("aUnits").value),isin=el("aIsin").value.trim().toUpperCase();
  if(!name||!Number.isFinite(value)||value<0||!Number.isFinite(invested)||invested<0||!Number.isFinite(units)||units<0)return alert("Completa los datos correctamente.");
- const asset={id:uuid(),name,type,value,invested,units,isin,createdAt:todayISO()};state.assets.push(asset);["aName","aValue","aInvested","aUnits","aIsin"].forEach(id=>el(id).value="");saveState();renderAll();updateMarketPrices(false);
+ const asset={id:uuid(),name,type,value,invested,units,isin,createdAt:todayISO()};
+ if(isCurrentAccount(asset)){if(state.assets.some(isCurrentAccount))return alert("Ya hay una cuenta corriente. Actualiza su saldo con «Actualizar manualmente» o bórrala antes.");setAccountReference(asset,value,todayISO())}
+ state.assets.push(asset);["aName","aValue","aInvested","aUnits","aIsin"].forEach(id=>el(id).value="");markDataUpdate("portfolio");saveState();renderAll();updateMarketPrices(false);
 }
 function renderAssets(){
  const {nw:total,invested,gain,liquidity,invValue}=portfolioTotals(),portfolioRef=latestPortfolioReference();
  el("assetSplit").textContent=state.assets.length?`${euro.format(liquidity)} en cuentas y otros · ${euro.format(invValue)} en fondos`:"—";
  el("assetTotal").textContent=euro.format(total);el("assetInvested").textContent=euro.format(invested);el("assetGain").textContent=euro.format(gain);el("assetGain").classList.toggle("negative",gain<0);el("assetGain").classList.toggle("positive",gain>=0);el("assetTotalCount").textContent=state.assets.length;
  el("assetLastUpdate").textContent=portfolioRef?`Actualizado ${formatDateTime(portfolioRef)}`:(state.assets.length?"Pendiente de registrar actualización":"Sin patrimonio");
- el("assetGrid").innerHTML=state.assets.length?state.assets.map(a=>{const g=Number(a.value)-Number(a.invested||0),units=Number(a.units||0),price=Number(a.unitPrice||0),meta=units>0?`<div class="sub">${assetDisplayUnits(units)} participaciones/títulos${price>0?` · ${euro.format(price)} / ud.`:""}</div>`:"",irr=assetAnnualizedReturn(a),irrHtml=irr===null?`<div class="sub">Rentabilidad anualizada: —${assetInvestmentMovements(a).length&&!(Number(a.units)>0)?" (las aportaciones registradas no cuadran con el capital aportado)":""}</div>`:`<div class="sub ${irr<0?"negative":"positive"}">Rentabilidad anualizada: ${(irr*100).toFixed(2).replace(".",",")} %</div>`,priceInfo=a.updatedAt?`<div class="sub">Cotización: ${formatDate(a.updatedAt)}${a.priceSource?` · ${escapeHtml(a.priceSource)}`:""}</div>`:"";return`<div class="asset-card"><span class="badge">${escapeHtml(a.type)}</span><h3>${escapeHtml(a.name)}</h3><div class="big">${euro.format(a.value)}</div><div class="sub">Aportado: ${euro.format(a.invested||0)}</div>${meta}<div class="sub ${g<0?"negative":"positive"}">Diferencia: ${euro.format(g)}</div>${irrHtml}${priceInfo}<div class="form-actions"><button class="secondary small" data-editasset="${a.id}">Actualizar manualmente</button><button class="danger small" data-delasset="${a.id}">Borrar</button></div></div>`}).join(""):`<div class="empty" style="grid-column:1/-1">No has añadido activos.</div>`;
+ el("assetGrid").innerHTML=state.assets.length?state.assets.map(a=>{const g=Number(a.value)-Number(a.invested||0),units=Number(a.units||0),price=Number(a.unitPrice||0),meta=units>0?`<div class="sub">${assetDisplayUnits(units)} participaciones/títulos${price>0?` · ${euro.format(price)} / ud.`:""}</div>`:"",irr=assetAnnualizedReturn(a),irrHtml=irr===null?`<div class="sub">Rentabilidad anualizada: —${assetInvestmentMovements(a).length&&!(Number(a.units)>0)?" (las aportaciones registradas no cuadran con el capital aportado)":""}</div>`:`<div class="sub ${irr<0?"negative":"positive"}">Rentabilidad anualizada: ${(irr*100).toFixed(2).replace(".",",")} %</div>`,priceInfo=isCurrentAccount(a)?`<div class="sub">Saldo calculado: referencia ${euro.format(a.refBalance||0)} el ${formatDate(a.refDate)} más los movimientos posteriores</div>`:a.updatedAt?`<div class="sub">Cotización: ${formatDate(a.updatedAt)}${a.priceSource?` · ${escapeHtml(a.priceSource)}`:""}</div>`:"";return`<div class="asset-card"><span class="badge">${escapeHtml(a.type)}</span><h3>${escapeHtml(a.name)}</h3><div class="big">${euro.format(a.value)}</div>${isCurrentAccount(a)?"":`<div class="sub">Aportado: ${euro.format(a.invested||0)}</div>${meta}<div class="sub ${g<0?"negative":"positive"}">Diferencia: ${euro.format(g)}</div>${irrHtml}`}${priceInfo}<div class="form-actions"><button class="secondary small" data-editasset="${a.id}">Actualizar manualmente</button><button class="danger small" data-delasset="${a.id}">Borrar</button></div></div>`}).join(""):`<div class="empty" style="grid-column:1/-1">No has añadido activos.</div>`;
  el("assetGrid").querySelectorAll("[data-delasset]").forEach(b=>b.onclick=()=>{if(confirm("¿Eliminar este activo?")){state.assets=state.assets.filter(x=>x.id!==b.dataset.delasset);markDataUpdate("portfolio");saveState();renderAll()}});
- el("assetGrid").querySelectorAll("[data-editasset]").forEach(b=>b.onclick=()=>{const a=state.assets.find(x=>x.id===b.dataset.editasset);if(Number(a.units)>0){const nv=prompt(`Nuevo precio por participación/título de ${a.name}:`,a.unitPrice||"");if(nv===null)return;const n=Number(String(nv).replace(",","."));if(!Number.isFinite(n)||n<0)return alert("Valor no válido.");a.unitPrice=n;a.value=Number(a.units)*n;a.updatedAt=todayISO();a.priceSource="Manual"}else{const nv=prompt(`Nuevo valor actual de ${a.name}:`,a.value);if(nv===null)return;const n=Number(String(nv).replace(",","."));if(!Number.isFinite(n)||n<0)return alert("Valor no válido.");a.value=n;a.updatedAt=todayISO();a.priceSource="Manual"}markDataUpdate("portfolio");saveState();renderAll()});
+ el("assetGrid").querySelectorAll("[data-editasset]").forEach(b=>b.onclick=()=>{const a=state.assets.find(x=>x.id===b.dataset.editasset);if(isCurrentAccount(a)){const calc=currentAccountValue(a);const nv=prompt(`Saldo real de ${a.name} hoy (la app calcula ${euro.format(calc)}):`,calc.toFixed(2));if(nv===null)return;const n=Number(String(nv).replace(",","."));if(!Number.isFinite(n))return alert("Valor no válido.");const diff=n-calc;setAccountReference(a,n,todayISO());markDataUpdate("portfolio");saveState();renderAll();toast(Math.abs(diff)<0.005?"Saldo confirmado: cuadra con lo registrado":`Nueva referencia. Diferencia con lo registrado: ${diff>0?"+":""}${euro.format(diff)}`);return}if(Number(a.units)>0){const nv=prompt(`Nuevo precio por participación/título de ${a.name}:`,a.unitPrice||"");if(nv===null)return;const n=Number(String(nv).replace(",","."));if(!Number.isFinite(n)||n<0)return alert("Valor no válido.");a.unitPrice=n;a.value=Number(a.units)*n;a.updatedAt=todayISO();a.priceSource="Manual"}else{const nv=prompt(`Nuevo valor actual de ${a.name}:`,a.value);if(nv===null)return;const n=Number(String(nv).replace(",","."));if(!Number.isFinite(n)||n<0)return alert("Valor no válido.");a.value=n;a.updatedAt=todayISO();a.priceSource="Manual"}markDataUpdate("portfolio");saveState();renderAll()});
 }
 
 // ---------- Periodo seleccionado: etiqueta y rango de fechas ----------
@@ -1430,6 +1494,7 @@ function importData(file){
 }
 function clearAll(){if(!confirm("Se borrarán todos tus datos guardados en este navegador. ¿Continuar?"))return;state=defaultState();saveState();setupPeriodSelectors();renderAll()}
 function renderAll(){
+ refreshDerivedAssets();renderTransferForm();
  renderCategoryList();updateMovementCategories();updateRecurringCategories();renderSearchCategories();updateInvestmentFields();
  renderSummary();renderMovements();renderRecurring();renderAssets();renderCategorySummary();renderFreshness();syncPeriodCompact();
  if(el("page-dashboard").classList.contains("active"))renderCharts();
@@ -1439,7 +1504,7 @@ document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>showPage(b.dat
 el("mDate").value=todayISO();el("rStartDate").value=todayISO();setupPeriodSelectors();updatePeriodControls();
 el("mType").onchange=()=>{updateMovementCategories();updateInvestmentFields()};el("mCategory").onchange=()=>{updateInvestmentFields();autoSelectAssetForCategory()};el("rType").onchange=updateRecurringCategories;
 el("addCategory").onclick=addCategory;el("saveMovement").onclick=saveMovement;el("cancelEdit").onclick=cancelEdit;
-el("addRecurring").onclick=addRecurring;el("generateRecurring").onclick=()=>generateRecurring(true);el("addAsset").onclick=addAsset;el("refreshPrices").onclick=()=>updateMarketPrices(true);
+el("addRecurring").onclick=addRecurring;el("doTransfer").onclick=doTransfer;el("generateRecurring").onclick=()=>generateRecurring(true);el("addAsset").onclick=addAsset;el("refreshPrices").onclick=()=>updateMarketPrices(true);
 el("periodMode").onchange=()=>{updatePeriodControls();renderAll()};el("monthFilter").onchange=renderAll;el("yearFilter").onchange=renderAll;
 el("goCurrent").onclick=()=>{const n=new Date();el("periodMode").value="month";el("monthFilter").value=n.getMonth()+1;updateYearOptions();el("yearFilter").value=n.getFullYear();updatePeriodControls();renderAll()};
 ["searchText","searchType","searchCategory","searchFrom","searchTo"].forEach(id=>el(id).addEventListener(id==="searchText"?"input":"change",()=>{el("filterNotice").hidden=true;renderMovements()}));
@@ -1461,7 +1526,8 @@ el("toggleFilters").onclick=()=>el("searchbar").classList.toggle("collapsed");
 el("monthlyToggle").onclick=()=>{monthlyShowAll=!monthlyShowAll;drawMonthlyChart()};
 // Si el sistema cambia entre claro y oscuro con la app abierta, se repintan los gráficos con los colores del nuevo tema.
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{if(el("page-dashboard").classList.contains("active"))renderCharts()});
-el("assetFormDetails").open=!isMobile();
+el("assetFormDetails").open=!isMobile();el("transferDetails").open=false;
+el("aType").onchange=()=>{el("aCurrentNote").hidden=el("aType").value!=="Cuenta corriente"};
 let lastMobile=isMobile(),resizeTimer=null;
 window.addEventListener("resize",()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(isMobile()!==lastMobile){lastMobile=isMobile();el("assetFormDetails").open=!lastMobile;if(el("page-dashboard").classList.contains("active"))renderCharts()}},200)});
 el("loginGoogle").onclick=login;el("logoutSidebar").onclick=logout;el("logoutSettings").onclick=logout;el("logoutMore").onclick=logout;

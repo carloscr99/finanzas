@@ -90,6 +90,12 @@ Opciones sin instalar nada:
 - Si tienes Python: `python -m http.server 8000`.
 - Si tienes Node: `npx serve -l 8000 .`.
 
+## Patrimonio: cuenta corriente, cuentas de ahorro y traspasos
+
+- **Cuenta corriente** (tipo de activo, solo puede haber una): se da de alta con el saldo real de hoy y desde entonces la app lo recalcula sola: saldo de referencia + ingresos − gastos − inversiones registrados a partir de esa fecha. «Actualizar manualmente» fija el saldo real del banco como nueva referencia y avisa de la diferencia con lo registrado (dinero que ha entrado o salido sin apuntarse).
+- **Cuentas de ahorro** (tipo Cuenta): un movimiento de Inversión cuya categoría coincide con el nombre de la cuenta (RenaultBank, Trade Republic…) suma su importe al saldo y al aportado de esa cuenta, también cuando lo genera un recurrente. Las cuentas, depósitos y seguros cuentan en el patrimonio total pero no en «capital invertido» ni en la rentabilidad, que solo miran los fondos con ISIN y cripto.
+- **Traspasos entre cuentas** (Patrimonio → «Traspaso entre cuentas»): mueven dinero entre dos cuentas sin contar como ingreso, gasto ni inversión. Sirven para el camino de vuelta (un depósito que vence y vuelve a la cuenta corriente) o entre cuentas de ahorro; quedan listados los últimos. Un traspaso equivocado se deshace registrando el inverso.
+
 ## Seguridad: qué es público y qué no
 
 - Los datos de `firebase-config.js` identifican el proyecto pero no dan acceso a nada: la protección está en `firestore.rules` y en los dominios autorizados.
