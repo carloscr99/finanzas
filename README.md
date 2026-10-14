@@ -73,10 +73,12 @@ Si abres la nueva `index.html` en el mismo navegador y la misma dirección donde
 
 La web está pensada para usarse también desde el teléfono. Para tenerla como una app con su icono y a pantalla completa:
 
-- **Android (Chrome)**: abre la URL, menú ⋮ → "Añadir a pantalla de inicio" (o "Instalar app").
-- **iPhone (Safari)**: abre la URL, botón Compartir → "Añadir a pantalla de inicio".
+- **Android (Chrome o Firefox)**: abre la URL, menú ⋮ → "Instalar" o "Añadir a pantalla de inicio".
+- **iPhone / iPad (Safari)**: abre la URL, botón Compartir → "Añadir a pantalla de inicio". Desde Firefox para iOS el acceso directo puede abrirse dentro del navegador en lugar de a pantalla completa.
 
-En el móvil, el botón **+** de la barra inferior abre la hoja de alta rápida: importe, tipo, categoría (las más usadas primero), concepto con sugerencias y fecha. Tocar un movimiento de la lista lo abre para editar o borrar. Los gráficos horizontales se muestran como listas de barras tocables, y la evolución mensual enseña seis meses (botón "Ver 12 meses" para el año completo). Al tocar una barra aparece su valor y el botón "Ver movimientos".
+La sesión de Google queda guardada en el dispositivo: al abrir la app verás "Comprobando sesión…" un instante y entrarás sin volver a pulsar nada. Solo se cierra la sesión si la cuenta deja de estar en la lista de permitidos o si pulsas "Cerrar sesión"; un fallo de red no la cierra. El fichero `sw.js` (service worker) guarda la app, los iconos y las librerías en el dispositivo, así que abre al instante y también sin conexión (los datos ya los guarda Firestore). Si alguna vez cambias las librerías de CDN, sube la versión `CACHE` que hay al principio de `sw.js`.
+
+En el móvil, el botón **+** de la barra inferior abre la hoja de alta rápida: importe, tipo, categoría (las más usadas primero), concepto con sugerencias y fecha. La hoja se cierra con la × o deslizándola hacia abajo. Tocar un movimiento de la lista lo abre para editar o borrar. Los gráficos horizontales se muestran como listas de barras tocables, y la evolución mensual enseña seis meses (botón "Ver 12 meses" para el año completo). Al tocar una barra aparece su valor y el botón "Ver movimientos". La página "Más" reúne la cuenta, las categorías, los recurrentes, los ajustes y el cierre de sesión.
 
 ## Probar en local
 

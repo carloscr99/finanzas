@@ -11,23 +11,35 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mis Finanzas">
 <title>Mis Finanzas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap">
 <style>
+/* Tokens de diseño (tema claro, Minimal/Flat; paleta "finanzas personales" de ui-ux-pro-max adaptada a claro) */
 :root{
-  --bg:#f4f6f8;--panel:#fff;--text:#17202a;--muted:#6b7280;--border:#e2e8f0;
+  --bg:#f3f5f9;--panel:#fff;--text:#0f172a;--muted:#475569;--border:#e2e8f0;
   --income:#16803b;--expense:#c73737;--investment:#2563eb;--accent:#0f172a;
   --accent2:#334155;--warning:#b7791f;--soft:#f8fafc;--shadow:0 8px 24px rgba(15,23,42,.06);
+  --primary:#0f172a;--on-primary:#fff;--success:#059669;--danger:#dc2626;--ring:#2563eb;
+  --nav-h:56px;--radius:16px;--ease-out:cubic-bezier(.2,.8,.2,1);
 }
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
-body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--text);font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.5}
 button,input,select{font:inherit}
-button{cursor:pointer}
-.app{display:grid;grid-template-columns:230px 1fr;min-height:100vh}
+button{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+:focus-visible{outline:2px solid var(--ring);outline-offset:2px}
+.ico{width:24px;height:24px;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.ico.sm{width:20px;height:20px}
+.metric-value,.big-amount,.mitem .amt,td.amount,.asset-card .big,.kpi-mini b,.barrow .bl-head span{font-variant-numeric:tabular-nums}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:0s!important;animation-duration:0s!important;scroll-behavior:auto!important}}
+.app{display:grid;grid-template-columns:230px 1fr;min-height:100dvh}
 .sidebar{background:var(--accent);color:#fff;padding:24px 16px;position:sticky;top:0;height:100vh}
-.brand{font-weight:800;font-size:22px;padding:0 10px 22px}
+.brand{font-weight:800;font-size:20px;padding:0 10px 22px;white-space:nowrap;letter-spacing:-.01em}
 .brand small{display:block;font-weight:500;font-size:12px;color:#94a3b8;margin-top:4px}
 .nav{display:flex;flex-direction:column;gap:6px}
-.nav button{border:0;background:transparent;color:#cbd5e1;text-align:left;padding:12px 13px;border-radius:12px;font-weight:600}
+.nav button{border:0;background:transparent;color:#cbd5e1;text-align:left;padding:11px 13px;border-radius:12px;font-weight:600;display:flex;align-items:center;gap:10px}
+.nav button .ico{width:20px;height:20px}
 .nav button.active,.nav button:hover{background:#1e293b;color:#fff}
 .content{min-width:0;padding:26px}
 .page{display:none}.page.active{display:block}
@@ -51,7 +63,9 @@ input,select{width:100%;min-height:42px;padding:10px 12px;border:1px solid var(-
 button.primary,button.secondary,button.danger,.file-label{min-height:42px;border-radius:10px;padding:10px 13px;font:inherit;font-weight:700;line-height:1.2;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap}
 button.primary{border:1px solid var(--accent);background:var(--accent);color:#fff}
 button.secondary,.file-label{background:#eef2f7;color:#1f2937;border:1px solid var(--border)}
-button.danger{background:#b42318;color:#fff;border:1px solid #b42318}
+button.danger{background:var(--danger);color:#fff;border:1px solid var(--danger)}
+button.primary,button.secondary,button.danger{transition:background-color .12s,color .12s,opacity .12s,transform .12s}
+button.primary:active,button.secondary:active,button.danger:active{transform:scale(.97)}
 button.small{min-height:32px;padding:7px 9px;font-size:12px}
 .form-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
 .form-grid-4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
@@ -84,23 +98,43 @@ td.actions{white-space:nowrap;width:1%}
 tr.clickable{cursor:pointer}tr.clickable:hover td{background:#f8fafc}
 .chart-hint{font-size:12px;color:var(--muted);margin-top:8px}
 .mobile-only{display:none!important}
-.fab{position:fixed;right:24px;bottom:24px;z-index:60;width:56px;height:56px;border-radius:50%;border:0;background:var(--accent);color:#fff;font-size:30px;line-height:1;box-shadow:0 10px 24px rgba(15,23,42,.25);display:flex;align-items:center;justify-content:center}
-.sheet-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:70}
-.sheet{position:fixed;left:50%;transform:translateX(-50%);bottom:0;width:min(560px,100%);max-height:92vh;overflow:auto;background:var(--panel);border-radius:20px 20px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom));z-index:71;box-shadow:0 -10px 40px rgba(15,23,42,.25)}
-.sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}.sheet-head h2{margin:0}
-.icon-btn{border:0;background:#eef2f7;width:36px;height:36px;border-radius:50%;font-size:20px;color:#334155}
-.big-amount{font-size:30px;font-weight:800;text-align:right;min-height:58px}
+.fab{position:fixed;right:24px;bottom:24px;z-index:60;width:56px;height:56px;border-radius:50%;border:0;background:var(--accent);color:#fff;box-shadow:0 10px 24px rgba(15,23,42,.25);display:flex;align-items:center;justify-content:center;transition:transform .12s}
+.fab:active{transform:scale(.94)}
+.sheet-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:70;opacity:0;transition:opacity .2s}
+.sheet-backdrop.open{opacity:1}
+.sheet{position:fixed;left:50%;bottom:0;width:min(560px,100%);max-height:min(92dvh,92vh);overflow:auto;background:var(--panel);border-radius:20px 20px 0 0;padding:10px 18px calc(18px + env(safe-area-inset-bottom));z-index:71;box-shadow:0 -10px 40px rgba(15,23,42,.25);transform:translate(-50%,100%);opacity:0;transition:transform .2s var(--ease-out),opacity .2s}
+.sheet.open{transform:translate(-50%,0);opacity:1}
+.sheet.dragging{transition:none}
+.sheet-handle{width:36px;height:4px;border-radius:2px;background:#cbd5e1;margin:0 auto 12px;touch-action:none}
+.sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;touch-action:none}.sheet-head h2{margin:0}
+.icon-btn{border:0;background:#eef2f7;width:40px;height:40px;border-radius:50%;color:#334155;display:inline-flex;align-items:center;justify-content:center}
+.big-amount{font-size:34px;font-weight:800;text-align:right;min-height:60px}
 .seg-full{display:flex;width:100%;margin-bottom:12px}.seg-full button{flex:1;padding:10px 6px}
-.chip-btn{border:1px solid var(--border);background:var(--soft);border-radius:999px;padding:8px 12px;font-size:13px;color:#1f2937}
+.chip-btn{border:1px solid var(--border);background:var(--soft);border-radius:999px;padding:8px 12px;min-height:40px;font-size:13px;font-weight:600;color:#1f2937;transition:background-color .12s,color .12s}
 .chip-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-.sheet label{margin-top:12px}.sheet .chips{gap:6px}
+.sheet label{margin-top:12px}.sheet .chips{gap:8px}
 .date-row{display:flex;gap:8px;align-items:center}.date-row input{flex:1}.date-row button{width:auto}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;background:#111827;color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;z-index:80;box-shadow:var(--shadow);white-space:nowrap}
 .mlist{flex-direction:column}
-.mitem{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 4px;border:0;border-bottom:1px solid var(--border);width:100%;background:transparent;text-align:left;font:inherit;color:var(--text)}
-.mitem b{display:block;font-size:14px}.mitem small{color:var(--muted);font-size:12px}
-.mitem .amt{font-weight:800;white-space:nowrap;font-variant-numeric:tabular-nums}.mitem .amt.inv{color:var(--investment)}
-.mday{font-size:12px;font-weight:700;color:var(--muted);padding:12px 4px 4px;text-transform:uppercase;letter-spacing:.03em}
+.mitem{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 4px;border:0;border-bottom:1px solid var(--border);width:100%;background:transparent;text-align:left;font:inherit;color:var(--text);transition:background-color .12s}
+.mitem:active{background:var(--soft)}
+.mico{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none}
+.mico.g{background:#fdecec;color:var(--expense)}.mico.i{background:#e6f6ee;color:var(--income)}.mico.v{background:#eaf1ff;color:var(--investment)}
+.mtext{flex:1;min-width:0}
+.mitem b{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mitem small{display:block;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mitem .amt{font-weight:700;font-size:15px;white-space:nowrap}.mitem .amt.inv{color:var(--investment)}
+.mday{font-size:12px;font-weight:700;color:var(--muted);padding:14px 4px 6px;text-transform:uppercase;letter-spacing:.04em;position:sticky;top:0;background:var(--panel);z-index:1}
+.empty-state{text-align:center;padding:28px 12px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:10px}
+.empty-state .ico{width:36px;height:36px;color:#94a3b8}.empty-state p{margin:0}
+.account-row{display:flex;align-items:center;gap:12px}
+.avatar{width:44px;height:44px;border-radius:50%;background:var(--investment);color:#fff;font-weight:700;font-size:18px;display:flex;align-items:center;justify-content:center;flex:none}
+.account-text b{display:block;font-size:15px}.account-text small{color:var(--muted);font-size:13px;word-break:break-all}
+.more-item{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:0 4px;border:0;border-bottom:1px solid var(--border);background:transparent;font:inherit;font-size:16px;font-weight:600;color:var(--text);text-align:left;transition:background-color .12s}
+.more-item:last-child{border-bottom:0}.more-item:active{background:var(--soft)}
+.more-item .caret{margin-left:auto;color:#94a3b8}.more-item.danger-item{color:var(--danger)}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid #cbd5e1;border-top-color:var(--investment);border-radius:50%;vertical-align:-3px;margin-right:8px;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.auth-logo{width:72px;height:72px;border-radius:18px;margin-bottom:12px}
 .barlist{display:flex;flex-direction:column;gap:9px}
 .barrow{border:0;background:transparent;padding:0;text-align:left;font:inherit;color:var(--text);width:100%}
 .barrow .bl-head{display:flex;justify-content:space-between;gap:8px;font-size:13px}.barrow .bl-head b{font-weight:600}.barrow .bl-head span{white-space:nowrap;color:#374151;font-weight:700}
@@ -108,7 +142,7 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:#f8fafc}
 .chart-pop{margin-top:8px;padding:10px 12px;border-radius:12px;background:#f8fafc;border:1px solid var(--border);font-size:13px;display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
 .period-compact{justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .period-nav{display:flex;align-items:center;gap:8px}.period-nav b{min-width:128px;text-align:center}.period-nav button{width:38px;min-height:38px;padding:0;font-size:20px}
-.more-list{display:flex;flex-direction:column;gap:10px}.more-list button{width:100%;justify-content:flex-start;font-size:16px;min-height:50px}
+.more-list{padding:4px 14px}
 details.panel summary{cursor:pointer;font-weight:700;font-size:17px;list-style:none;display:flex;justify-content:space-between;align-items:center}
 details.panel summary::-webkit-details-marker{display:none}details.panel summary::after{content:"+";font-size:22px;color:var(--muted)}details.panel[open] summary::after{content:"−"}
 .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;color:var(--muted);font-size:13px}
@@ -146,46 +180,82 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .form-grid{grid-template-columns:repeat(2,1fr)}.searchbar{grid-template-columns:repeat(2,1fr)}
 }
 @media(max-width:760px){
- body{padding-bottom:72px}.app{display:block}.sidebar{display:none}.content{padding:16px 12px}
- .page-head{display:block}.page-head h1{font-size:25px}
+ body{padding-bottom:calc(var(--nav-h) + 16px + env(safe-area-inset-bottom))}.app{display:block}.sidebar{display:none}
+ .content{padding:calc(12px + env(safe-area-inset-top)) 16px 16px}
+ .page-head{display:block;margin-bottom:14px}.page-head h1{font-size:22px}.page-head p{font-size:13px}
  .grid-2,.grid-3,.grid-4,.summary-grid,.asset-grid,.kpi-strip{grid-template-columns:1fr}
+ .grid-2,.grid-3,.grid-4,.summary-grid{gap:12px}
  .form-grid,.form-grid-4,.toolbar,.searchbar{grid-template-columns:1fr}
- .mobile-nav{position:fixed;z-index:50;left:0;right:0;bottom:0;height:68px;padding-bottom:env(safe-area-inset-bottom);background:rgba(15,23,42,.97);display:flex;justify-content:space-around;align-items:center;border-top:1px solid #334155}
- .mobile-nav button{border:0;background:transparent;color:#94a3b8;font-size:11px;padding:7px 6px;min-width:56px}
- .mobile-nav button.active{color:#fff;font-weight:800}
- .mobile-nav button.nav-add{background:var(--investment);color:#fff;width:52px;height:52px;min-width:52px;border-radius:50%;font-size:30px;line-height:1;padding:0;margin-top:-26px;box-shadow:0 8px 18px rgba(37,99,235,.45)}
- .panel,.card{border-radius:15px}
+ /* Barra inferior: 5 destinos, icono + etiqueta, píldora indicadora en el activo, safe area */
+ .mobile-nav{position:fixed;z-index:50;left:0;right:0;bottom:0;height:calc(var(--nav-h) + env(safe-area-inset-bottom));padding:0 4px env(safe-area-inset-bottom);background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);align-items:stretch}
+ .mobile-nav button{border:0;background:transparent;color:#64748b;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px 0;min-height:48px;font-size:11px;font-weight:600;line-height:1.2;transition:color .12s}
+ .mobile-nav .nav-ind{display:flex;align-items:center;justify-content:center;width:56px;height:30px;border-radius:15px;transition:background-color .15s,transform .12s}
+ .mobile-nav button:active .nav-ind{transform:scale(.92)}
+ .mobile-nav button.active{color:var(--primary)}
+ .mobile-nav button.active .nav-ind{background:rgba(37,99,235,.14)}
+ .mobile-nav button.active .ico{stroke-width:2.25}
+ .mobile-nav button.nav-add{background:var(--investment);color:#fff;width:52px;height:52px;min-height:52px;border-radius:50%;padding:0;margin:-18px auto 0;box-shadow:0 6px 16px rgba(37,99,235,.35);transition:transform .12s,box-shadow .12s}
+ .mobile-nav button.nav-add:active{transform:scale(.94);box-shadow:0 3px 8px rgba(37,99,235,.3)}
+ .mobile-nav button.nav-add .ico{stroke-width:2.5;width:26px;height:26px}
+ .panel,.card{border-radius:var(--radius)}
  .mobile-only:not([hidden]){display:block!important}.desktop-only{display:none!important}
  .period-compact.mobile-only:not([hidden]),.mlist.mobile-only:not([hidden]){display:flex!important}
  .summary-grid,.grid-3{grid-template-columns:1fr 1fr}
- .card{padding:13px}.metric-label{font-size:12px}.metric-value{font-size:20px}.metric-sub{font-size:11px}
+ .card{padding:14px}.metric-label{font-size:12px}.metric-value{font-size:22px}.metric-sub{font-size:11px}
+ .panel{padding:16px}
  .chart-box{height:230px}
  .fab{display:none}
  .searchbar.collapsed{display:none}
  .table-wrap.desktop-only{display:none!important}
- .page-head p{font-size:14px}
+ .toast{bottom:calc(var(--nav-h) + 24px + env(safe-area-inset-bottom))}
+ .big-amount{font-size:36px}
+ .sheet .chip-btn{min-height:44px}
+ .sheet .form-actions{flex-direction:column}.sheet .form-actions button{width:100%;min-height:48px}
+ .sheet label{font-size:14px}
+ .mitem b{font-size:16px}
 }
 </style>
 </head>
 <body>
+<!-- Sprite de iconos (una sola familia outline, 24 px, trazo 1,75). Se usan con <svg class="ico"><use href="#i-…"/></svg>. -->
+<svg hidden aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="i-house" viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12"/><circle cx="4.5" cy="6" r="1.1" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="4.5" cy="18" r="1.1" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-pie" viewBox="0 0 24 24"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></symbol>
+  <symbol id="i-dots" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="1.7" fill="currentColor" stroke="none"/><circle cx="19" cy="12" r="1.7" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-gear" viewBox="0 0 24 24"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-tag" viewBox="0 0 24 24"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r="1" fill="currentColor" stroke="none"/></symbol>
+  <symbol id="i-repeat" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M8 16H3v5"/></symbol>
+  <symbol id="i-signout" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="m16 17 5-5-5-5"/><path d="M21 12H9"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18M6 6l12 12"/></symbol>
+  <symbol id="i-caret-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></symbol>
+  <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></symbol>
+  <symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24"><path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></symbol>
+  <symbol id="i-funnel" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"/></symbol>
+</svg>
 <div id="authScreen" class="auth-screen">
   <div class="auth-card">
+    <img class="auth-logo" src="icon-192.png" alt="" width="72" height="72">
     <h1>Mis Finanzas</h1>
     <p>Control personal de ingresos, gastos e inversiones.</p>
-    <button class="primary" id="loginGoogle">Entrar con Google</button>
-    <div class="auth-status" id="authStatus"></div>
+    <button class="primary" id="loginGoogle" hidden>Entrar con Google</button>
+    <div class="auth-status" id="authStatus" aria-live="polite"><span class="spinner" aria-hidden="true"></span>Comprobando sesión…</div>
+    <button class="secondary" id="authRetry" hidden style="margin-top:12px">Reintentar</button>
   </div>
 </div>
 <div class="app" hidden>
   <aside class="sidebar">
     <div class="brand">Mis Finanzas<small>Control personal</small></div>
     <nav class="nav">
-      <button data-page="dashboard" class="active">📊 Dashboard</button>
-      <button data-page="movements">💳 Movimientos</button>
-      <button data-page="categories">🏷️ Categorías</button>
-      <button data-page="recurring">🔁 Recurrentes</button>
-      <button data-page="assets">💼 Patrimonio</button>
-      <button data-page="settings">⚙️ Ajustes</button>
+      <button data-page="dashboard" class="active"><svg class="ico" aria-hidden="true"><use href="#i-house"/></svg>Dashboard</button>
+      <button data-page="movements"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg>Movimientos</button>
+      <button data-page="categories"><svg class="ico" aria-hidden="true"><use href="#i-tag"/></svg>Categorías</button>
+      <button data-page="recurring"><svg class="ico" aria-hidden="true"><use href="#i-repeat"/></svg>Recurrentes</button>
+      <button data-page="assets"><svg class="ico" aria-hidden="true"><use href="#i-pie"/></svg>Patrimonio</button>
+      <button data-page="settings"><svg class="ico" aria-hidden="true"><use href="#i-gear"/></svg>Ajustes</button>
     </nav>
     <div class="user-box"><span id="userEmail"></span><button id="logoutSidebar">Cerrar sesión</button></div>
   </aside>
@@ -397,21 +467,28 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
       </div>
     </section>
     <section id="page-more" class="page">
-      <div class="page-head"><div><h1>Más</h1><p>Categorías, recurrentes y ajustes.</p></div></div>
-      <div class="panel more-list">
-        <button class="secondary" data-page="categories">🏷️ Categorías</button>
-        <button class="secondary" data-page="recurring">🔁 Movimientos recurrentes</button>
-        <button class="secondary" data-page="settings">⚙️ Ajustes y copias de seguridad</button>
+      <div class="page-head"><div><h1>Más</h1><p>Cuenta, categorías, recurrentes y ajustes.</p></div></div>
+      <div class="panel account-row">
+        <span class="avatar" id="moreAvatar" aria-hidden="true"></span>
+        <div class="account-text"><b>Tu cuenta</b><small id="moreEmail"></small></div>
       </div>
-      <div class="inline-note section-gap">Sesión iniciada como <b id="moreEmail"></b>.</div>
+      <div class="panel more-list section-gap">
+        <button class="more-item" data-page="categories"><svg class="ico" aria-hidden="true"><use href="#i-tag"/></svg><span>Categorías</span><svg class="ico sm caret" aria-hidden="true"><use href="#i-caret-right"/></svg></button>
+        <button class="more-item" data-page="recurring"><svg class="ico" aria-hidden="true"><use href="#i-repeat"/></svg><span>Movimientos recurrentes</span><svg class="ico sm caret" aria-hidden="true"><use href="#i-caret-right"/></svg></button>
+        <button class="more-item" data-page="settings"><svg class="ico" aria-hidden="true"><use href="#i-gear"/></svg><span>Ajustes y copias de seguridad</span><svg class="ico sm caret" aria-hidden="true"><use href="#i-caret-right"/></svg></button>
+      </div>
+      <div class="panel more-list section-gap">
+        <button class="more-item danger-item" id="logoutMore"><svg class="ico" aria-hidden="true"><use href="#i-signout"/></svg><span>Cerrar sesión</span></button>
+      </div>
     </section>
   </main>
 </div>
 
-<button class="fab" id="fabAdd" aria-label="Añadir movimiento" title="Añadir movimiento" hidden>+</button>
+<button class="fab" id="fabAdd" aria-label="Añadir movimiento" title="Añadir movimiento" hidden><svg class="ico" aria-hidden="true" style="stroke-width:2.5"><use href="#i-plus"/></svg></button>
 <div class="sheet-backdrop" id="sheetBackdrop" hidden></div>
-<section class="sheet" id="quickSheet" hidden aria-label="Añadir movimiento">
-  <div class="sheet-head"><h2 id="qsTitle">Nuevo movimiento</h2><button type="button" class="icon-btn" id="qsClose" aria-label="Cerrar">×</button></div>
+<section class="sheet" id="quickSheet" hidden role="dialog" aria-modal="true" aria-labelledby="qsTitle">
+  <div class="sheet-handle" id="sheetHandle"></div>
+  <div class="sheet-head" id="sheetHead"><h2 id="qsTitle">Nuevo movimiento</h2><button type="button" class="icon-btn" id="qsClose" aria-label="Cerrar"><svg class="ico sm" aria-hidden="true"><use href="#i-x"/></svg></button></div>
   <label>Importe (€)</label><input id="qsAmount" class="big-amount" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off">
   <div class="seg seg-full" id="qsType" style="margin-top:12px"><button type="button" data-type="Gasto" class="active">Gasto</button><button type="button" data-type="Ingreso">Ingreso</button><button type="button" data-type="Inversión">Inversión</button></div>
   <label>Categoría</label><div class="chips" id="qsCats"></div>
@@ -425,18 +502,18 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 </section>
 <div class="toast" id="toast" hidden></div>
 
-<nav class="mobile-nav" hidden>
-  <button data-page="dashboard" class="active">📊<br>Inicio</button>
-  <button data-page="movements">💳<br>Movimientos</button>
-  <button class="nav-add" id="navAdd" aria-label="Añadir movimiento">+</button>
-  <button data-page="assets">💼<br>Patrimonio</button>
-  <button data-page="more">☰<br>Más</button>
+<nav class="mobile-nav" aria-label="Navegación principal" hidden>
+  <button data-page="dashboard" class="active" aria-current="page"><span class="nav-ind"><svg class="ico" aria-hidden="true"><use href="#i-house"/></svg></span><span class="nav-lbl">Inicio</span></button>
+  <button data-page="movements"><span class="nav-ind"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg></span><span class="nav-lbl">Movimientos</span></button>
+  <button class="nav-add" id="navAdd" aria-label="Añadir movimiento"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></button>
+  <button data-page="assets"><span class="nav-ind"><svg class="ico" aria-hidden="true"><use href="#i-pie"/></svg></span><span class="nav-lbl">Patrimonio</span></button>
+  <button data-page="more"><span class="nav-ind"><svg class="ico" aria-hidden="true"><use href="#i-dots"/></svg></span><span class="nav-lbl">Más</span></button>
 </nav>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithRedirect, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDoc, getDocFromServer, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 
@@ -535,9 +612,11 @@ async function loadInitialState(ref){
  }
 }
 async function startApp(user){
+ if(unsubscribeSnapshot){unsubscribeSnapshot();unsubscribeSnapshot=null} // por si se reintenta tras un error
  currentUser=user;userDocRef=doc(db,"users",user.uid);
  el("userEmail").textContent=user.email||"";el("settingsEmail").textContent=user.email||"";el("moreEmail").textContent=user.email||"";
- setAuthStatus("Cargando tus datos…");
+ el("moreAvatar").textContent=(user.email||"?").trim().charAt(0).toUpperCase();
+ setAuthStatus("Cargando tus datos…",false,true);
  const initial=await loadInitialState(userDocRef);
  if(initial.snap&&initial.snap.exists()){
    state=normalizeState(initial.snap.data());
@@ -566,20 +645,29 @@ function stopApp(){
 }
 
 // ---------- Autenticación con Google + lista de permitidos ----------
+// La sesión de Firebase persiste en IndexedDB: al abrir la app se muestra "Comprobando sesión…" (sin botón) hasta que
+// onAuthStateChanged la restaura. Solo se cierra sesión cuando el acceso está denegado de verdad, nunca por un fallo de red.
+let authBusy=true,pendingUser=null; // true: el HTML inicial ya muestra "Comprobando sesión…"
+const allowKey=uid=>"allow:"+uid;
 function showAuthScreen(show){el("authScreen").hidden=!show;document.querySelector(".app").hidden=show;document.querySelector(".mobile-nav").hidden=show;el("fabAdd").hidden=show;if(show)closeQuickSheet()}
-function setAuthStatus(msg,isError=false){const n=el("authStatus");n.textContent=msg||"";n.classList.toggle("error",!!isError)}
-async function isAllowed(email){
- try{const snap=await getDoc(doc(db,"allowlist",String(email||"").toLowerCase()));return snap.exists()}
- catch(err){if(err.code==="permission-denied")return false;throw err}
+function setAuthStatus(msg,isError=false,busy=false){
+ const n=el("authStatus");authBusy=busy;
+ n.innerHTML=(busy?'<span class="spinner" aria-hidden="true"></span>':"")+escapeHtml(msg||"");
+ n.classList.toggle("error",!!isError);
+}
+// Devuelve "yes" (está en la lista), "no" (no está o Firestore lo deniega) o "unknown" (sin conexión u otro error temporal).
+async function checkAllowed(email){
+ try{const snap=await getDoc(doc(db,"allowlist",String(email||"").toLowerCase()));return snap.exists()?"yes":"no"}
+ catch(err){return err.code==="permission-denied"?"no":"unknown"}
 }
 async function login(){
- setAuthStatus("Abriendo la ventana de Google…");
+ setAuthStatus("Abriendo la ventana de Google…",false,true);
  const provider=new GoogleAuthProvider();provider.setCustomParameters({prompt:"select_account"});
  try{await signInWithPopup(auth,provider)}
  catch(err){
    const code=err.code||"";
    if(code==="auth/popup-blocked"||code==="auth/operation-not-supported-in-this-environment"){
-     try{await signInWithRedirect(auth,provider)}catch(e2){setAuthStatus("No se pudo iniciar sesión: "+(e2.code||e2.message),true)}
+     setAuthStatus("El navegador ha bloqueado la ventana de Google. Permite las ventanas emergentes para esta web y vuelve a pulsar «Entrar con Google».",true);
    }else if(code==="auth/popup-closed-by-user"||code==="auth/cancelled-popup-request"){
      setAuthStatus("");
    }else if(code==="auth/unauthorized-domain"){
@@ -590,19 +678,40 @@ async function login(){
  }
 }
 async function logout(){if(!confirm("¿Cerrar sesión?"))return;stopApp();await signOut(auth)}
-onAuthStateChanged(auth,async user=>{
- if(!user){stopApp();return}
- setAuthStatus("Comprobando acceso…");
- let ok=false;
- try{ok=await isAllowed(user.email)}
- catch(err){setAuthStatus("No se pudo comprobar el acceso ("+(err.code||err.message)+"). Revisa la conexión.",true);await signOut(auth);return}
- if(!ok){setAuthStatus(`La cuenta ${user.email} no está autorizada. Pide que la añadan a la lista de permitidos.`,true);await signOut(auth);return}
+async function enterApp(user){
+ el("loginGoogle").hidden=true;el("authRetry").hidden=true;
+ setAuthStatus("Comprobando acceso…",false,true);
+ const verdict=await checkAllowed(user.email);
+ if(verdict==="no"){
+   try{localStorage.removeItem(allowKey(user.uid))}catch{}
+   setAuthStatus(`La cuenta ${user.email} no está autorizada. Pide que la añadan a la lista de permitidos.`,true);
+   await signOut(auth);return;
+ }
+ let cached=false;try{cached=localStorage.getItem(allowKey(user.uid))==="1"}catch{}
+ if(verdict==="unknown"&&!cached){
+   setAuthStatus("No se pudo comprobar el acceso. Revisa la conexión y vuelve a intentarlo.",true);
+   el("authRetry").hidden=false;return;
+ }
+ if(verdict==="yes"){try{localStorage.setItem(allowKey(user.uid),"1")}catch{}}
  try{await startApp(user)}
  catch(err){
    console.error(err);
-   const msg=err.code==="permission-denied"?"Firestore ha denegado el acceso. Revisa las reglas (firestore.rules) y la lista de permitidos.":"Error cargando los datos: "+(err.code||err.message);
-   setAuthStatus(msg,true);await signOut(auth);
+   if(err.code==="permission-denied"){
+     setAuthStatus("Firestore ha denegado el acceso. Revisa las reglas (firestore.rules) y la lista de permitidos.",true);
+     await signOut(auth);return;
+   }
+   setAuthStatus("Error cargando los datos: "+(err.code||err.message),true);
+   el("authRetry").hidden=false;
  }
+}
+onAuthStateChanged(auth,user=>{
+ pendingUser=user;
+ if(!user){
+   el("loginGoogle").hidden=false;el("authRetry").hidden=true;
+   if(authBusy)setAuthStatus(""); // deja visibles los mensajes de error; quita solo el "Comprobando…"
+   stopApp();return;
+ }
+ enterApp(user);
 });
 function nowISO(){return new Date().toISOString()}
 function markDataUpdate(kind){
@@ -921,17 +1030,19 @@ function renderMovements(){
  el("movementTable").innerHTML=movs.length?movs.map(m=>`<tr><td>${formatDate(m.date)}</td><td><span class="pill ${m.type}">${m.type}</span></td><td>${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")}</td><td>${escapeHtml(m.description)}</td><td class="amount">${euro.format(m.amount)}</td><td class="actions"><button class="secondary small" data-edit="${m.id}">Editar</button> <button class="danger small" data-del="${m.id}">Borrar</button></td></tr>`).join(""):`<tr><td colspan="6" class="empty">No hay movimientos.</td></tr>`;
  el("movementTable").querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editMovement(b.dataset.edit));
  el("movementTable").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>deleteMovement(b.dataset.del));
- // Lista táctil para móvil (agrupada por día; tocar abre la hoja de edición)
+ // Lista táctil para móvil (agrupada por día; tocar abre la hoja de edición). Icono + signo + texto: el tipo nunca se indica solo por color.
  const list=el("movementList"),LIMIT=300,shown=movs.slice(0,LIMIT);let html="",lastDate="";
+ const TYPE_UI={Gasto:{cls:"negative",k:"g",icon:"i-arrow-down",sign:"−"},Ingreso:{cls:"positive",k:"i",icon:"i-arrow-up",sign:"+"},"Inversión":{cls:"inv",k:"v",icon:"i-trend",sign:""}};
  shown.forEach(m=>{
    if(m.date!==lastDate){lastDate=m.date;html+=`<div class="mday">${formatDate(m.date)}</div>`}
-   const cls=m.type==="Gasto"?"negative":m.type==="Ingreso"?"positive":"inv",sign=m.type==="Gasto"?"−":m.type==="Ingreso"?"+":"";
-   html+=`<button type="button" class="mitem" data-id="${m.id}"><span><b>${escapeHtml(m.description)}</b><small>${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")} · ${m.type}</small></span><span class="amt ${cls}">${sign}${euro.format(m.amount)}</span></button>`;
+   const t=TYPE_UI[m.type]||TYPE_UI.Gasto;
+   html+=`<button type="button" class="mitem" data-id="${m.id}"><span class="mico ${t.k}"><svg class="ico sm" aria-hidden="true"><use href="#${t.icon}"/></svg></span><span class="mtext"><b>${escapeHtml(m.description)}</b><small>${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")} · ${m.type}</small></span><span class="amt ${t.cls}">${t.sign}${euro.format(m.amount)}</span></button>`;
  });
- if(!html)html=`<div class="empty">No hay movimientos.</div>`;
+ if(!html)html=`<div class="empty-state"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg><p>${state.movements.length?"Ningún movimiento coincide con los filtros.":"Todavía no hay movimientos."}</p><button type="button" class="primary" data-empty-add>Añadir movimiento</button></div>`;
  if(movs.length>LIMIT)html+=`<div class="empty">Mostrando ${LIMIT} de ${movs.length}. Usa los filtros para acotar.</div>`;
  list.innerHTML=html;
  list.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>{const m=state.movements.find(x=>x.id===b.dataset.id);if(m)openQuickSheet(m)});
+ const emptyAdd=list.querySelector("[data-empty-add]");if(emptyAdd)emptyAdd.onclick=()=>openQuickSheet(null);
  const nFilters=["searchText","searchType","searchCategory","searchFrom","searchTo"].filter(id=>el(id).value).length;
  el("toggleFilters").textContent=nFilters?`Filtros (${nFilters})`:"Filtros";
 }
@@ -1185,10 +1296,30 @@ function openQuickSheet(movement){
  setQsType(type);
  if(movement?.assetId)el("qsAsset").value=movement.assetId;
  updateDescSuggestions();
- el("sheetBackdrop").hidden=false;el("quickSheet").hidden=false;document.body.style.overflow="hidden";
- setTimeout(()=>el("qsAmount").focus(),60);
+ const sheet=el("quickSheet"),backdrop=el("sheetBackdrop");
+ clearTimeout(sheetCloseTimer);sheet.style.transform="";sheet.classList.remove("dragging");
+ backdrop.hidden=false;sheet.hidden=false;document.body.style.overflow="hidden";
+ void sheet.offsetHeight; // fuerza el reflow para que la transición de entrada se ejecute desde display:none
+ backdrop.classList.add("open");sheet.classList.add("open");
+ setTimeout(()=>el("qsAmount").focus(),220);
 }
-function closeQuickSheet(){el("sheetBackdrop").hidden=true;el("quickSheet").hidden=true;document.body.style.overflow="";qs.editId=null}
+let sheetCloseTimer=null;
+function closeQuickSheet(){
+ const sheet=el("quickSheet"),backdrop=el("sheetBackdrop");
+ qs.editId=null;document.body.style.overflow="";
+ if(sheet.hidden)return;
+ sheet.classList.remove("open","dragging");backdrop.classList.remove("open");sheet.style.transform="";
+ clearTimeout(sheetCloseTimer);
+ sheetCloseTimer=setTimeout(()=>{sheet.hidden=true;backdrop.hidden=true},160); // espera la animación de salida (más corta que la de entrada)
+}
+// Deslizar hacia abajo desde el asa o la cabecera cierra la hoja (el botón × sigue disponible; el gesto no es el único camino).
+function enableSheetSwipe(){
+ const sheet=el("quickSheet");let startY=null,dy=0;
+ const start=e=>{startY=e.touches[0].clientY;dy=0;sheet.classList.add("dragging")};
+ const move=e=>{if(startY===null)return;dy=Math.max(0,e.touches[0].clientY-startY);sheet.style.transform=`translate(-50%,${dy}px)`};
+ const end=()=>{if(startY===null)return;startY=null;sheet.classList.remove("dragging");if(dy>60)closeQuickSheet();else sheet.style.transform=""};
+ [el("sheetHandle"),el("sheetHead")].forEach(n=>{n.addEventListener("touchstart",start,{passive:true});n.addEventListener("touchmove",move,{passive:true});n.addEventListener("touchend",end);n.addEventListener("touchcancel",end)});
+}
 function quickSave(keepOpen){
  const amount=parseAmount(el("qsAmount").value),description=el("qsDesc").value.trim(),date=el("qsDate").value,type=qs.type,categoryId=qs.categoryId;
  const usesUnits=qsUsesUnits(),assetId=usesUnits?el("qsAsset").value:"",units=usesUnits?parseAmount(el("qsUnits").value):0;
@@ -1239,7 +1370,11 @@ let monthlyShowAll=false;
 function showPage(name){
  document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id==="page-"+name));
  const navName=["categories","recurring","settings"].includes(name)?"more":name;
- document.querySelectorAll("[data-page]").forEach(b=>b.classList.toggle("active",b.dataset.page===name||(b.closest(".mobile-nav")&&b.dataset.page===navName)));
+ document.querySelectorAll("[data-page]").forEach(b=>{
+   const inNav=!!b.closest(".mobile-nav"),active=b.dataset.page===name||(inNav&&b.dataset.page===navName);
+   b.classList.toggle("active",active);
+   if(inNav){if(active)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")}
+ });
  window.scrollTo({top:0,behavior:"smooth"});
  if(name==="dashboard")setTimeout(renderCharts,20);
 }
@@ -1283,10 +1418,14 @@ el("monthlyToggle").onclick=()=>{monthlyShowAll=!monthlyShowAll;drawMonthlyChart
 el("assetFormDetails").open=!isMobile();
 let lastMobile=isMobile(),resizeTimer=null;
 window.addEventListener("resize",()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(isMobile()!==lastMobile){lastMobile=isMobile();el("assetFormDetails").open=!lastMobile;if(el("page-dashboard").classList.contains("active"))renderCharts()}},200)});
-el("loginGoogle").onclick=login;el("logoutSidebar").onclick=logout;el("logoutSettings").onclick=logout;
+el("loginGoogle").onclick=login;el("logoutSidebar").onclick=logout;el("logoutSettings").onclick=logout;el("logoutMore").onclick=logout;
+el("authRetry").onclick=()=>{if(pendingUser)enterApp(pendingUser)};
+enableSheetSwipe();
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flushRemoteSave()});
 window.addEventListener("pagehide",flushRemoteSave);
-// La app arranca en onAuthStateChanged → startApp(user) una vez comprobado el acceso.
+// Service worker: cachea la app (HTML, iconos y librerías de CDN) para abrir al instante y sin conexión cuando está instalada.
+if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))navigator.serviceWorker.register("./sw.js").catch(err=>console.warn("Service worker no registrado",err));
+// La app arranca en onAuthStateChanged → enterApp(user) una vez comprobado el acceso.
 })();
 </script>
 </body>
