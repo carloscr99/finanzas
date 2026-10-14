@@ -1,6 +1,6 @@
 <!-- Copia técnica del documento de traspaso. La versión completa, con datos personales, está fuera del repositorio (Descargas de Carlos). Este repositorio es público. -->
 
-# Mis Finanzas — resumen del proyecto (estado a 14/10/2026)
+# Mis Finanzas — resumen del proyecto (estado al cierre del 14/10/2026, último commit `776c792`)
 
 Documento de traspaso: qué es la aplicación, cómo está hecha, dónde está cada cosa, cómo se trabaja con ella y qué queda pendiente. Sustituye a la versión del 13/10/2026.
 
@@ -186,6 +186,8 @@ Antes de tocar la interfaz, consultar la skill (`search.py … --domain ux|icons
 6. Opcional: restringir la clave de Firebase por referrer `carloscr99.github.io/*` en Google Cloud Console → Credenciales.
 7. Opcional: el recurrente de Revolut (50 €) sigue como Inversión; si se prefiere como provisión del seguro, cambiarlo a Gasto › Seguros.
 8. Seguir vigilando que el cron del robot dispare las dos pasadas (ver Actions).
+9. Limpieza de categorías (criterio: la categoría dice el motivo, no el canal de pago): renombrar "Bizum recibido" a "Reembolsos", repartir y borrar "Bizums" (gasto) y, opcionalmente, "Compras online". Revisar los presupuestos propuestos (sección Presupuesto → Ajustar presupuestos).
+10. Ideas pendientes del análisis de competencia (14/10): objetivos de ahorro ligados a cuentas, importación del extracto del banco en CSV con reglas de categoría, comparativa año contra año y "mes típico", tasa de ahorro, recordatorio de copia de seguridad, atajos del manifest ("Añadir gasto"), etiquetas en movimientos. Descartado: conexión bancaria, multiusuario, fotos de tickets, notificaciones.
 
 ### Limitaciones conocidas
 - Sin servidor propio: los recurrentes se generan al abrir la web (con la fecha correcta aunque se abra días después).
