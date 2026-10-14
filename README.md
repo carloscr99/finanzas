@@ -90,6 +90,15 @@ Opciones sin instalar nada:
 - Si tienes Python: `python -m http.server 8000`.
 - Si tienes Node: `npx serve -l 8000 .`.
 
+## Dashboard: tarjetas y gráficos
+
+- **Ahorro acumulado** = ingresos − gastos de todo el histórico (las inversiones no se restan: siguen siendo tuyas). **Liquidez acumulada** = ingresos − gastos − inversiones de todo el histórico: lo que ha quedado en la cuenta corriente desde el primer movimiento registrado.
+- **Evolución del patrimonio**: la app guarda un punto por día (`meta.netWorthHistory`, máximo 730) cada vez que cambia algo: cotizaciones, movimientos, traspasos o actualizaciones manuales. Muestra patrimonio total, valor de los fondos y capital aportado a los fondos, según el periodo elegido. Hasta que no haya dos días con datos no se dibuja.
+
+## Recurrentes de fondos: participaciones estimadas
+
+Cuando un recurrente de Inversión apunta a un fondo con ISIN (por ejemplo "Compra Amundi MSCI World"), la app no sabe cuántas participaciones compró MyInvestor. Las **estima** con la última cotización (importe ÷ precio), las suma al activo y marca el movimiento con «≈ … part. (estimadas)». Cuando llega una cotización con fecha igual o posterior a la compra, recalcula las participaciones con ese precio y las da por definitivas. Si el extracto dice otra cifra, edita el movimiento y escribe las participaciones reales.
+
 ## Corregir el histórico: cambiar categoría en bloque
 
 En Movimientos, filtra los apuntes que quieras corregir (texto, tipo, categoría, fechas) y pulsa «Cambiar categoría de los visibles…»: eliges el nuevo tipo y la nueva categoría y se aplican a todos los visibles de una vez. Solo cambia tipo y categoría; los saldos del patrimonio no se tocan, así que sirve para reclasificar el histórico sin duplicar importes en las cuentas. Si el movimiento sale de una categoría de Inversión con participaciones, pierde el enlace con el fondo.

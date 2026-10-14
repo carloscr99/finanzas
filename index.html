@@ -316,10 +316,11 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         <div class="card"><div class="metric-label">Liquidez restante</div><div class="metric-value" id="sumBalance">0 €</div><div class="metric-sub" id="cmpBalance">—</div></div>
       </div>
 
-      <div class="grid-3">
+      <div class="summary-grid" style="margin-bottom:0">
         <div class="card"><div class="metric-label">Rentabilidad de los fondos</div><div class="metric-value" id="portfolioReturn">0 €</div><div class="metric-sub" id="portfolioReturnPct">0,0 % sobre lo aportado</div><div class="metric-sub">Solo fondos con ISIN y cripto</div></div>
         <div class="card"><div class="metric-label">Patrimonio actual</div><div class="metric-value" id="netWorth">0 €</div><div class="metric-sub" id="assetCount">0 activos</div><div class="metric-sub" id="currentAccountNote" hidden></div><div class="metric-sub" id="portfolioUpdateDashboard">Sin actualizar</div></div>
-        <div class="card"><div class="metric-label">Ahorro acumulado</div><div class="metric-value" id="cumulativeSavings">0 €</div><div class="metric-sub">Ingresos − gastos</div></div>
+        <div class="card"><div class="metric-label">Ahorro acumulado</div><div class="metric-value" id="cumulativeSavings">0 €</div><div class="metric-sub">Ingresos − gastos de todo el histórico</div></div>
+        <div class="card"><div class="metric-label">Liquidez acumulada</div><div class="metric-value" id="cumulativeLiquidity">0 €</div><div class="metric-sub">Ingresos − gastos − inversiones de todo el histórico</div></div>
       </div>
       <div class="inline-note section-gap" id="dataFreshness">Últimas actualizaciones: sin datos todavía.</div>
 
@@ -351,10 +352,17 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         </div>
       </div>
 
-      <div class="panel section-gap">
-        <div class="chart-head"><div><h2>Rentabilidad anualizada por activo</h2><p class="chart-sub" id="subReturn"></p></div></div>
-        <div class="chart-box"><canvas id="compoundReturnChart"></canvas></div>
-        <div class="inline-note">Calculada mediante XIRR: tiene en cuenta el importe y la fecha de cada aportación y el valor actual del activo. Se actualiza al añadir, editar o borrar movimientos de inversión y al cambiar el precio actual.</div>
+      <div class="grid-2 section-gap">
+        <div class="panel">
+          <div class="chart-head"><div><h2>Evolución del patrimonio</h2><p class="chart-sub" id="subNetWorth"></p></div></div>
+          <div class="chart-box"><canvas id="netWorthChart"></canvas></div>
+          <div class="chart-hint">Un punto por día con cambios: cotizaciones, movimientos, traspasos o actualizaciones manuales.</div>
+        </div>
+        <div class="panel">
+          <div class="chart-head"><div><h2>Rentabilidad anualizada por activo</h2><p class="chart-sub" id="subReturn"></p></div></div>
+          <div class="chart-box"><canvas id="compoundReturnChart"></canvas></div>
+          <div class="inline-note">Calculada mediante XIRR: tiene en cuenta el importe y la fecha de cada aportación y el valor actual del activo. Se actualiza al añadir, editar o borrar movimientos de inversión y al cambiar el precio actual.</div>
+        </div>
       </div>
 
       <div class="panel section-gap">
@@ -633,7 +641,8 @@ function normalizeState(s){
       lastPortfolioUpdateAt:s?.meta?.lastPortfolioUpdateAt||null,
       lastPricesSyncAt:s?.meta?.lastPricesSyncAt||null,
       lastPriceFeedUpdateAt:s?.meta?.lastPriceFeedUpdateAt||null,
-      lastDataUpdateAt:s?.meta?.lastDataUpdateAt||null
+      lastDataUpdateAt:s?.meta?.lastDataUpdateAt||null,
+      netWorthHistory:Array.isArray(s?.meta?.netWorthHistory)?s.meta.netWorthHistory:[]
     }
   };
 }
@@ -657,8 +666,18 @@ async function uiPrompt(msg,def,opts={}){
 // ---------- Persistencia en Firestore (un documento users/{uid} con todo el estado) ----------
 let currentUser=null,userDocRef=null,unsubscribeSnapshot=null,remoteSaveTimer=null;
 function cleanForFirestore(s){return JSON.parse(JSON.stringify(s))} // elimina undefined, que Firestore no admite
+// Histórico del patrimonio: un punto por día (se sobrescribe el del mismo día), máximo 730 puntos, para el gráfico de evolución.
+function recordNetWorthPoint(){
+ if(!state.assets.length)return;
+ refreshDerivedAssets();
+ const t=portfolioTotals(),date=todayISO(),point={date,value:Math.round(t.nw*100)/100,invested:Math.round(t.invested*100)/100,funds:Math.round(t.invValue*100)/100};
+ state.meta=state.meta||{};const h=Array.isArray(state.meta.netWorthHistory)?state.meta.netWorthHistory:[];
+ const i=h.findIndex(x=>x.date===date);if(i>=0)h[i]=point;else h.push(point);
+ h.sort((a,b)=>a.date.localeCompare(b.date));state.meta.netWorthHistory=h.slice(-730);
+}
 function saveState(){
  if(!userDocRef)return;
+ recordNetWorthPoint();
  clearTimeout(remoteSaveTimer);
  remoteSaveTimer=setTimeout(flushRemoteSave,300); // agrupa ráfagas de cambios en una sola escritura
 }
@@ -922,6 +941,26 @@ function netSince(date){return state.movements.filter(m=>m.date>=date).reduce((s
 function setAccountReference(a,balance,date){a.refBalance=Number(balance)||0;a.refDate=date||todayISO();a.refDayNet=netOnDate(a.refDate);a.updatedAt=a.refDate;a.priceSource="Saldo real";refreshDerivedAssets()}
 function currentAccountValue(a){return Number(a.refBalance||0)+netSince(a.refDate||todayISO())-Number(a.refDayNet||0)}
 function refreshDerivedAssets(){state.assets.forEach(a=>{if(isCurrentAccount(a)){if(a.refDate==null)setAccountReference(a,a.value,a.createdAt||todayISO());a.value=currentAccountValue(a);a.invested=a.value}})}
+// Compra recurrente de un fondo con ISIN: no sabemos las participaciones exactas hasta que MyInvestor ejecuta la orden, así que
+// se estiman con la última cotización (importe / precio) y se marcan como estimadas. Cuando llega una cotización con fecha
+// igual o posterior a la compra, se recalculan con ese precio y se dan por definitivas. Siempre se pueden corregir a mano.
+function linkFundEstimate(m){
+ if(m.type!=="Inversión")return null;
+ const a=bestAssetForText((getCat(m.categoryId)?.name||"")+" "+String(m.description||""),state.assets.filter(x=>assetMarketConfig(x)));
+ if(!a||!(Number(a.unitPrice)>0))return null;
+ m.assetId=a.id;m.units=Math.round(Number(m.amount)/Number(a.unitPrice)*1e6)/1e6;m.unitsEstimated=true;
+ return a;
+}
+function finalizeEstimatedUnits(){
+ let changed=0;
+ state.movements.forEach(m=>{
+   if(!m.unitsEstimated||!m.assetId)return;const a=state.assets.find(x=>x.id===m.assetId);if(!a||!(Number(a.unitPrice)>0))return;
+   const units=Math.round(Number(m.amount)/Number(a.unitPrice)*1e6)/1e6;
+   if(units!==m.units){applyInvestmentMovementToAsset(m,-1);m.units=units;applyInvestmentMovementToAsset(m,1);changed++}
+   if(a.updatedAt&&a.updatedAt>=m.date){delete m.unitsEstimated;changed++}
+ });
+ return changed;
+}
 // Un movimiento de Inversión cuya categoría coincide con una cuenta de ahorro (RenaultBank, Trade Republic…) queda enlazado a ella.
 function linkSavingsAccount(m){
  if(m.type!=="Inversión"||m.units>0)return null;
@@ -983,6 +1022,7 @@ async function updateMarketPrices(showAlert=false){
      a.priceSource=row.source||"GitHub";
      changed++;
    }
+   finalizeEstimatedUnits();
    state.meta=state.meta||{};
    const syncAt=nowISO(),feedAt=feed.updatedAt||syncAt;
    state.meta.lastPricesSyncAt=syncAt;
@@ -1081,6 +1121,7 @@ function renderSummary(){
  const portfolioRef=latestPortfolioReference();
  el("portfolioUpdateDashboard").textContent=portfolioRef?`Actualizado ${formatDateTime(portfolioRef)}`:(state.assets.length?"Pendiente de registrar actualización":"Sin patrimonio");
  const all=calcSummary(state.movements);el("cumulativeSavings").textContent=euro.format(all.income-all.expense);
+ el("cumulativeLiquidity").textContent=euro.format(all.balance);el("cumulativeLiquidity").classList.toggle("negative",all.balance<0);
 }
 
 function renderFreshness(){
@@ -1123,7 +1164,7 @@ function persistMovement(d,id){
    if(i>=0){
      applyInvestmentMovementToAsset(state.movements[i],-1);
      const next={...state.movements[i],date,type,categoryId,description,amount};
-     if(usesUnits){next.assetId=assetId;next.units=units}else{const wasLinked=!!state.movements[i].assetId;delete next.assetId;delete next.units;if(wasLinked)linkSavingsAccount(next)}
+     if(usesUnits){next.assetId=assetId;next.units=units;delete next.unitsEstimated}else{const wasLinked=!!state.movements[i].assetId;delete next.assetId;delete next.units;if(wasLinked)linkSavingsAccount(next)}
      state.movements[i]=next;applyInvestmentMovementToAsset(next,1);
    }
  }else{
@@ -1178,7 +1219,7 @@ async function bulkRecategorize(){
 }
 function renderMovements(){
  const movs=movementSearchResults();el("visibleCount").textContent=intFmt.format(movs.length);
- el("movementTable").innerHTML=movs.length?movs.map(m=>`<tr><td>${formatDate(m.date)}</td><td><span class="pill ${m.type}">${m.type}</span></td><td>${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")}</td><td>${escapeHtml(m.description)}</td><td class="amount">${euro.format(m.amount)}</td><td class="actions"><button class="secondary small" data-edit="${m.id}">Editar</button> <button class="danger small" data-del="${m.id}">Borrar</button></td></tr>`).join(""):`<tr><td colspan="6" class="empty">No hay movimientos.</td></tr>`;
+ el("movementTable").innerHTML=movs.length?movs.map(m=>`<tr><td>${formatDate(m.date)}</td><td><span class="pill ${m.type}">${m.type}</span></td><td>${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")}</td><td>${escapeHtml(m.description)}</td><td class="amount">${euro.format(m.amount)}${m.unitsEstimated?` <span class="badge" title="Participaciones estimadas con la última cotización; se ajustan solas al llegar la cotización del día de compra">≈ ${assetDisplayUnits(m.units)} part.</span>`:""}</td><td class="actions"><button class="secondary small" data-edit="${m.id}">Editar</button> <button class="danger small" data-del="${m.id}">Borrar</button></td></tr>`).join(""):`<tr><td colspan="6" class="empty">No hay movimientos.</td></tr>`;
  el("movementTable").querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editMovement(b.dataset.edit));
  el("movementTable").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>deleteMovement(b.dataset.del));
  // Lista táctil para móvil (agrupada por día; tocar abre la hoja de edición). Icono + signo + texto: el tipo nunca se indica solo por color.
@@ -1187,7 +1228,7 @@ function renderMovements(){
  shown.forEach(m=>{
    if(m.date!==lastDate){lastDate=m.date;html+=`<div class="mday">${formatDate(m.date)}</div>`}
    const t=TYPE_UI[m.type]||TYPE_UI.Gasto;
-   html+=`<button type="button" class="mitem" data-id="${m.id}"><span class="mico ${t.k}"><svg class="ico sm" aria-hidden="true"><use href="#${t.icon}"/></svg></span><span class="mtext"><b>${escapeHtml(m.description)}</b><small>${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")} · ${m.type}</small></span><span class="amt ${t.cls}">${t.sign}${euro.format(m.amount)}</span></button>`;
+   html+=`<button type="button" class="mitem" data-id="${m.id}"><span class="mico ${t.k}"><svg class="ico sm" aria-hidden="true"><use href="#${t.icon}"/></svg></span><span class="mtext"><b>${escapeHtml(m.description)}</b><small>${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")} · ${m.type}${m.unitsEstimated?" · ≈ "+assetDisplayUnits(m.units)+" part. (estimadas)":""}</small></span><span class="amt ${t.cls}">${t.sign}${euro.format(m.amount)}</span></button>`;
  });
  if(!html)html=`<div class="empty-state"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg><p>${state.movements.length?"Ningún movimiento coincide con los filtros.":"Todavía no hay movimientos."}</p><button type="button" class="primary" data-empty-add>Añadir movimiento</button></div>`;
  if(movs.length>LIMIT)html+=`<div class="empty">Mostrando ${intFmt.format(LIMIT)} de ${intFmt.format(movs.length)}. Usa los filtros para acotar.</div>`;
@@ -1210,7 +1251,7 @@ function generateRecurring(showAlert=false){
    let guard=0;
    while(r.nextDate&&r.nextDate<=today&&guard<500){
      const exists=state.movements.some(m=>m.recurringId===r.id&&m.recurrenceDate===r.nextDate);
-     if(!exists){const m={id:uuid(),date:r.nextDate,type:r.type,categoryId:r.categoryId,description:r.description,amount:Number(r.amount),recurringId:r.id,recurrenceDate:r.nextDate};if(linkSavingsAccount(m))applyInvestmentMovementToAsset(m,1);state.movements.push(m);created++}
+     if(!exists){const m={id:uuid(),date:r.nextDate,type:r.type,categoryId:r.categoryId,description:r.description,amount:Number(r.amount),recurringId:r.id,recurrenceDate:r.nextDate};if(linkSavingsAccount(m)||linkFundEstimate(m))applyInvestmentMovementToAsset(m,1);state.movements.push(m);created++}
      r.nextDate=nextDate(r.nextDate,r.frequency);guard++;
    }
  });
@@ -1388,6 +1429,29 @@ function drawPatrimonyChart(){
    scales:{x:{beginAtZero:true,ticks:{callback:v=>shortNum(v)},grid:{display:false}},y:{ticks:{autoSkip:false,callback:truncTick}}}},
   plugins:[barValueLabels]});
 }
+function drawNetWorthChart(){
+ const p=selectedPeriod(),r=periodRange(),all=state.meta?.netWorthHistory||[];
+ const series=all.filter(x=>(!r.from||x.date>=r.from)&&(!r.to||x.date<=r.to));
+ showChartCanvas("netWorthChart");const box=chartBoxFor("netWorthChart");let note=box.parentElement.querySelector(".empty-state");
+ if(series.length<2){
+   if(charts.netWorthChart){charts.netWorthChart.destroy();delete charts.netWorthChart}
+   box.style.display="none";
+   if(!note){note=document.createElement("div");note.className="empty-state";box.after(note)}
+   note.innerHTML=`<svg class="ico" aria-hidden="true"><use href="#i-trend"/></svg><p>${all.length?"Sin suficientes puntos en este periodo. Cambia a «Año» o «Todo».":"Se irá dibujando a medida que se sincronicen cotizaciones y registres movimientos."}</p>`;
+   el("subNetWorth").textContent=all.length?`${intFmt.format(all.length)} punto${all.length===1?"":"s"} guardados desde ${formatDate(all[0].date)}`:"Todavía sin histórico";return;
+ }
+ if(note)note.remove();box.style.display="";
+ const first=series[0],last=series[series.length-1],delta=last.value-first.value;
+ el("subNetWorth").textContent=`${formatDate(first.date)} – ${formatDate(last.date)} · ${delta>=0?"+":""}${euro.format(delta)} en el periodo`;
+ const labels=series.map(x=>p.mode==="month"?x.date.slice(8,10):`${x.date.slice(8,10)}/${x.date.slice(5,7)}`);
+ mountChart("netWorthChart",{type:"line",data:{labels,datasets:[
+   {label:"Patrimonio total",data:series.map(x=>x.value),borderColor:tok("--chart-neutral"),backgroundColor:withAlpha(tok("--chart-neutral"),0.08),fill:true,tension:0.25,pointRadius:series.length>60?0:2},
+   {label:"Fondos (valor)",data:series.map(x=>x.funds),borderColor:colors["Inversión"],backgroundColor:"transparent",tension:0.25,pointRadius:series.length>60?0:2},
+   {label:"Fondos (aportado)",data:series.map(x=>x.invested),borderColor:colors["Inversión"],borderDash:[5,4],backgroundColor:"transparent",tension:0.25,pointRadius:0}]},
+  options:{responsive:true,maintainAspectRatio:false,animation:{duration:250},interaction:{mode:"index",intersect:false},
+   plugins:{legend:{labels:{usePointStyle:true,boxWidth:8,font:{family:FONT}}},tooltip:{callbacks:{title:items=>formatDate(series[items[0].dataIndex].date),label:c=>` ${c.dataset.label}: ${euro.format(c.parsed.y)}`}}},
+   scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:8}},y:{ticks:{callback:v=>shortNum(v)}}}}});
+}
 function drawCompoundReturnChart(){
  const data=state.assets.map(a=>({name:a.name||"Activo",rate:assetAnnualizedReturn(a),invested:Number(a.invested||0),value:Number(a.value||0),since:assetInvestmentMovements(a)[0]?.date,asOf:a.updatedAt})).filter(x=>x.rate!==null&&Number.isFinite(x.rate)).sort((a,b)=>b.rate-a.rate);
  el("subReturn").textContent=data.length?"Desde la primera aportación de cada activo hasta su última cotización":"Necesito compras de inversión enlazadas a un activo con valor actual";
@@ -1404,7 +1468,7 @@ function renderCharts(){
  // Colores de los gráficos según el tema activo (claro u oscuro)
  colors.Ingreso=tok("--income");colors.Gasto=tok("--expense");colors["Inversión"]=tok("--investment");
  Chart.defaults.color=tok("--muted");Chart.defaults.borderColor=tok("--border");Chart.defaults.font.family=FONT;
- drawMonthlyChart();drawSavingsChart();drawCategoryChart();drawPatrimonyChart();drawCompoundReturnChart();
+ drawMonthlyChart();drawSavingsChart();drawCategoryChart();drawPatrimonyChart();drawNetWorthChart();drawCompoundReturnChart();
 }
 
 // ---------- Móvil: utilidades, hoja rápida de alta, selector compacto, listas de barras ----------
