@@ -316,11 +316,10 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         <div class="card"><div class="metric-label">Liquidez restante</div><div class="metric-value" id="sumBalance">0 €</div><div class="metric-sub" id="cmpBalance">—</div></div>
       </div>
 
-      <div class="summary-grid" style="margin-bottom:0">
+      <div class="grid-3">
         <div class="card"><div class="metric-label">Rentabilidad de los fondos</div><div class="metric-value" id="portfolioReturn">0 €</div><div class="metric-sub" id="portfolioReturnPct">0,0 % sobre lo aportado</div><div class="metric-sub">Solo fondos con ISIN y cripto</div></div>
         <div class="card"><div class="metric-label">Patrimonio actual</div><div class="metric-value" id="netWorth">0 €</div><div class="metric-sub" id="assetCount">0 activos</div><div class="metric-sub" id="currentAccountNote" hidden></div><div class="metric-sub" id="portfolioUpdateDashboard">Sin actualizar</div></div>
-        <div class="card"><div class="metric-label">Ahorro acumulado</div><div class="metric-value" id="cumulativeSavings">0 €</div><div class="metric-sub">Ingresos − gastos de todo el histórico</div></div>
-        <div class="card"><div class="metric-label">Liquidez acumulada</div><div class="metric-value" id="cumulativeLiquidity">0 €</div><div class="metric-sub">Ingresos − gastos − inversiones de todo el histórico</div></div>
+        <div class="card"><div class="metric-label">Ahorro acumulado</div><div class="metric-value" id="cumulativeSavings">0 €</div><div class="metric-sub">Ingresos − gastos de todo el histórico. Las inversiones no se restan: no son gasto, es dinero que sigue siendo tuyo en fondos y cuentas de ahorro.</div></div>
       </div>
       <div class="inline-note section-gap" id="dataFreshness">Últimas actualizaciones: sin datos todavía.</div>
 
@@ -333,7 +332,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         <div class="panel">
           <div class="chart-head"><div><h2>Ahorro acumulado</h2><p class="chart-sub" id="subSavings"></p></div></div>
           <div class="chart-box"><canvas id="savingsChart"></canvas></div>
-          <div class="chart-hint">Ingresos menos gastos, sumados desde el primer movimiento. Las inversiones no se restan.</div>
+          <div class="chart-hint">Ingresos menos gastos, sumados desde el primer movimiento. Las inversiones no se restan: no son gasto, siguen siendo tuyas.</div>
         </div>
       </div>
 
@@ -1121,7 +1120,6 @@ function renderSummary(){
  const portfolioRef=latestPortfolioReference();
  el("portfolioUpdateDashboard").textContent=portfolioRef?`Actualizado ${formatDateTime(portfolioRef)}`:(state.assets.length?"Pendiente de registrar actualización":"Sin patrimonio");
  const all=calcSummary(state.movements);el("cumulativeSavings").textContent=euro.format(all.income-all.expense);
- el("cumulativeLiquidity").textContent=euro.format(all.balance);el("cumulativeLiquidity").classList.toggle("negative",all.balance<0);
 }
 
 function renderFreshness(){

@@ -92,7 +92,7 @@ Opciones sin instalar nada:
 
 ## Dashboard: tarjetas y gráficos
 
-- **Ahorro acumulado** = ingresos − gastos de todo el histórico (las inversiones no se restan: siguen siendo tuyas). **Liquidez acumulada** = ingresos − gastos − inversiones de todo el histórico: lo que ha quedado en la cuenta corriente desde el primer movimiento registrado.
+- **Ahorro acumulado** = ingresos − gastos de todo el histórico. Las inversiones no se restan: no son gasto, es dinero que sigue siendo tuyo en fondos y cuentas de ahorro. **Liquidez restante** (por periodo) sí las resta: es lo que queda en la cuenta corriente ese mes o ese año.
 - **Evolución del patrimonio**: la app guarda un punto por día (`meta.netWorthHistory`, máximo 730) cada vez que cambia algo: cotizaciones, movimientos, traspasos o actualizaciones manuales. Muestra patrimonio total, valor de los fondos y capital aportado a los fondos, según el periodo elegido. Hasta que no haya dos días con datos no se dibuja.
 
 ## Recurrentes de fondos: participaciones estimadas
