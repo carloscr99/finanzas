@@ -117,6 +117,10 @@ En «Ajustar presupuestos» está la tabla con cada categoría de gasto, su tipo
 
 El tipo de activo **Deuda** (préstamo del coche, pago final pendiente…) guarda en «Valor actual» lo que queda por pagar. Resta del **patrimonio neto** (activos − deudas), no cuenta como inversión ni aparece en la distribución. Se actualiza a mano o con un traspaso desde una cuenta hacia la deuda, que la reduce (traspasar desde la deuda la aumenta).
 
+## Categorías
+
+Alta, baja (no deja borrar categorías en uso) y **renombrado** con el lápiz del chip; al renombrar se conserva el identificador, así que movimientos, recurrentes y presupuestos no cambian. Conviene que las categorías digan en qué se va el dinero, no por dónde sale (Bizum o compra online son canales de pago, no motivos de gasto).
+
 ## Corregir el histórico: cambiar categoría en bloque
 
 En Movimientos, filtra los apuntes que quieras corregir (texto, tipo, categoría, fechas) y pulsa «Cambiar categoría de los visibles…»: eliges el nuevo tipo y la nueva categoría y se aplican a todos los visibles de una vez. Solo cambia tipo y categoría; los saldos del patrimonio no se tocan, así que sirve para reclasificar el histórico sin duplicar importes en las cuentas. Si el movimiento sale de una categoría de Inversión con participaciones, pierde el enlace con el fondo.

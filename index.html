@@ -103,7 +103,7 @@ td.actions{white-space:nowrap;width:1%}
 .pill.Inversión{background:var(--investment-soft);color:var(--investment)}
 .chips{display:flex;gap:8px;flex-wrap:wrap}
 .chip{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border-radius:999px;border:1px solid var(--border);background:var(--soft);font-size:13px}
-.chip button{border:0;background:transparent;color:var(--muted);padding:0}
+.chip button{border:0;background:transparent;color:var(--muted);padding:4px;display:inline-flex;align-items:center;border-radius:50%;min-width:28px;min-height:28px;justify-content:center}.chip button .ico{width:16px;height:16px}.chip button:active{background:var(--btn2-bg)}
 .muted{color:var(--muted)}
 .empty{text-align:center;padding:24px;color:var(--muted)}
 .chart-box{position:relative;height:300px;width:100%}
@@ -258,6 +258,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
   <symbol id="i-trend" viewBox="0 0 24 24"><path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></symbol>
   <symbol id="i-funnel" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"/></symbol>
+  <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></symbol>
   <symbol id="i-gauge" viewBox="0 0 24 24"><path d="m12 14 3.5-3.5"/><path d="M4.93 19.07A10 10 0 1 1 19.07 19.07"/></symbol>
   <symbol id="i-caret-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
 </svg>
@@ -694,7 +695,7 @@ async function uiConfirm(msg,opts={}){
 }
 async function uiPrompt(msg,def,opts={}){
  const S=swalBase();if(!S)return prompt(msg,def);
- const r=await S.fire({title:opts.title||"",text:msg,input:"text",inputValue:def==null?"":String(def),inputAttributes:{inputmode:"decimal",autocomplete:"off"},showCancelButton:true,confirmButtonText:opts.confirmText||"Guardar",cancelButtonText:"Cancelar"});
+ const r=await S.fire({title:opts.title||"",text:msg,input:"text",inputValue:def==null?"":String(def),inputAttributes:{inputmode:opts.inputmode||"decimal",autocomplete:"off"},showCancelButton:true,confirmButtonText:opts.confirmText||"Guardar",cancelButtonText:"Cancelar"});
  return r.isConfirmed?r.value:null;
 }
 // ---------- Persistencia en Firestore (un documento users/{uid} con todo el estado) ----------
@@ -1189,8 +1190,19 @@ function renderSearchCategories(){
 }
 function renderCategoryList(){
  const sorted=[...state.categories].sort((a,b)=>a.type.localeCompare(b.type)||a.name.localeCompare(b.name,"es"));
- el("categoryList").innerHTML=sorted.length?sorted.map(c=>`<span class="chip"><span class="pill ${c.type}">${c.type}</span>${escapeHtml(c.name)}<button data-delcat="${c.id}">×</button></span>`).join(""):`<span class="muted">No hay categorías.</span>`;
+ el("categoryList").innerHTML=sorted.length?sorted.map(c=>`<span class="chip"><span class="pill ${c.type}">${c.type}</span>${escapeHtml(c.name)}<button type="button" data-rencat="${c.id}" aria-label="Renombrar ${escapeHtml(c.name)}" title="Renombrar"><svg class="ico" aria-hidden="true"><use href="#i-pencil"/></svg></button><button type="button" data-delcat="${c.id}" aria-label="Eliminar ${escapeHtml(c.name)}" title="Eliminar"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button></span>`).join(""):`<span class="muted">No hay categorías.</span>`;
  el("categoryList").querySelectorAll("[data-delcat]").forEach(b=>b.onclick=()=>deleteCategory(b.dataset.delcat));
+ el("categoryList").querySelectorAll("[data-rencat]").forEach(b=>b.onclick=()=>renameCategory(b.dataset.rencat));
+}
+// Renombrar conserva el id, así que movimientos, recurrentes y presupuestos siguen apuntando a la misma categoría.
+async function renameCategory(id){
+ const c=getCat(id);if(!c)return;
+ const nv=await uiPrompt(`Nuevo nombre para «${c.name}» (${c.type}). Los movimientos, recurrentes y presupuestos se mantienen.`,c.name,{title:"Renombrar categoría",inputmode:"text",confirmText:"Renombrar"});
+ if(nv===null)return;const name=String(nv).trim();
+ if(!name)return uiError("Escribe un nombre.");
+ if(name===c.name)return;
+ if(state.categories.some(x=>x.id!==id&&x.type===c.type&&x.name.toLowerCase()===name.toLowerCase()))return uiError("Ya hay una categoría de ese tipo con ese nombre.");
+ const old=c.name;c.name=name;markDataUpdate("movement");saveState();renderAll();toast(`«${old}» ahora se llama «${name}»`);
 }
 function addCategory(){
  const name=el("cName").value.trim(),type=el("cType").value;if(!name)return uiError("Escribe un nombre.");
