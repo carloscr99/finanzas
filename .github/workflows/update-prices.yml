@@ -15,6 +15,8 @@ permissions:
 jobs:
   update:
     runs-on: ubuntu-latest
+    outputs:
+      changed: ${{ steps.commit.outputs.changed }}
     steps:
       - name: Descargar el repositorio
         uses: actions/checkout@v4
@@ -28,13 +30,26 @@ jobs:
         run: node scripts/update-prices.mjs
 
       - name: Subir el cambio si hay precios nuevos
+        id: commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if git diff --quiet -- prices.json; then
             echo "prices.json sin cambios, no se hace commit"
+            echo "changed=false" >> "$GITHUB_OUTPUT"
           else
             git add prices.json
             git commit -m "Cotizaciones $(date -u +%Y-%m-%d)"
             git push
+            echo "changed=true" >> "$GITHUB_OUTPUT"
           fi
+
+  # Los commits hechos con GITHUB_TOKEN no disparan el workflow de publicación: se llama aquí explícitamente.
+  publicar:
+    needs: update
+    if: needs.update.outputs.changed == 'true'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/deploy-pages.yml

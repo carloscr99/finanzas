@@ -1,0 +1,42 @@
+name: Publicar en GitHub Pages
+
+# Publica el contenido del repositorio en GitHub Pages con un workflow propio (en vez del constructor "legacy" de Pages).
+# Se ejecuta en cada push a main, a mano, y también lo llama el workflow de cotizaciones tras actualizar prices.json
+# (los commits hechos con GITHUB_TOKEN no disparan otros workflows, por eso se llama explícitamente).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Preparar Pages
+        uses: actions/configure-pages@v5
+
+      - name: Empaquetar la web
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: "."
+
+      - name: Desplegar
+        id: deployment
+        uses: actions/deploy-pages@v4
