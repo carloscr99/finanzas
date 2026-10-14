@@ -109,6 +109,10 @@ En Movimientos, filtra los apuntes que quieras corregir (texto, tipo, categoría
 - **Cuentas de ahorro** (tipo Cuenta): un movimiento de Inversión cuya categoría coincide con el nombre de la cuenta (RenaultBank, Trade Republic…) suma su importe al saldo y al aportado de esa cuenta, también cuando lo genera un recurrente. Las cuentas, depósitos y seguros cuentan en el patrimonio total pero no en «capital invertido» ni en la rentabilidad, que solo miran los fondos con ISIN y cripto.
 - **Traspasos entre cuentas** (Patrimonio → «Traspaso entre cuentas»): mueven dinero entre dos cuentas sin contar como ingreso, gasto ni inversión. Sirven para el camino de vuelta (un depósito que vence y vuelve a la cuenta corriente) o entre cuentas de ahorro; quedan listados los últimos. Un traspaso equivocado se deshace registrando el inverso.
 
+## Cómo se publica la web
+
+GitHub Pages está configurado en modo **GitHub Actions**: el workflow `.github/workflows/deploy-pages.yml` empaqueta el repositorio y lo despliega en cada push a `main` (también a mano desde Actions → "Publicar en GitHub Pages" → Run workflow). El workflow de cotizaciones lo llama después de cada commit de `prices.json`, porque los commits hechos con `GITHUB_TOKEN` no disparan otros workflows por sí solos. Se cambió el 14/10/2026 porque el constructor clásico de Pages se quedó colgado varias veces ("in progress deployment"); si volviera a pasar con el workflow, en Actions se puede cancelar el despliegue atascado y relanzar.
+
 ## Límites de Firebase y tamaño de los datos
 
 Todo el estado se guarda en un único documento de Firestore (`users/{uid}`), que tiene un **límite de 1 MiB**. Ajustes muestra "Tamaño de tus datos": el JSON compacto del estado, que es una buena aproximación de lo que mide Firestore, con el porcentaje del límite y una estimación de meses de margen (a 45 movimientos al mes, unos 180 bytes cada uno). A 14/10/2026 ocupaba unos 250 KB. El aviso cambia a naranja a partir del 70 % y a rojo a partir del 90 %.

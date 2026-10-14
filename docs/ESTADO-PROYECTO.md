@@ -43,7 +43,8 @@ Requisitos fijados al principio y que se mantienen:
 | `firestore.rules` | Reglas de seguridad (copia versionada; las vigentes están en la consola). |
 | `prices.json` | Cotizaciones por ISIN (y `BTC`): `price`, `priceDate`, `source`, `updatedAt`. Lo reescribe el robot. |
 | `scripts/update-prices.mjs` | Script Node que lee el NAV de cada fondo en el Financial Times y BTC en CoinGecko. |
-| `.github/workflows/update-prices.yml` | GitHub Action, dos pasadas al día (06:00 y 18:00 UTC) y a mano. |
+| `.github/workflows/update-prices.yml` | GitHub Action, dos pasadas al día (06:00 y 18:00 UTC) y a mano; tras un commit de precios llama al workflow de publicación. |
+| `.github/workflows/deploy-pages.yml` | Publica la web en Pages (modo "GitHub Actions") en cada push a `main`, a mano o desde el workflow de cotizaciones. |
 | `manifest.webmanifest`, `icon-192.png`, `icon-512.png` | Instalación como app (id, standalone, portrait, categoría finance). |
 | `README.md` | Guía completa: Firebase, Pages, cotizaciones, móvil, Patrimonio, cambio en bloque, Dashboard, recurrentes de fondos. |
 | `.nojekyll`, `.gitignore` | Pages sin Jekyll; ignora `.claude/` y `mis-finanzas-*.json`. |
@@ -152,7 +153,7 @@ Clasificaciones dudosas que se pueden revisar con el cambio en bloque: "Mas i ma
 ## 7. Cómo trabajar con el proyecto
 
 ### Publicar un cambio
-En `C:\Users\Carlos\repos\finanzas`: `git pull` (el robot hace commits propios), editar, `git add -A`, `git commit -m "…"`, `git push`. Pages republica en 1-2 minutos. En la consola de Claude puede hacer falta recargar el PATH: `$env:Path = [Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [Environment]::GetEnvironmentVariable("Path","User")`.
+En `C:\Users\Carlos\repos\finanzas`: `git pull` (el robot hace commits propios), editar, `git add -A`, `git commit -m "…"`, `git push`. El workflow "Publicar en GitHub Pages" la republica en 1-2 minutos (Pages está en modo GitHub Actions desde el 14/10/2026, porque el constructor clásico se colgaba). En la consola de Claude puede hacer falta recargar el PATH: `$env:Path = [Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [Environment]::GetEnvironmentVariable("Path","User")`.
 
 ### Probar en local sin login
 `powershell -NoProfile -ExecutionPolicy Bypass -File .claude\serve.ps1` y abrir http://localhost:8000/.claude/test.html (datos del JSON de importación; "guardar" no persiste). Claude lo hace con el navegador integrado (`preview_start`, configuración "finanzas").
