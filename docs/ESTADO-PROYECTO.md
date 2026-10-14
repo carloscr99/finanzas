@@ -88,11 +88,11 @@ GitHub Pages (estático)                     Firebase (plan gratuito Spark)
 
 ### Secciones de la web
 
-- **Dashboard**: periodo (mes / año / todo), tarjetas (ingresos, gastos, inversiones, liquidez restante, rentabilidad de los fondos, patrimonio actual con nota de la cuenta corriente, ahorro acumulado), gráficos (evolución mensual, ahorro acumulado, por categoría, distribución del patrimonio, evolución del patrimonio, rentabilidad anualizada por activo) y tabla resumen por categoría. Clic en barras y filas lleva a Movimientos filtrado.
+- **Dashboard**: periodo (mes / año / todo), tarjetas (ingresos, gastos, inversiones, liquidez restante, rentabilidad de los fondos, patrimonio actual con nota de la cuenta corriente, ahorro acumulado), gráficos (evolución mensual, ahorro acumulado, por categoría, distribución del patrimonio, rentabilidad anualizada por activo) y tabla resumen por categoría. Clic en barras y filas lleva a Movimientos filtrado.
 - **Movimientos**: alta (formulario en escritorio, hoja rápida con "+" en móvil), búsqueda y filtros, tabla o lista por días, y **cambio de tipo y categoría en bloque** de los movimientos visibles (no toca saldos del patrimonio).
 - **Presupuesto** (sección propia, no en el Dashboard): navegador de meses, tarjetas (presupuestado, gastado, disponible, ritmo diario), barras por categoría y tabla «Ajustar presupuestos» con propuesta calculada (fijo por recurrente / habitual: máx(media, mediana) de 12 meses / irregular: anual entre 12 / sin propuesta con poco histórico). Se guardan en `budgets`.
 - **Categorías** (alta, baja y renombrar conservando el id), **Recurrentes** (se generan al abrir la web; pausar/borrar), **Ajustes** (cuenta, exportar/importar JSON, borrar todo, tamaño de los datos).
-- **Patrimonio**: activos de tipo Cuenta, **Cuenta corriente**, Fondo, Cripto, Oro, Efectivo, Otro. Sincronizar cotizaciones lee `prices.json`. Panel **Traspaso entre cuentas** con historial.
+- **Patrimonio**: activos de tipo Cuenta, **Cuenta corriente**, Fondo, Cripto, Oro, Efectivo, Otro. Sincronizar cotizaciones lee `prices.json`. Panel **Traspaso entre cuentas** con historial y gráfico de **evolución del patrimonio** (todo el histórico).
 - **Móvil**: barra inferior de 5 destinos (Inicio, Movimientos, +, Patrimonio, Más) con iconos SVG y píldora activa; página "Más" con cuenta, categorías, recurrentes, ajustes y cerrar sesión; hoja rápida con asa y cierre deslizando.
 
 ### Modelo de patrimonio (decidido el 14/10)

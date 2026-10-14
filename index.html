@@ -355,17 +355,10 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         </div>
       </div>
 
-      <div class="grid-2 section-gap">
-        <div class="panel">
-          <div class="chart-head"><div><h2>Evolución del patrimonio</h2><p class="chart-sub" id="subNetWorth"></p></div></div>
-          <div class="chart-box"><canvas id="netWorthChart"></canvas></div>
-          <div class="chart-hint">Un punto por día con cambios: cotizaciones, movimientos, traspasos o actualizaciones manuales.</div>
-        </div>
-        <div class="panel">
+      <div class="panel section-gap">
           <div class="chart-head"><div><h2>Rentabilidad anualizada por activo</h2><p class="chart-sub" id="subReturn"></p></div></div>
           <div class="chart-box"><canvas id="compoundReturnChart"></canvas></div>
           <div class="inline-note">Calculada mediante XIRR: tiene en cuenta el importe y la fecha de cada aportación y el valor actual del activo. Se actualiza al añadir, editar o borrar movimientos de inversión y al cambiar el precio actual.</div>
-        </div>
       </div>
 
       <div class="panel section-gap">
@@ -476,6 +469,11 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
       <div class="inline-note" style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
         <span id="priceStatus">Cotizaciones: conectando con GitHub…</span>
         <button class="secondary small" id="refreshPrices">Sincronizar cotizaciones</button>
+      </div>
+      <div class="panel" style="margin-bottom:16px">
+        <div class="chart-head"><div><h2>Evolución del patrimonio</h2><p class="chart-sub" id="subNetWorth"></p></div></div>
+        <div class="chart-box"><canvas id="netWorthChart"></canvas></div>
+        <div class="chart-hint">Un punto por día con cambios: cotizaciones, movimientos, traspasos o actualizaciones manuales. Patrimonio neto, valor de los fondos y capital aportado a los fondos.</div>
       </div>
       <div id="assetGrid" class="asset-grid"></div>
       <details class="panel section-gap" id="transferDetails">
@@ -1559,21 +1557,21 @@ function drawPatrimonyChart(){
   plugins:[barValueLabels]});
 }
 function drawNetWorthChart(){
- const p=selectedPeriod(),r=periodRange(),all=state.meta?.netWorthHistory||[];
- const series=all.filter(x=>(!r.from||x.date>=r.from)&&(!r.to||x.date<=r.to));
+ if(typeof Chart==="undefined")return;
+ const all=state.meta?.netWorthHistory||[],series=all;
  showChartCanvas("netWorthChart");const box=chartBoxFor("netWorthChart");let note=box.parentElement.querySelector(".empty-state");
  if(series.length<2){
    if(charts.netWorthChart){charts.netWorthChart.destroy();delete charts.netWorthChart}
    box.style.display="none";
    if(!note){note=document.createElement("div");note.className="empty-state";box.after(note)}
-   const n=all.length,msg=n===0?"Se irá dibujando a medida que se sincronicen cotizaciones y registres movimientos.":n===1?"Hoy se ha guardado el primer punto. A partir de mañana, con dos días o más, aparecerá la línea.":"Sin suficientes puntos en este periodo. Cambia a «Año» o «Todo».";
+   const n=all.length,msg=n===0?"Se irá dibujando a medida que se sincronicen cotizaciones y registres movimientos.":"Hoy se ha guardado el primer punto. A partir de mañana, con dos días o más, aparecerá la línea.";
    note.innerHTML=`<svg class="ico" aria-hidden="true"><use href="#i-trend"/></svg><p>${msg}</p>`;
    el("subNetWorth").textContent=n===0?"Todavía sin histórico":n===1?`1 punto guardado (${formatDate(all[0].date)})`:`${intFmt.format(n)} puntos guardados desde ${formatDate(all[0].date)}`;return;
  }
  if(note)note.remove();box.style.display="";
  const first=series[0],last=series[series.length-1],delta=last.value-first.value;
- el("subNetWorth").textContent=`${formatDate(first.date)} – ${formatDate(last.date)} · ${delta>=0?"+":""}${euro.format(delta)} en el periodo`;
- const labels=series.map(x=>p.mode==="month"?x.date.slice(8,10):`${x.date.slice(8,10)}/${x.date.slice(5,7)}`);
+ el("subNetWorth").textContent=`${formatDate(first.date)} – ${formatDate(last.date)} · ${delta>=0?"+":""}${euro.format(delta)} desde el primer punto`;
+ const labels=series.map(x=>series.length>180?`${months[Number(x.date.slice(5,7))-1].slice(0,3)} ${x.date.slice(2,4)}`:`${x.date.slice(8,10)}/${x.date.slice(5,7)}`);
  mountChart("netWorthChart",{type:"line",data:{labels,datasets:[
    {label:"Patrimonio total",data:series.map(x=>x.value),borderColor:tok("--chart-neutral"),backgroundColor:withAlpha(tok("--chart-neutral"),0.08),fill:true,tension:0.25,pointRadius:series.length>60?0:2},
    {label:"Fondos (valor)",data:series.map(x=>x.funds),borderColor:colors["Inversión"],backgroundColor:"transparent",tension:0.25,pointRadius:series.length>60?0:2},
@@ -1598,7 +1596,7 @@ function renderCharts(){
  // Colores de los gráficos según el tema activo (claro u oscuro)
  colors.Ingreso=tok("--income");colors.Gasto=tok("--expense");colors["Inversión"]=tok("--investment");
  Chart.defaults.color=tok("--muted");Chart.defaults.borderColor=tok("--border");Chart.defaults.font.family=FONT;
- drawMonthlyChart();drawSavingsChart();drawCategoryChart();drawPatrimonyChart();drawNetWorthChart();drawCompoundReturnChart();
+ drawMonthlyChart();drawSavingsChart();drawCategoryChart();drawPatrimonyChart();drawCompoundReturnChart();
 }
 
 // ---------- Móvil: utilidades, hoja rápida de alta, selector compacto, listas de barras ----------
@@ -1728,6 +1726,7 @@ function showPage(name){
  });
  window.scrollTo({top:0,behavior:"smooth"});
  if(name==="dashboard")setTimeout(renderCharts,20);
+ if(name==="assets")setTimeout(drawNetWorthChart,20);
 }
 function exportData(){
  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=`mis-finanzas-${todayISO()}.json`;a.click();URL.revokeObjectURL(url);
@@ -1741,6 +1740,7 @@ function renderAll(){
  renderCategoryList();updateMovementCategories();updateRecurringCategories();renderSearchCategories();updateInvestmentFields();
  renderSummary();renderMovements();renderRecurring();renderAssets();renderCategorySummary();renderBudgets();renderBudgetTable();renderFreshness();renderDataSize();syncPeriodCompact();
  if(el("page-dashboard").classList.contains("active"))renderCharts();
+ if(el("page-assets").classList.contains("active"))drawNetWorthChart();
 }
 
 document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>showPage(b.dataset.page));
