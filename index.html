@@ -312,7 +312,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
       </div>
 
       <div class="grid-3">
-        <div class="card"><div class="metric-label">Rentabilidad del patrimonio</div><div class="metric-value" id="portfolioReturn">0 €</div><div class="metric-sub" id="portfolioReturnPct">0,0 % sobre lo aportado</div></div>
+        <div class="card"><div class="metric-label">Rentabilidad de los fondos</div><div class="metric-value" id="portfolioReturn">0 €</div><div class="metric-sub" id="portfolioReturnPct">0,0 % sobre lo aportado</div><div class="metric-sub">Solo fondos con ISIN y cripto</div></div>
         <div class="card"><div class="metric-label">Patrimonio actual</div><div class="metric-value" id="netWorth">0 €</div><div class="metric-sub" id="assetCount">0 activos</div><div class="metric-sub" id="portfolioUpdateDashboard">Sin actualizar</div></div>
         <div class="card"><div class="metric-label">Ahorro acumulado</div><div class="metric-value" id="cumulativeSavings">0 €</div><div class="metric-sub">Ingresos − gastos</div></div>
       </div>
@@ -441,9 +441,9 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
     <section id="page-assets" class="page">
       <div class="page-head"><div><h1>Patrimonio e inversiones</h1><p>Registra cuentas, fondos, cripto, oro, efectivo y otros activos.</p></div></div>
       <div class="summary-grid">
-        <div class="card"><div class="metric-label">Patrimonio total</div><div class="metric-value" id="assetTotal">0 €</div><div class="metric-sub" id="assetLastUpdate">Sin actualizar</div></div>
-        <div class="card investment"><div class="metric-label">Capital invertido</div><div class="metric-value" id="assetInvested">0 €</div></div>
-        <div class="card"><div class="metric-label">Ganancia / pérdida</div><div class="metric-value" id="assetGain">0 €</div></div>
+        <div class="card"><div class="metric-label">Patrimonio total</div><div class="metric-value" id="assetTotal">0 €</div><div class="metric-sub" id="assetSplit">—</div><div class="metric-sub" id="assetLastUpdate">Sin actualizar</div></div>
+        <div class="card investment"><div class="metric-label">Capital invertido</div><div class="metric-value" id="assetInvested">0 €</div><div class="metric-sub">Solo fondos con ISIN y cripto; cuentas, depósitos y seguros no cuentan</div></div>
+        <div class="card"><div class="metric-label">Ganancia / pérdida</div><div class="metric-value" id="assetGain">0 €</div><div class="metric-sub">Valor de los fondos menos su capital aportado</div></div>
         <div class="card"><div class="metric-label">Número de activos</div><div class="metric-value" id="assetTotalCount">0</div></div>
       </div>
       <div class="inline-note" style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
@@ -779,6 +779,15 @@ function assetMarketConfig(a){
  if(n.includes("bitcoin")||n==="btc"||(type==="cripto"&&n.includes("btc")))return{feedKey:"BTC",label:"Bitcoin"};
  return null;
 }
+// Solo los activos con cotización (fondos con ISIN y Bitcoin) cuentan como "capital invertido" y entran en la rentabilidad.
+// Cuentas, depósitos, seguros de ahorro y demás forman parte del patrimonio total, pero no de la ganancia.
+function isInvestmentAsset(a){return !!assetMarketConfig(a)}
+function portfolioTotals(){
+ const all=state.assets,inv=all.filter(isInvestmentAsset);
+ const sum=(xs,k)=>xs.reduce((s,x)=>s+Number(x[k]||0),0);
+ const nw=sum(all,"value"),invValue=sum(inv,"value"),invested=sum(inv,"invested");
+ return{nw,invValue,invested,gain:invValue-invested,liquidity:nw-invValue};
+}
 function assetDisplayUnits(v){return Number(v||0).toLocaleString("es-ES",{maximumFractionDigits:6})}
 function dateToMs(iso){const t=Date.parse(String(iso||"")+"T00:00:00");return Number.isFinite(t)?t:NaN}
 function movementAsset(m){
@@ -969,9 +978,7 @@ function renderSummary(){
  }else{
    ["cmpIncome","cmpExpense","cmpInvestment","cmpBalance"].forEach(id=>el(id).textContent="Comparación disponible en vista mensual");
  }
- const nw=state.assets.reduce((a,x)=>a+Number(x.value||0),0);
- const invested=state.assets.reduce((a,x)=>a+Number(x.invested||0),0);
- const portfolioGain=nw-invested,portfolioPct=invested?portfolioGain/invested*100:0;
+ const {nw,invested,gain:portfolioGain}=portfolioTotals(),portfolioPct=invested?portfolioGain/invested*100:0;
  el("portfolioReturn").textContent=`${portfolioGain>=0?"+":""}${euro.format(portfolioGain)}`;
  el("portfolioReturn").classList.toggle("negative",portfolioGain<0);el("portfolioReturn").classList.toggle("positive",portfolioGain>=0);
  el("portfolioReturnPct").textContent=invested?`${portfolioPct>=0?"+":""}${portfolioPct.toFixed(1).replace(".",",")} % sobre lo aportado`:"Sin capital aportado";
@@ -1112,7 +1119,8 @@ function addAsset(){
  const asset={id:uuid(),name,type,value,invested,units,isin,createdAt:todayISO()};state.assets.push(asset);["aName","aValue","aInvested","aUnits","aIsin"].forEach(id=>el(id).value="");saveState();renderAll();updateMarketPrices(false);
 }
 function renderAssets(){
- const total=state.assets.reduce((a,x)=>a+Number(x.value||0),0),invested=state.assets.reduce((a,x)=>a+Number(x.invested||0),0),gain=total-invested,portfolioRef=latestPortfolioReference();
+ const {nw:total,invested,gain,liquidity,invValue}=portfolioTotals(),portfolioRef=latestPortfolioReference();
+ el("assetSplit").textContent=state.assets.length?`${euro.format(liquidity)} en cuentas y otros · ${euro.format(invValue)} en fondos`:"—";
  el("assetTotal").textContent=euro.format(total);el("assetInvested").textContent=euro.format(invested);el("assetGain").textContent=euro.format(gain);el("assetGain").classList.toggle("negative",gain<0);el("assetGain").classList.toggle("positive",gain>=0);el("assetTotalCount").textContent=state.assets.length;
  el("assetLastUpdate").textContent=portfolioRef?`Actualizado ${formatDateTime(portfolioRef)}`:(state.assets.length?"Pendiente de registrar actualización":"Sin patrimonio");
  el("assetGrid").innerHTML=state.assets.length?state.assets.map(a=>{const g=Number(a.value)-Number(a.invested||0),units=Number(a.units||0),price=Number(a.unitPrice||0),meta=units>0?`<div class="sub">${assetDisplayUnits(units)} participaciones/títulos${price>0?` · ${euro.format(price)} / ud.`:""}</div>`:"",irr=assetAnnualizedReturn(a),irrHtml=irr===null?`<div class="sub">Rentabilidad anualizada: —${assetInvestmentMovements(a).length&&!(Number(a.units)>0)?" (las aportaciones registradas no cuadran con el capital aportado)":""}</div>`:`<div class="sub ${irr<0?"negative":"positive"}">Rentabilidad anualizada: ${(irr*100).toFixed(2).replace(".",",")} %</div>`,priceInfo=a.updatedAt?`<div class="sub">Cotización: ${formatDate(a.updatedAt)}${a.priceSource?` · ${escapeHtml(a.priceSource)}`:""}</div>`:"";return`<div class="asset-card"><span class="badge">${escapeHtml(a.type)}</span><h3>${escapeHtml(a.name)}</h3><div class="big">${euro.format(a.value)}</div><div class="sub">Aportado: ${euro.format(a.invested||0)}</div>${meta}<div class="sub ${g<0?"negative":"positive"}">Diferencia: ${euro.format(g)}</div>${irrHtml}${priceInfo}<div class="form-actions"><button class="secondary small" data-editasset="${a.id}">Actualizar manualmente</button><button class="danger small" data-delasset="${a.id}">Borrar</button></div></div>`}).join(""):`<div class="empty" style="grid-column:1/-1">No has añadido activos.</div>`;
