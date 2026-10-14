@@ -99,6 +99,14 @@ Opciones sin instalar nada:
 
 Cuando un recurrente de Inversión apunta a un fondo con ISIN (por ejemplo "Compra Amundi MSCI World"), la app no sabe cuántas participaciones compró MyInvestor. Las **estima** con la última cotización (importe ÷ precio), las suma al activo y marca el movimiento con «≈ … part. (estimadas)». Cuando llega una cotización con fecha igual o posterior a la compra, recalcula las participaciones con ese precio y las da por definitivas. Si el extracto dice otra cifra, edita el movimiento y escribe las participaciones reales.
 
+## Presupuestos mensuales por categoría
+
+En Categorías → "Presupuestos mensuales de gasto" hay una tabla con cada categoría de gasto, su **media mensual** (gasto total entre los meses completos del histórico), lo gastado el último mes completo y una casilla de presupuesto. «Rellenar con mi media» pone en todas la media redondeada a 5 € hacia arriba; también se pueden escribir a mano (vacío = sin presupuesto). El Dashboard muestra el panel "Presupuesto de gastos" con una barra por categoría (verde, naranja a partir del 80 %, rojo si se pasa), el total del periodo y lo gastado en categorías sin presupuesto; en «Año» compara con el presupuesto × 12. Si no hay presupuestos, el panel ofrece crearlos con la media histórica. Se guardan en `budgets` (categoría → €/mes).
+
+## Deudas en el patrimonio
+
+El tipo de activo **Deuda** (préstamo del coche, pago final pendiente…) guarda en «Valor actual» lo que queda por pagar. Resta del **patrimonio neto** (activos − deudas), no cuenta como inversión ni aparece en la distribución. Se actualiza a mano o con un traspaso desde una cuenta hacia la deuda, que la reduce (traspasar desde la deuda la aumenta).
+
 ## Corregir el histórico: cambiar categoría en bloque
 
 En Movimientos, filtra los apuntes que quieras corregir (texto, tipo, categoría, fechas) y pulsa «Cambiar categoría de los visibles…»: eliges el nuevo tipo y la nueva categoría y se aplican a todos los visibles de una vez. Solo cambia tipo y categoría; los saldos del patrimonio no se tocan, así que sirve para reclasificar el histórico sin duplicar importes en las cuentas. Si el movimiento sale de una categoría de Inversión con participaciones, pierde el enlace con el fondo.

@@ -316,9 +316,15 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         <div class="card"><div class="metric-label">Liquidez restante</div><div class="metric-value" id="sumBalance">0 €</div><div class="metric-sub" id="cmpBalance">—</div></div>
       </div>
 
+      <div class="panel section-gap" id="budgetPanel">
+        <div class="chart-head"><div><h2>Presupuesto de gastos</h2><p class="chart-sub" id="subBudget"></p></div><button class="secondary small" id="budgetSetup">Ajustar presupuestos</button></div>
+        <div id="budgetList" class="barlist"></div>
+        <div class="chart-hint" id="budgetHint"></div>
+      </div>
+
       <div class="grid-3">
         <div class="card"><div class="metric-label">Rentabilidad de los fondos</div><div class="metric-value" id="portfolioReturn">0 €</div><div class="metric-sub" id="portfolioReturnPct">0,0 % sobre lo aportado</div><div class="metric-sub">Solo fondos con ISIN y cripto</div></div>
-        <div class="card"><div class="metric-label">Patrimonio actual</div><div class="metric-value" id="netWorth">0 €</div><div class="metric-sub" id="assetCount">0 activos</div><div class="metric-sub" id="currentAccountNote" hidden></div><div class="metric-sub" id="portfolioUpdateDashboard">Sin actualizar</div></div>
+        <div class="card"><div class="metric-label">Patrimonio neto</div><div class="metric-value" id="netWorth">0 €</div><div class="metric-sub" id="assetCount">0 activos</div><div class="metric-sub" id="currentAccountNote" hidden></div><div class="metric-sub" id="portfolioUpdateDashboard">Sin actualizar</div></div>
         <div class="card"><div class="metric-label">Ahorro acumulado</div><div class="metric-value" id="cumulativeSavings">0 €</div><div class="metric-sub">Ingresos − gastos de todo el histórico. Las inversiones no se restan: no son gasto, es dinero que sigue siendo tuyo en fondos y cuentas de ahorro.</div></div>
       </div>
       <div class="inline-note section-gap" id="dataFreshness">Últimas actualizaciones: sin datos todavía.</div>
@@ -436,6 +442,11 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         </div>
         <div id="categoryList" class="chips section-gap"></div>
       </div>
+      <div class="panel section-gap" id="budgetsPanel">
+        <div class="chart-head"><div><h2>Presupuestos mensuales de gasto</h2><p class="chart-sub" id="subBudgets"></p></div><div class="footer-tools"><button class="secondary small" id="budgetFillAvg">Rellenar con mi media</button><button class="secondary small" id="budgetClearAll">Quitar todos</button></div></div>
+        <div class="inline-note">La media mensual sale de todo tu histórico de meses completos. El presupuesto se guarda al cambiar la casilla; déjala vacía para no presupuestar esa categoría. En «Año» el Dashboard compara con el presupuesto × 12.</div>
+        <div class="table-wrap section-gap"><table><thead><tr><th>Categoría</th><th style="text-align:right">Media mensual</th><th style="text-align:right">Último mes completo</th><th style="text-align:right">Presupuesto (€/mes)</th></tr></thead><tbody id="budgetTable"></tbody></table></div>
+      </div>
     </section>
 
     <section id="page-recurring" class="page">
@@ -463,7 +474,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
     <section id="page-assets" class="page">
       <div class="page-head"><div><h1>Patrimonio e inversiones</h1><p>Registra cuentas, fondos, cripto, oro, efectivo y otros activos.</p></div></div>
       <div class="summary-grid">
-        <div class="card"><div class="metric-label">Patrimonio total</div><div class="metric-value" id="assetTotal">0 €</div><div class="metric-sub" id="assetSplit">—</div><div class="metric-sub" id="assetLastUpdate">Sin actualizar</div></div>
+        <div class="card"><div class="metric-label">Patrimonio neto</div><div class="metric-value" id="assetTotal">0 €</div><div class="metric-sub" id="assetSplit">—</div><div class="metric-sub" id="assetLastUpdate">Sin actualizar</div></div>
         <div class="card investment"><div class="metric-label">Capital invertido</div><div class="metric-value" id="assetInvested">0 €</div><div class="metric-sub">Solo fondos con ISIN y cripto; cuentas, depósitos y seguros no cuentan</div></div>
         <div class="card"><div class="metric-label">Ganancia / pérdida</div><div class="metric-value" id="assetGain">0 €</div><div class="metric-sub">Valor de los fondos menos su capital aportado</div></div>
         <div class="card"><div class="metric-label">Número de activos</div><div class="metric-value" id="assetTotalCount">0</div></div>
@@ -489,8 +500,9 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         <summary>Añadir activo</summary>
         <div class="form-grid section-gap">
           <div><label>Nombre</label><input id="aName" placeholder="Ej. Amundi Index MSCI World"></div>
-          <div><label>Tipo</label><select id="aType"><option>Cuenta</option><option>Cuenta corriente</option><option>Fondo</option><option>Cripto</option><option>Oro</option><option>Efectivo</option><option>Otro</option></select></div>
+          <div><label>Tipo</label><select id="aType"><option>Cuenta</option><option>Cuenta corriente</option><option>Fondo</option><option>Cripto</option><option>Oro</option><option>Efectivo</option><option>Otro</option><option>Deuda</option></select></div>
           <div><label>Valor actual (€)</label><input id="aValue" type="number" min="0" step="0.01" placeholder="Manual / inicial"></div>
+          <div id="aDebtNote" class="inline-note" hidden style="grid-column:1/-1">Deuda: escribe en «Valor actual» lo que queda por pagar (por ejemplo, cuotas pendientes más el pago final). Restará del patrimonio neto y no cuenta como inversión.</div>
           <div id="aCurrentNote" class="inline-note" hidden style="grid-column:1/-1">Cuenta corriente: el valor que pongas es el <b>saldo real de hoy</b>. A partir de ahora la app lo moverá sola con cada ingreso, gasto e inversión que registres. Cuando mires el banco, usa «Actualizar manualmente» para fijar el saldo real como nueva referencia.</div>
           <div><label>Capital aportado (€)</label><input id="aInvested" type="number" min="0" step="0.01" placeholder="Opcional"></div>
           <div><label>Participaciones / títulos</label><input id="aUnits" type="number" min="0" step="0.000001" placeholder="Opcional"></div>
@@ -625,7 +637,7 @@ function defaultState(){return{
     {id:uuid(),type:"Gasto",name:"Restaurantes"},{id:uuid(),type:"Gasto",name:"Transporte"},
     {id:uuid(),type:"Gasto",name:"Ocio"},{id:uuid(),type:"Inversión",name:"Fondos"},
     {id:uuid(),type:"Inversión",name:"Bitcoin"},{id:uuid(),type:"Inversión",name:"Oro"}
-  ],movements:[],recurring:[],assets:[],transfers:[],
+  ],movements:[],recurring:[],assets:[],transfers:[],budgets:{},
   meta:{lastMovementUpdateAt:null,lastPortfolioUpdateAt:null,lastPricesSyncAt:null,lastPriceFeedUpdateAt:null,lastDataUpdateAt:null}
 }}
 function normalizeState(s){
@@ -636,6 +648,7 @@ function normalizeState(s){
     recurring:Array.isArray(s?.recurring)?s.recurring:[],
     assets:Array.isArray(s?.assets)?s.assets:[],
     transfers:Array.isArray(s?.transfers)?s.transfers:[],
+    budgets:(s?.budgets&&typeof s.budgets==="object"&&!Array.isArray(s.budgets))?s.budgets:{},
     meta:{
       lastMovementUpdateAt:s?.meta?.lastMovementUpdateAt||null,
       lastPortfolioUpdateAt:s?.meta?.lastPortfolioUpdateAt||null,
@@ -848,11 +861,13 @@ function assetMarketConfig(a){
 // Solo los activos con cotización (fondos con ISIN y Bitcoin) cuentan como "capital invertido" y entran en la rentabilidad.
 // Cuentas, depósitos, seguros de ahorro y demás forman parte del patrimonio total, pero no de la ganancia.
 function isInvestmentAsset(a){return !!assetMarketConfig(a)}
+// Deudas (préstamos, pago final del coche…): su "valor" es lo pendiente de pagar y resta del patrimonio neto.
+function isDebt(a){return String(a?.type||"")==="Deuda"}
 function portfolioTotals(){
- const all=state.assets,inv=all.filter(isInvestmentAsset);
+ const all=state.assets.filter(a=>!isDebt(a)),inv=all.filter(isInvestmentAsset);
  const sum=(xs,k)=>xs.reduce((s,x)=>s+Number(x[k]||0),0);
- const nw=sum(all,"value"),invValue=sum(inv,"value"),invested=sum(inv,"invested");
- return{nw,invValue,invested,gain:invValue-invested,liquidity:nw-invValue};
+ const gross=sum(all,"value"),debts=sum(state.assets.filter(isDebt),"value"),invValue=sum(inv,"value"),invested=sum(inv,"invested");
+ return{nw:gross-debts,gross,debts,invValue,invested,gain:invValue-invested,liquidity:gross-invValue};
 }
 function assetDisplayUnits(v){return Number(v||0).toLocaleString("es-ES",{maximumFractionDigits:6})}
 function dateToMs(iso){const t=Date.parse(String(iso||"")+"T00:00:00");return Number.isFinite(t)?t:NaN}
@@ -892,7 +907,7 @@ function assetAnnualizedReturn(asset){
  return xirr(flows);
 }
 function portfolioDistributionData(){
- const rows=state.assets.map(a=>({id:a.id,name:a.name||"Activo",value:Math.max(0,Number(a.value||0))})).filter(a=>a.value>0).sort((a,b)=>b.value-a.value);
+ const rows=state.assets.filter(a=>!isDebt(a)).map(a=>({id:a.id,name:a.name||"Activo",value:Math.max(0,Number(a.value||0))})).filter(a=>a.value>0).sort((a,b)=>b.value-a.value);
  const total=rows.reduce((s,a)=>s+a.value,0);if(!total)return[];
  const tenths=rows.map(a=>Math.round(a.value/total*1000));const diff=1000-tenths.reduce((s,x)=>s+x,0);if(tenths.length)tenths[0]+=diff;
  return rows.map((a,i)=>({...a,pct:tenths[i]/10,total}));
@@ -934,7 +949,7 @@ function applyInvestmentMovementToAsset(m,sign){
 // value = saldo de referencia + (ingresos − gastos − inversiones) registrados desde la fecha de referencia.
 // refDayNet guarda lo que ya había apuntado ese mismo día al fijar la referencia, para no contarlo dos veces.
 function isCurrentAccount(a){return String(a?.type||"")==="Cuenta corriente"}
-function savingsAccounts(){return state.assets.filter(a=>!assetMarketConfig(a)&&!isCurrentAccount(a))}
+function savingsAccounts(){return state.assets.filter(a=>!assetMarketConfig(a)&&!isCurrentAccount(a)&&!isDebt(a))}
 function movementNet(m){const v=Number(m.amount)||0;return m.type==="Ingreso"?v:-v}
 function netOnDate(date){return state.movements.filter(m=>m.date===date).reduce((s,m)=>s+movementNet(m),0)}
 function netSince(date){return state.movements.filter(m=>m.date>=date).reduce((s,m)=>s+movementNet(m),0)}
@@ -972,6 +987,7 @@ function linkSavingsAccount(m){
 function transferableAssets(){return state.assets.filter(a=>!assetMarketConfig(a))}
 function applyTransferToAsset(a,delta){
  if(isCurrentAccount(a)){a.refBalance=Number(a.refBalance||0)+delta;a.value=currentAccountValue(a);a.invested=a.value}
+ else if(isDebt(a)){a.value=Math.max(0,Number(a.value||0)-delta)} // traspasar dinero a una deuda la reduce; desde una deuda, la aumenta
  else{a.value=Math.max(0,Number(a.value||0)+delta);a.invested=Math.max(0,Number(a.invested||0)+delta)}
  a.updatedAt=todayISO();
 }
@@ -1116,7 +1132,8 @@ function renderSummary(){
  el("portfolioReturn").textContent=`${portfolioGain>=0?"+":""}${euro.format(portfolioGain)}`;
  el("portfolioReturn").classList.toggle("negative",portfolioGain<0);el("portfolioReturn").classList.toggle("positive",portfolioGain>=0);
  el("portfolioReturnPct").textContent=invested?`${portfolioPct>=0?"+":""}${portfolioPct.toFixed(1).replace(".",",")} % sobre lo aportado`:"Sin capital aportado";
- el("netWorth").textContent=euro.format(nw);el("assetCount").textContent=`${state.assets.length} activo${state.assets.length===1?"":"s"}`;
+ const tot=portfolioTotals();el("netWorth").textContent=euro.format(nw);el("netWorth").classList.toggle("negative",nw<0);
+ el("assetCount").textContent=tot.debts>0?`${euro.format(tot.gross)} en activos − ${euro.format(tot.debts)} de deudas`:`${state.assets.length} activo${state.assets.length===1?"":"s"}`;
  const cc=state.assets.find(isCurrentAccount);el("currentAccountNote").hidden=!cc;if(cc)el("currentAccountNote").textContent=`Cuenta corriente: ${euro.format(cc.value||0)}`;
  const portfolioRef=latestPortfolioReference();
  el("portfolioUpdateDashboard").textContent=portfolioRef?`Actualizado ${formatDateTime(portfolioRef)}`:(state.assets.length?"Pendiente de registrar actualización":"Sin patrimonio");
@@ -1161,7 +1178,7 @@ function addCategory(){
 }
 async function deleteCategory(id){
  if(state.movements.some(m=>m.categoryId===id)||state.recurring.some(r=>r.categoryId===id))return uiError("No puedes borrar esta categoría porque se está usando en movimientos o recurrentes.");
- if(!(await uiConfirm("Solo se pueden borrar categorías sin movimientos ni recurrentes.",{title:"¿Eliminar esta categoría?",danger:true,confirmText:"Eliminar"})))return;state.categories=state.categories.filter(c=>c.id!==id);saveState();renderAll();
+ if(!(await uiConfirm("Solo se pueden borrar categorías sin movimientos ni recurrentes.",{title:"¿Eliminar esta categoría?",danger:true,confirmText:"Eliminar"})))return;state.categories=state.categories.filter(c=>c.id!==id);if(state.budgets)delete state.budgets[id];saveState();renderAll();
 }
 // Guardado único de movimientos (formulario de escritorio y hoja rápida). Devuelve un mensaje de error o null.
 function persistMovement(d,id){
@@ -1282,11 +1299,12 @@ function addAsset(){
  state.assets.push(asset);["aName","aValue","aInvested","aUnits","aIsin"].forEach(id=>el(id).value="");markDataUpdate("portfolio");saveState();renderAll();updateMarketPrices(false);
 }
 function renderAssets(){
- const {nw:total,invested,gain,liquidity,invValue}=portfolioTotals(),portfolioRef=latestPortfolioReference();
- el("assetSplit").textContent=state.assets.length?`${euro.format(liquidity)} en cuentas y otros · ${euro.format(invValue)} en fondos`:"—";
+ const {nw:total,invested,gain,liquidity,invValue,debts}=portfolioTotals(),portfolioRef=latestPortfolioReference();
+ el("assetSplit").textContent=state.assets.length?`${euro.format(liquidity)} en cuentas y otros · ${euro.format(invValue)} en fondos${debts>0?` − ${euro.format(debts)} de deudas`:""}`:"—";
+ el("assetTotal").classList.toggle("negative",total<0);
  el("assetTotal").textContent=euro.format(total);el("assetInvested").textContent=euro.format(invested);el("assetGain").textContent=euro.format(gain);el("assetGain").classList.toggle("negative",gain<0);el("assetGain").classList.toggle("positive",gain>=0);el("assetTotalCount").textContent=state.assets.length;
  el("assetLastUpdate").textContent=portfolioRef?`Actualizado ${formatDateTime(portfolioRef)}`:(state.assets.length?"Pendiente de registrar actualización":"Sin patrimonio");
- el("assetGrid").innerHTML=state.assets.length?state.assets.map(a=>{const g=Number(a.value)-Number(a.invested||0),units=Number(a.units||0),price=Number(a.unitPrice||0),meta=units>0?`<div class="sub">${assetDisplayUnits(units)} participaciones/títulos${price>0?` · ${euro.format(price)} / ud.`:""}</div>`:"",irr=assetAnnualizedReturn(a),irrHtml=irr===null?`<div class="sub">Rentabilidad anualizada: —${assetInvestmentMovements(a).length&&!(Number(a.units)>0)?" (las aportaciones registradas no cuadran con el capital aportado)":""}</div>`:`<div class="sub ${irr<0?"negative":"positive"}">Rentabilidad anualizada: ${(irr*100).toFixed(2).replace(".",",")} %</div>`,priceInfo=isCurrentAccount(a)?`<div class="sub">Saldo calculado: referencia ${euro.format(a.refBalance||0)} el ${formatDate(a.refDate)} más los movimientos posteriores</div>`:a.updatedAt?`<div class="sub">Cotización: ${formatDate(a.updatedAt)}${a.priceSource?` · ${escapeHtml(a.priceSource)}`:""}</div>`:"";return`<div class="asset-card"><span class="badge">${escapeHtml(a.type)}</span><h3>${escapeHtml(a.name)}</h3><div class="big">${euro.format(a.value)}</div>${isCurrentAccount(a)?"":`<div class="sub">Aportado: ${euro.format(a.invested||0)}</div>${meta}<div class="sub ${g<0?"negative":"positive"}">Diferencia: ${euro.format(g)}</div>${irrHtml}`}${priceInfo}<div class="form-actions"><button class="secondary small" data-editasset="${a.id}">Actualizar manualmente</button><button class="danger small" data-delasset="${a.id}">Borrar</button></div></div>`}).join(""):`<div class="empty" style="grid-column:1/-1">No has añadido activos.</div>`;
+ el("assetGrid").innerHTML=state.assets.length?state.assets.map(a=>{const g=Number(a.value)-Number(a.invested||0),units=Number(a.units||0),price=Number(a.unitPrice||0),meta=units>0?`<div class="sub">${assetDisplayUnits(units)} participaciones/títulos${price>0?` · ${euro.format(price)} / ud.`:""}</div>`:"",irr=assetAnnualizedReturn(a),irrHtml=irr===null?`<div class="sub">Rentabilidad anualizada: —${assetInvestmentMovements(a).length&&!(Number(a.units)>0)?" (las aportaciones registradas no cuadran con el capital aportado)":""}</div>`:`<div class="sub ${irr<0?"negative":"positive"}">Rentabilidad anualizada: ${(irr*100).toFixed(2).replace(".",",")} %</div>`,priceInfo=isDebt(a)?`<div class="sub">Pendiente de pagar. Resta del patrimonio neto; actualízalo cuando cambie o usa un traspaso hacia la deuda para registrar un pago.</div>`:isCurrentAccount(a)?`<div class="sub">Saldo calculado: referencia ${euro.format(a.refBalance||0)} el ${formatDate(a.refDate)} más los movimientos posteriores</div>`:a.updatedAt?`<div class="sub">Cotización: ${formatDate(a.updatedAt)}${a.priceSource?` · ${escapeHtml(a.priceSource)}`:""}</div>`:"";return`<div class="asset-card"><span class="badge">${escapeHtml(a.type)}</span><h3>${escapeHtml(a.name)}</h3><div class="big${isDebt(a)?" negative":""}">${isDebt(a)?"−":""}${euro.format(a.value)}</div>${isCurrentAccount(a)||isDebt(a)?"":`<div class="sub">Aportado: ${euro.format(a.invested||0)}</div>${meta}<div class="sub ${g<0?"negative":"positive"}">Diferencia: ${euro.format(g)}</div>${irrHtml}`}${priceInfo}<div class="form-actions"><button class="secondary small" data-editasset="${a.id}">Actualizar manualmente</button><button class="danger small" data-delasset="${a.id}">Borrar</button></div></div>`}).join(""):`<div class="empty" style="grid-column:1/-1">No has añadido activos.</div>`;
  el("assetGrid").querySelectorAll("[data-delasset]").forEach(b=>b.onclick=async()=>{if(await uiConfirm("Desaparecerá del patrimonio; los movimientos no se tocan.",{title:"¿Eliminar este activo?",danger:true,confirmText:"Eliminar"})){state.assets=state.assets.filter(x=>x.id!==b.dataset.delasset);markDataUpdate("portfolio");saveState();renderAll()}});
  el("assetGrid").querySelectorAll("[data-editasset]").forEach(b=>b.onclick=async()=>{const a=state.assets.find(x=>x.id===b.dataset.editasset);if(isCurrentAccount(a)){const calc=currentAccountValue(a);const nv=await uiPrompt(`Saldo real de ${a.name} hoy (la app calcula ${euro.format(calc)}):`,calc.toFixed(2));if(nv===null)return;const n=Number(String(nv).replace(",","."));if(!Number.isFinite(n))return uiError("Valor no válido.");const diff=n-calc;setAccountReference(a,n,todayISO());markDataUpdate("portfolio");saveState();renderAll();toast(Math.abs(diff)<0.005?"Saldo confirmado: cuadra con lo registrado":`Nueva referencia. Diferencia con lo registrado: ${diff>0?"+":""}${euro.format(diff)}`);return}if(Number(a.units)>0){const nv=await uiPrompt(`Nuevo precio por participación/título de ${a.name}:`,a.unitPrice||"");if(nv===null)return;const n=Number(String(nv).replace(",","."));if(!Number.isFinite(n)||n<0)return uiError("Valor no válido.");a.unitPrice=n;a.value=Number(a.units)*n;a.updatedAt=todayISO();a.priceSource="Manual"}else{const nv=await uiPrompt(`Nuevo valor actual de ${a.name}:`,a.value);if(nv===null)return;const n=Number(String(nv).replace(",","."));if(!Number.isFinite(n)||n<0)return uiError("Valor no válido.");a.value=n;a.updatedAt=todayISO();a.priceSource="Manual"}markDataUpdate("portfolio");saveState();renderAll()});
 }
@@ -1330,6 +1348,57 @@ function clearMovementFilters(){
 }
 
 // ---------- Tabla resumen por categoría ----------
+// ---------- Presupuestos mensuales por categoría de gasto ----------
+// Media histórica: gasto de cada categoría dividido entre los meses completos transcurridos desde el primer movimiento.
+function completeMonthsRange(){
+ const f=firstMovementMonth();if(!f)return null;
+ const now=new Date();let y=now.getFullYear(),m=now.getMonth();if(m===0){m=12;y--} // último mes completo = el anterior al actual
+ const months=(y-f.y)*12+(m-f.m)+1;
+ return months>0?{from:`${f.y}-${String(f.m).padStart(2,"0")}-01`,to:lastDayISO(y,m),months,lastY:y,lastM:m}:null;
+}
+function monthlyAverageByCategory(){
+ const r=completeMonthsRange(),avg=new Map(),last=new Map();if(!r)return{avg,last,months:0,lastLabel:""};
+ state.movements.forEach(mv=>{
+   if(mv.type!=="Gasto")return;
+   if(mv.date>=r.from&&mv.date<=r.to)avg.set(mv.categoryId,(avg.get(mv.categoryId)||0)+Number(mv.amount||0));
+   if(Number(mv.date.slice(0,4))===r.lastY&&Number(mv.date.slice(5,7))===r.lastM)last.set(mv.categoryId,(last.get(mv.categoryId)||0)+Number(mv.amount||0));
+ });
+ avg.forEach((v,k)=>avg.set(k,v/r.months));
+ return{avg,last,months:r.months,lastLabel:`${months[r.lastM-1]} ${r.lastY}`};
+}
+function suggestedBudget(avg){return Math.ceil(avg/5)*5} // redondeo a 5 € hacia arriba
+function fillBudgetsFromAverage(){
+ const {avg}=monthlyAverageByCategory();let n=0;state.budgets=state.budgets||{};
+ state.categories.filter(c=>c.type==="Gasto").forEach(c=>{const a=avg.get(c.id)||0;if(a>0){state.budgets[c.id]=suggestedBudget(a);n++}});
+ return n;
+}
+function renderBudgetTable(){
+ const {avg,last,months,lastLabel}=monthlyAverageByCategory(),cats=state.categories.filter(c=>c.type==="Gasto").sort((a,b)=>(avg.get(b.id)||0)-(avg.get(a.id)||0)||a.name.localeCompare(b.name,"es"));
+ el("subBudgets").textContent=months?`Media de ${intFmt.format(months)} meses completos · último mes completo: ${lastLabel}`:"Todavía no hay meses completos de histórico";
+ el("budgetTable").innerHTML=cats.length?cats.map(c=>{const b=state.budgets?.[c.id];return`<tr><td>${escapeHtml(c.name)}</td><td class="amount muted">${euro.format(avg.get(c.id)||0)}</td><td class="amount muted">${euro.format(last.get(c.id)||0)}</td><td class="amount" style="width:160px"><input type="number" min="0" step="5" inputmode="decimal" data-budget="${c.id}" value="${b!=null?b:""}" placeholder="—" style="text-align:right"></td></tr>`}).join(""):`<tr><td colspan="4" class="empty">No hay categorías de gasto.</td></tr>`;
+ el("budgetTable").querySelectorAll("[data-budget]").forEach(inp=>inp.onchange=()=>{const v=Number(String(inp.value).replace(",","."));state.budgets=state.budgets||{};if(inp.value===""||!Number.isFinite(v)||v<=0)delete state.budgets[inp.dataset.budget];else state.budgets[inp.dataset.budget]=Math.round(v*100)/100;saveState();renderBudgets();toast("Presupuesto guardado")});
+}
+function renderBudgets(){
+ const p=selectedPeriod(),budgets=state.budgets||{},ids=Object.keys(budgets).filter(id=>getCat(id)&&budgets[id]>0);
+ const list=el("budgetList"),hint=el("budgetHint"),sub=el("subBudget");
+ if(!ids.length){
+   sub.textContent="Sin presupuestos todavía";
+   list.innerHTML=`<div class="empty-state"><svg class="ico" aria-hidden="true"><use href="#i-tag"/></svg><p>Crea presupuestos mensuales por categoría a partir de lo que gastas de media. Luego podrás ajustarlos en Categorías.</p><button type="button" class="primary" id="budgetCreateAvg">Crear presupuestos con mi media histórica</button></div>`;
+   const b=el("budgetCreateAvg");if(b)b.onclick=async()=>{const n=fillBudgetsFromAverage();if(!n)return uiAlert("No hay histórico de gastos suficiente para calcular medias.");saveState();renderAll();toast(`${n} presupuestos creados`)};
+   hint.textContent="";return;
+ }
+ if(p.mode==="all"){sub.textContent="Elige «Mes» o «Año» para comparar con el presupuesto";list.innerHTML="";hint.textContent="";return}
+ const factor=p.mode==="year"?12:1,movs=periodMovements().filter(m=>m.type==="Gasto"),spent=new Map();
+ movs.forEach(m=>spent.set(m.categoryId,(spent.get(m.categoryId)||0)+Number(m.amount||0)));
+ const rows=ids.map(id=>{const budget=budgets[id]*factor,s=spent.get(id)||0;return{id,name:getCat(id).name,budget,spent:s,pct:budget?s/budget*100:0}}).sort((a,b)=>b.pct-a.pct);
+ const totalB=rows.reduce((a,r)=>a+r.budget,0),totalS=rows.reduce((a,r)=>a+r.spent,0),other=movs.filter(m=>!budgets[m.categoryId]).reduce((a,m)=>a+Number(m.amount||0),0);
+ const pr=periodRange();
+ sub.textContent=`${periodLabel()} · ${euro.format(totalS)} de ${euro.format(totalB)} (${pct1(totalB?totalS/totalB*100:0)} %)${totalS>totalB?` · ${euro.format(totalS-totalB)} por encima`:` · quedan ${euro.format(totalB-totalS)}`}`;
+ list.innerHTML=rows.map(r=>{const over=r.spent>r.budget,warn=!over&&r.pct>=80,color=over?"var(--expense)":warn?"var(--warning)":"var(--income)";
+  return`<button type="button" class="barrow" data-cat="${r.id}"><div class="bl-head"><b>${escapeHtml(r.name)}</b><span>${euro.format(r.spent)} de ${euro.format(r.budget)} · ${over?`+${euro.format(r.spent-r.budget)}`:pct1(r.pct)+" %"}</span></div><div class="bl-track"><div class="bl-fill" style="width:${Math.min(100,Math.round(r.pct))}%;background:${color}"></div></div></button>`}).join("");
+ list.querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>goToMovements({type:"Gasto",categoryId:b.dataset.cat,from:pr.from,to:pr.to,label:periodLabel()}));
+ hint.textContent=other>0?`Además, ${euro.format(other)} en categorías sin presupuesto. Pulsa una barra para ver sus movimientos.`:"Pulsa una barra para ver sus movimientos.";
+}
 function renderCategorySummary(){
  const movs=periodMovements(),totals=new Map(),counts=new Map(),typeTotals={Ingreso:0,Gasto:0,"Inversión":0};
  movs.forEach(m=>{totals.set(m.categoryId,(totals.get(m.categoryId)||0)+Number(m.amount));counts.set(m.categoryId,(counts.get(m.categoryId)||0)+1);typeTotals[m.type]+=Number(m.amount)});
@@ -1619,14 +1688,17 @@ async function clearAll(){if(!(await uiConfirm("Se borrarán movimientos, catego
 function renderAll(){
  refreshDerivedAssets();renderTransferForm();
  renderCategoryList();updateMovementCategories();updateRecurringCategories();renderSearchCategories();updateInvestmentFields();
- renderSummary();renderMovements();renderRecurring();renderAssets();renderCategorySummary();renderFreshness();renderDataSize();syncPeriodCompact();
+ renderSummary();renderMovements();renderRecurring();renderAssets();renderCategorySummary();renderBudgets();renderBudgetTable();renderFreshness();renderDataSize();syncPeriodCompact();
  if(el("page-dashboard").classList.contains("active"))renderCharts();
 }
 
 document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>showPage(b.dataset.page));
 el("mDate").value=todayISO();el("rStartDate").value=todayISO();setupPeriodSelectors();updatePeriodControls();
 el("mType").onchange=()=>{updateMovementCategories();updateInvestmentFields()};el("mCategory").onchange=()=>{updateInvestmentFields();autoSelectAssetForCategory()};el("rType").onchange=updateRecurringCategories;
-el("addCategory").onclick=addCategory;el("saveMovement").onclick=saveMovement;el("cancelEdit").onclick=cancelEdit;
+el("addCategory").onclick=addCategory;
+el("budgetSetup").onclick=()=>{showPage("categories");setTimeout(()=>el("budgetsPanel").scrollIntoView({behavior:"smooth",block:"start"}),80)};
+el("budgetFillAvg").onclick=async()=>{if(!(await uiConfirm("Se sustituirán los presupuestos actuales por la media mensual de tu histórico, redondeada a 5 €.",{title:"¿Rellenar con la media?",confirmText:"Rellenar"})))return;const n=fillBudgetsFromAverage();saveState();renderAll();toast(`${n} presupuestos rellenados`)};
+el("budgetClearAll").onclick=async()=>{if(!(await uiConfirm("Se quitarán todos los presupuestos. Los movimientos no cambian.",{title:"¿Quitar presupuestos?",danger:true,confirmText:"Quitar"})))return;state.budgets={};saveState();renderAll();toast("Presupuestos eliminados")};el("saveMovement").onclick=saveMovement;el("cancelEdit").onclick=cancelEdit;
 el("addRecurring").onclick=addRecurring;el("doTransfer").onclick=doTransfer;el("generateRecurring").onclick=()=>generateRecurring(true);el("addAsset").onclick=addAsset;el("refreshPrices").onclick=()=>updateMarketPrices(true);
 el("periodMode").onchange=()=>{updatePeriodControls();renderAll()};el("monthFilter").onchange=renderAll;el("yearFilter").onchange=renderAll;
 el("goCurrent").onclick=()=>{const n=new Date();el("periodMode").value="month";el("monthFilter").value=n.getMonth()+1;updateYearOptions();el("yearFilter").value=n.getFullYear();updatePeriodControls();renderAll()};
@@ -1651,7 +1723,7 @@ el("monthlyToggle").onclick=()=>{monthlyShowAll=!monthlyShowAll;drawMonthlyChart
 // Si el sistema cambia entre claro y oscuro con la app abierta, se repintan los gráficos con los colores del nuevo tema.
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{if(el("page-dashboard").classList.contains("active"))renderCharts()});
 el("assetFormDetails").open=!isMobile();el("transferDetails").open=false;
-el("aType").onchange=()=>{el("aCurrentNote").hidden=el("aType").value!=="Cuenta corriente"};
+el("aType").onchange=()=>{el("aCurrentNote").hidden=el("aType").value!=="Cuenta corriente";el("aDebtNote").hidden=el("aType").value!=="Deuda"};
 let lastMobile=isMobile(),resizeTimer=null;
 window.addEventListener("resize",()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(isMobile()!==lastMobile){lastMobile=isMobile();el("assetFormDetails").open=!lastMobile;if(el("page-dashboard").classList.contains("active"))renderCharts()}},200)});
 el("loginGoogle").onclick=login;el("logoutSidebar").onclick=logout;el("logoutSettings").onclick=logout;el("logoutMore").onclick=logout;

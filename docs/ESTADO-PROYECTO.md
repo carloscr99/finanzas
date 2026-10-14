@@ -90,13 +90,14 @@ GitHub Pages (estático)                     Firebase (plan gratuito Spark)
 
 - **Dashboard**: periodo (mes / año / todo), tarjetas (ingresos, gastos, inversiones, liquidez restante, rentabilidad de los fondos, patrimonio actual con nota de la cuenta corriente, ahorro acumulado), gráficos (evolución mensual, ahorro acumulado, por categoría, distribución del patrimonio, evolución del patrimonio, rentabilidad anualizada por activo) y tabla resumen por categoría. Clic en barras y filas lleva a Movimientos filtrado.
 - **Movimientos**: alta (formulario en escritorio, hoja rápida con "+" en móvil), búsqueda y filtros, tabla o lista por días, y **cambio de tipo y categoría en bloque** de los movimientos visibles (no toca saldos del patrimonio).
+- **Presupuestos** mensuales por categoría de gasto (`budgets`), con media histórica de meses completos como propuesta; panel en el Dashboard con barras por categoría y gestión en Categorías.
 - **Categorías**, **Recurrentes** (se generan al abrir la web; pausar/borrar), **Ajustes** (cuenta, exportar/importar JSON, borrar todo).
 - **Patrimonio**: activos de tipo Cuenta, **Cuenta corriente**, Fondo, Cripto, Oro, Efectivo, Otro. Sincronizar cotizaciones lee `prices.json`. Panel **Traspaso entre cuentas** con historial.
 - **Móvil**: barra inferior de 5 destinos (Inicio, Movimientos, +, Patrimonio, Más) con iconos SVG y píldora activa; página "Más" con cuenta, categorías, recurrentes, ajustes y cerrar sesión; hoja rápida con asa y cierre deslizando.
 
 ### Modelo de patrimonio (decidido el 14/10)
 
-- **Patrimonio total** = suma del valor de todos los activos (cuentas, depósitos, SIALP y fondos).
+- **Patrimonio neto** = suma del valor de los activos (cuentas, depósitos, SIALP y fondos) − deudas (tipo de activo "Deuda": lo pendiente de pagar, se actualiza a mano o con un traspaso hacia la deuda).
 - **Capital invertido, ganancia/pérdida y rentabilidad** solo miran los activos con cotización (fondos con ISIN y Bitcoin). Cuentas, depósitos y seguros cuentan en el total pero no en la ganancia.
 - **Cuenta corriente** (solo puede haber una): valor = saldo de referencia + ingresos − gastos − inversiones registrados desde la fecha de referencia (campos `refBalance`, `refDate`, `refDayNet`). "Actualizar manualmente" fija el saldo real del banco como nueva referencia y muestra la diferencia con lo registrado.
 - **Cuentas de ahorro**: un movimiento de Inversión cuya categoría coincide con el nombre de la cuenta (RenaultBank, Trade Republic, SIALP Santander…) suma su importe al saldo y al aportado de esa cuenta, también cuando lo genera un recurrente. Los movimientos históricos importados no están enlazados y no se enlazan al editarlos (su importe ya está en el saldo).
