@@ -3,7 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#0f172a">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" media="(prefers-color-scheme: light)" content="#0f172a">
+<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b1120">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png" type="image/png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -21,7 +23,23 @@
   --income:#16803b;--expense:#c73737;--investment:#2563eb;--accent:#0f172a;
   --accent2:#334155;--warning:#b7791f;--soft:#f8fafc;--shadow:0 8px 24px rgba(15,23,42,.06);
   --primary:#0f172a;--on-primary:#fff;--success:#059669;--danger:#dc2626;--ring:#2563eb;
+  --border-strong:#cbd5e1;--btn2-bg:#eef2f7;--btn2-fg:#1f2937;--input-bg:#fff;--toast-bg:#111827;--toast-fg:#fff;
+  --nav-bg:rgba(255,255,255,.92);--nav-pill:rgba(37,99,235,.14);--chart-neutral:#0f172a;
+  --income-soft:#e8f7ed;--expense-soft:#fdecec;--investment-soft:#eaf1ff;
   --nav-h:56px;--radius:16px;--ease-out:cubic-bezier(.2,.8,.2,1);
+}
+/* Modo oscuro automático (preferencia del sistema). Variantes más claras de los colores semánticos para mantener
+   4,5:1 en texto y 3:1 en bordes e iconos; nunca se reutilizan los grises del tema claro. */
+@media (prefers-color-scheme:dark){
+  :root{
+    --bg:#0b1120;--panel:#151d2e;--text:#f1f5f9;--muted:#9fb0c5;--border:#263246;--soft:#1c2536;
+    --income:#4ade80;--expense:#f87171;--investment:#60a5fa;--accent:#0f172a;--accent2:#94a3b8;--warning:#fbbf24;
+    --shadow:0 8px 24px rgba(0,0,0,.35);--primary:#e2e8f0;--on-primary:#0f172a;--success:#34d399;--danger:#f87171;--ring:#60a5fa;
+    --border-strong:#3b4961;--btn2-bg:#243047;--btn2-fg:#e2e8f0;--input-bg:#0f172a;--toast-bg:#e2e8f0;--toast-fg:#0f172a;
+    --nav-bg:rgba(21,29,46,.92);--nav-pill:rgba(96,165,250,.22);--chart-neutral:#cbd5e1;
+    --income-soft:rgba(74,222,128,.16);--expense-soft:rgba(248,113,113,.16);--investment-soft:rgba(96,165,250,.18);
+  }
+  .sidebar{border-right:1px solid var(--border)}
 }
 *{box-sizing:border-box}
 html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
@@ -59,10 +77,10 @@ button{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:tran
 .negative{color:var(--expense)!important}.positive{color:var(--income)!important}
 h2{font-size:20px;margin:0 0 14px}h3{font-size:16px;margin:0 0 12px}
 label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
-input,select{width:100%;min-height:42px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:#fff;color:var(--text)}
+input,select{width:100%;min-height:42px;padding:10px 12px;border:1px solid var(--border);border-radius:10px;background:var(--input-bg);color:var(--text);color-scheme:light dark}
 button.primary,button.secondary,button.danger,.file-label{min-height:42px;border-radius:10px;padding:10px 13px;font:inherit;font-weight:700;line-height:1.2;display:inline-flex;align-items:center;justify-content:center;white-space:nowrap}
-button.primary{border:1px solid var(--accent);background:var(--accent);color:#fff}
-button.secondary,.file-label{background:#eef2f7;color:#1f2937;border:1px solid var(--border)}
+button.primary{border:1px solid var(--primary);background:var(--primary);color:var(--on-primary)}
+button.secondary,.file-label{background:var(--btn2-bg);color:var(--btn2-fg);border:1px solid var(--border)}
 button.danger{background:var(--danger);color:#fff;border:1px solid var(--danger)}
 button.primary,button.secondary,button.danger{transition:background-color .12s,color .12s,opacity .12s,transform .12s}
 button.primary:active,button.secondary:active,button.danger:active{transform:scale(.97)}
@@ -80,12 +98,12 @@ th{font-weight:700;color:var(--muted);font-size:12px}
 td.amount{text-align:right;font-variant-numeric:tabular-nums}
 td.actions{white-space:nowrap;width:1%}
 .pill{display:inline-block;padding:4px 9px;border-radius:999px;font-size:12px;font-weight:700}
-.pill.Ingreso{background:#e8f7ed;color:var(--income)}
-.pill.Gasto{background:#fdecec;color:var(--expense)}
-.pill.Inversión{background:#eaf1ff;color:var(--investment)}
+.pill.Ingreso{background:var(--income-soft);color:var(--income)}
+.pill.Gasto{background:var(--expense-soft);color:var(--expense)}
+.pill.Inversión{background:var(--investment-soft);color:var(--investment)}
 .chips{display:flex;gap:8px;flex-wrap:wrap}
 .chip{display:inline-flex;align-items:center;gap:8px;padding:7px 10px;border-radius:999px;border:1px solid var(--border);background:var(--soft);font-size:13px}
-.chip button{border:0;background:transparent;color:#64748b;padding:0}
+.chip button{border:0;background:transparent;color:var(--muted);padding:0}
 .muted{color:var(--muted)}
 .empty{text-align:center;padding:24px;color:var(--muted)}
 .chart-box{position:relative;height:300px;width:100%}
@@ -93,53 +111,53 @@ td.actions{white-space:nowrap;width:1%}
 .chart-head h2{margin:0 0 4px}
 .chart-sub{margin:0;color:var(--muted);font-size:13px}
 .seg{display:inline-flex;border:1px solid var(--border);border-radius:10px;overflow:hidden;background:var(--soft)}
-.seg button{border:0;background:transparent;padding:7px 11px;font-size:13px;font-weight:600;color:#475569}
-.seg button.active{background:var(--accent);color:#fff}
-tr.clickable{cursor:pointer}tr.clickable:hover td{background:#f8fafc}
+.seg button{border:0;background:transparent;padding:7px 11px;font-size:13px;font-weight:600;color:var(--muted)}
+.seg button.active{background:var(--primary);color:var(--on-primary)}
+tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 .chart-hint{font-size:12px;color:var(--muted);margin-top:8px}
 .mobile-only{display:none!important}
-.fab{position:fixed;right:24px;bottom:24px;z-index:60;width:56px;height:56px;border-radius:50%;border:0;background:var(--accent);color:#fff;box-shadow:0 10px 24px rgba(15,23,42,.25);display:flex;align-items:center;justify-content:center;transition:transform .12s}
+.fab{position:fixed;right:24px;bottom:24px;z-index:60;width:56px;height:56px;border-radius:50%;border:0;background:var(--primary);color:var(--on-primary);box-shadow:0 10px 24px rgba(15,23,42,.25);display:flex;align-items:center;justify-content:center;transition:transform .12s}
 .fab:active{transform:scale(.94)}
 .sheet-backdrop{position:fixed;inset:0;background:rgba(15,23,42,.45);z-index:70;opacity:0;transition:opacity .2s}
 .sheet-backdrop.open{opacity:1}
 .sheet{position:fixed;left:50%;bottom:0;width:min(560px,100%);max-height:min(92dvh,92vh);overflow:auto;background:var(--panel);border-radius:20px 20px 0 0;padding:10px 18px calc(18px + env(safe-area-inset-bottom));z-index:71;box-shadow:0 -10px 40px rgba(15,23,42,.25);transform:translate(-50%,100%);opacity:0;transition:transform .2s var(--ease-out),opacity .2s}
 .sheet.open{transform:translate(-50%,0);opacity:1}
 .sheet.dragging{transition:none}
-.sheet-handle{width:36px;height:4px;border-radius:2px;background:#cbd5e1;margin:0 auto 12px;touch-action:none}
+.sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--border-strong);margin:0 auto 12px;touch-action:none}
 .sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;touch-action:none}.sheet-head h2{margin:0}
-.icon-btn{border:0;background:#eef2f7;width:40px;height:40px;border-radius:50%;color:#334155;display:inline-flex;align-items:center;justify-content:center}
+.icon-btn{border:0;background:var(--btn2-bg);width:40px;height:40px;border-radius:50%;color:var(--btn2-fg);display:inline-flex;align-items:center;justify-content:center}
 .big-amount{font-size:34px;font-weight:800;text-align:right;min-height:60px}
 .seg-full{display:flex;width:100%;margin-bottom:12px}.seg-full button{flex:1;padding:10px 6px}
-.chip-btn{border:1px solid var(--border);background:var(--soft);border-radius:999px;padding:8px 12px;min-height:40px;font-size:13px;font-weight:600;color:#1f2937;transition:background-color .12s,color .12s}
-.chip-btn.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.chip-btn{border:1px solid var(--border);background:var(--soft);border-radius:999px;padding:8px 12px;min-height:40px;font-size:13px;font-weight:600;color:var(--text);transition:background-color .12s,color .12s}
+.chip-btn.active{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
 .sheet label{margin-top:12px}.sheet .chips{gap:8px}
 .date-row{display:flex;gap:8px;align-items:center}.date-row input{flex:1}.date-row button{width:auto}
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;background:#111827;color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;z-index:80;box-shadow:var(--shadow);white-space:nowrap}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;background:var(--toast-bg);color:var(--toast-fg);padding:10px 16px;border-radius:999px;font-size:14px;z-index:80;box-shadow:var(--shadow);white-space:nowrap}
 .mlist{flex-direction:column}
 .mitem{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 4px;border:0;border-bottom:1px solid var(--border);width:100%;background:transparent;text-align:left;font:inherit;color:var(--text);transition:background-color .12s}
 .mitem:active{background:var(--soft)}
 .mico{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none}
-.mico.g{background:#fdecec;color:var(--expense)}.mico.i{background:#e6f6ee;color:var(--income)}.mico.v{background:#eaf1ff;color:var(--investment)}
+.mico.g{background:var(--expense-soft);color:var(--expense)}.mico.i{background:var(--income-soft);color:var(--income)}.mico.v{background:var(--investment-soft);color:var(--investment)}
 .mtext{flex:1;min-width:0}
 .mitem b{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mitem small{display:block;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mitem .amt{font-weight:700;font-size:15px;white-space:nowrap}.mitem .amt.inv{color:var(--investment)}
 .mday{font-size:12px;font-weight:700;color:var(--muted);padding:14px 4px 6px;text-transform:uppercase;letter-spacing:.04em;position:sticky;top:0;background:var(--panel);z-index:1}
 .empty-state{text-align:center;padding:28px 12px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:10px}
-.empty-state .ico{width:36px;height:36px;color:#94a3b8}.empty-state p{margin:0}
+.empty-state .ico{width:36px;height:36px;color:var(--muted)}.empty-state p{margin:0}
 .account-row{display:flex;align-items:center;gap:12px}
 .avatar{width:44px;height:44px;border-radius:50%;background:var(--investment);color:#fff;font-weight:700;font-size:18px;display:flex;align-items:center;justify-content:center;flex:none}
 .account-text b{display:block;font-size:15px}.account-text small{color:var(--muted);font-size:13px;word-break:break-all}
 .more-item{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:0 4px;border:0;border-bottom:1px solid var(--border);background:transparent;font:inherit;font-size:16px;font-weight:600;color:var(--text);text-align:left;transition:background-color .12s}
 .more-item:last-child{border-bottom:0}.more-item:active{background:var(--soft)}
-.more-item .caret{margin-left:auto;color:#94a3b8}.more-item.danger-item{color:var(--danger)}
-.spinner{display:inline-block;width:16px;height:16px;border:2px solid #cbd5e1;border-top-color:var(--investment);border-radius:50%;vertical-align:-3px;margin-right:8px;animation:spin .8s linear infinite}
+.more-item .caret{margin-left:auto;color:var(--muted)}.more-item.danger-item{color:var(--danger)}
+.spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border-strong);border-top-color:var(--investment);border-radius:50%;vertical-align:-3px;margin-right:8px;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 .auth-logo{width:72px;height:72px;border-radius:18px;margin-bottom:12px}
 .barlist{display:flex;flex-direction:column;gap:9px}
 .barrow{border:0;background:transparent;padding:0;text-align:left;font:inherit;color:var(--text);width:100%}
-.barrow .bl-head{display:flex;justify-content:space-between;gap:8px;font-size:13px}.barrow .bl-head b{font-weight:600}.barrow .bl-head span{white-space:nowrap;color:#374151;font-weight:700}
-.barrow .bl-track{height:10px;border-radius:999px;background:#eef2f7;margin-top:4px;overflow:hidden}.barrow .bl-fill{height:100%;border-radius:999px}
-.chart-pop{margin-top:8px;padding:10px 12px;border-radius:12px;background:#f8fafc;border:1px solid var(--border);font-size:13px;display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
+.barrow .bl-head{display:flex;justify-content:space-between;gap:8px;font-size:13px}.barrow .bl-head b{font-weight:600}.barrow .bl-head span{white-space:nowrap;color:var(--text);font-weight:700}
+.barrow .bl-track{height:10px;border-radius:999px;background:var(--btn2-bg);margin-top:4px;overflow:hidden}.barrow .bl-fill{height:100%;border-radius:999px}
+.chart-pop{margin-top:8px;padding:10px 12px;border-radius:12px;background:var(--soft);border:1px solid var(--border);font-size:13px;display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
 .period-compact{justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .period-nav{display:flex;align-items:center;gap:8px}.period-nav b{min-width:128px;text-align:center}.period-nav button{width:38px;min-height:38px;padding:0;font-size:20px}
 .more-list{padding:4px 14px}
@@ -151,15 +169,15 @@ details.panel summary::-webkit-details-marker{display:none}details.panel summary
 .kpi-mini{padding:12px;border:1px solid var(--border);border-radius:14px;background:var(--soft)}
 .kpi-mini b{display:block;font-size:18px;margin-top:4px}
 .asset-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.asset-card{border:1px solid var(--border);border-radius:16px;padding:15px;background:#fff}
+.asset-card{border:1px solid var(--border);border-radius:16px;padding:15px;background:var(--panel)}
 .asset-card h3{margin-bottom:6px}.asset-card .big{font-size:22px;font-weight:800}
 .asset-card .sub{font-size:12px;color:var(--muted);margin-top:4px}
-.badge{font-size:11px;font-weight:700;border-radius:999px;background:#eef2f7;color:#334155;padding:4px 8px;display:inline-block}
-.inline-note{padding:12px 14px;border-radius:12px;background:#f8fafc;border:1px solid var(--border);font-size:13px;color:#475569}
+.badge{font-size:11px;font-weight:700;border-radius:999px;background:var(--btn2-bg);color:var(--btn2-fg);padding:4px 8px;display:inline-block}
+.inline-note{padding:12px 14px;border-radius:12px;background:var(--soft);border:1px solid var(--border);font-size:13px;color:var(--muted)}
 .footer-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .file-label{cursor:pointer;margin:0}
 .file-label input{display:none}
-input:focus,select:focus{outline:2px solid rgba(37,99,235,.18);outline-offset:1px;border-color:#94a3b8}
+input:focus,select:focus{outline:2px solid var(--ring);outline-offset:1px;border-color:var(--border-strong)}
 button.primary:focus-visible,button.secondary:focus-visible,button.danger:focus-visible,.file-label:focus-within{outline:2px solid rgba(37,99,235,.28);outline-offset:2px}
 .mobile-nav{display:none}
 .section-gap{margin-top:16px}
@@ -187,12 +205,12 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .grid-2,.grid-3,.grid-4,.summary-grid{gap:12px}
  .form-grid,.form-grid-4,.toolbar,.searchbar{grid-template-columns:1fr}
  /* Barra inferior: 5 destinos, icono + etiqueta, píldora indicadora en el activo, safe area */
- .mobile-nav{position:fixed;z-index:50;left:0;right:0;bottom:0;height:calc(var(--nav-h) + env(safe-area-inset-bottom));padding:0 4px env(safe-area-inset-bottom);background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);align-items:stretch}
- .mobile-nav button{border:0;background:transparent;color:#64748b;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px 0;min-height:48px;font-size:11px;font-weight:600;line-height:1.2;transition:color .12s}
+ .mobile-nav{position:fixed;z-index:50;left:0;right:0;bottom:0;height:calc(var(--nav-h) + env(safe-area-inset-bottom));padding:0 4px env(safe-area-inset-bottom);background:var(--nav-bg);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);align-items:stretch}
+ .mobile-nav button{border:0;background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px 0;min-height:48px;font-size:11px;font-weight:600;line-height:1.2;transition:color .12s}
  .mobile-nav .nav-ind{display:flex;align-items:center;justify-content:center;width:56px;height:30px;border-radius:15px;transition:background-color .15s,transform .12s}
  .mobile-nav button:active .nav-ind{transform:scale(.92)}
  .mobile-nav button.active{color:var(--primary)}
- .mobile-nav button.active .nav-ind{background:rgba(37,99,235,.14)}
+ .mobile-nav button.active .nav-ind{background:var(--nav-pill)}
  .mobile-nav button.active .ico{stroke-width:2.25}
  .mobile-nav button.nav-add{background:var(--investment);color:#fff;width:52px;height:52px;min-height:52px;border-radius:50%;padding:0;margin:-18px auto 0;box-shadow:0 6px 16px rgba(37,99,235,.35);transition:transform .12s,box-shadow .12s}
  .mobile-nav button.nav-add:active{transform:scale(.94);box-shadow:0 3px 8px rgba(37,99,235,.3)}
@@ -355,7 +373,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
           <div><label>Concepto</label><input id="mDescription" placeholder="Ej. Supermercado"></div>
           <div><label>Importe (€)</label><input id="mAmount" type="number" min="0" step="0.01" placeholder="0,00"></div>
         </div>
-        <div id="investmentFields" class="panel section-gap" style="display:none;background:#f8fafc;box-shadow:none">
+        <div id="investmentFields" class="panel section-gap" style="display:none;background:var(--soft);box-shadow:none">
           <h3>Datos de la inversión</h3>
           <div class="grid-2">
             <div><label>Activo del patrimonio</label><select id="mAsset"></select></div>
@@ -525,7 +543,8 @@ const db=initializeFirestore(firebaseApp,{localCache:persistentLocalCache({tabMa
 const LEGACY_STORAGE_KEY="controlFinanzas_v1"; // clave de la versión anterior (solo lectura, para migrar)
 const euro=new Intl.NumberFormat("es-ES",{style:"currency",currency:"EUR"});
 const months=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
-const colors={Ingreso:"#16803b",Gasto:"#c73737","Inversión":"#2563eb"};
+const colors={Ingreso:"#16803b",Gasto:"#c73737","Inversión":"#2563eb"}; // se refresca desde los tokens CSS en renderCharts (modo claro/oscuro)
+function tok(name){return getComputedStyle(document.documentElement).getPropertyValue(name).trim()}
 const el=id=>document.getElementById(id);
 let state=defaultState();
 let editingId=null;
@@ -1157,7 +1176,7 @@ function pct1(v){return v.toFixed(1).replace(".",",")}
 const barValueLabels={id:"barValueLabels",afterDatasetsDraw(chart,args,opts){
  if(!opts||!opts.format)return;const {ctx}=chart;
  chart.data.datasets.forEach((ds,di)=>{const meta=chart.getDatasetMeta(di);if(meta.hidden)return;
-  meta.data.forEach((bar,i)=>{const v=ds.data[i];if(v==null)return;ctx.save();ctx.font="600 12px "+FONT;ctx.fillStyle="#374151";ctx.textBaseline="middle";
+  meta.data.forEach((bar,i)=>{const v=ds.data[i];if(v==null)return;ctx.save();ctx.font="600 12px "+FONT;ctx.fillStyle=tok("--text");ctx.textBaseline="middle";
    if(v<0){ctx.textAlign="right";ctx.fillText(opts.format(v,i),bar.x-6,bar.y)}else{ctx.textAlign="left";ctx.fillText(opts.format(v,i),bar.x+6,bar.y)}
    ctx.restore()})})}};
 
@@ -1198,7 +1217,7 @@ function drawSavingsChart(){
  el("subSavings").textContent=!all.length?"Sin movimientos todavía":p.mode==="all"?`Acumulado desde ${monthAbbr(all[0].y,all[0].m)} hasta hoy`:`Acumulado desde ${monthAbbr(all[0].y,all[0].m)}, mostrando ${p.year}`;
  const labels=series.map(x=>p.mode==="all"?`${months[x.m-1].slice(0,3)} ${String(x.y).slice(2)}`:months[x.m-1].slice(0,3));
  const sel=p.mode==="month"?series.findIndex(x=>x.m===p.month):-1;
- mountChart("savingsChart",{type:"line",data:{labels,datasets:[{label:"Ahorro acumulado",data:series.map(x=>x.cum),borderColor:"#0f172a",backgroundColor:withAlpha("#0f172a",0.08),fill:true,tension:0.25,pointRadius:series.map((_,i)=>i===sel?5:2),pointBackgroundColor:series.map((_,i)=>i===sel?"#2563eb":"#0f172a")}]},
+ mountChart("savingsChart",{type:"line",data:{labels,datasets:[{label:"Ahorro acumulado",data:series.map(x=>x.cum),borderColor:tok("--chart-neutral"),backgroundColor:withAlpha(tok("--chart-neutral"),0.08),fill:true,tension:0.25,pointRadius:series.map((_,i)=>i===sel?5:2),pointBackgroundColor:series.map((_,i)=>i===sel?colors["Inversión"]:tok("--chart-neutral"))}]},
   options:{responsive:true,maintainAspectRatio:false,animation:{duration:250},
    plugins:{legend:{display:false},tooltip:{callbacks:{title:items=>{const x=series[items[0].dataIndex];return `${months[x.m-1]} ${x.y}`},label:c=>{const x=series[c.dataIndex];return[` Acumulado: ${euro.format(x.cum)}`,` Este mes: ${x.net>=0?"+":""}${euro.format(x.net)}`]}}}},
    scales:{x:{grid:{display:false}},y:{ticks:{callback:v=>shortNum(v)}}},
@@ -1226,9 +1245,9 @@ function drawCategoryChart(){
 function drawPatrimonyChart(){
  const assets=portfolioDistributionData(),ref=latestPortfolioReference();
  el("subPatrimony").textContent=assets.length?`Valor actual, total ${euro.format(assets[0].total)} · actualizado ${formatDateTime(ref)}`:"Añade activos en Patrimonio para ver su distribución";
- if(isMobile()){renderBarList("patrimonyChart",assets.map(a=>({label:a.name,value:a.value,color:"#0f172a",text:`${euro.format(a.value)} · ${pct1(a.pct)} %`})),{empty:"Sin activos"});return}
+ if(isMobile()){renderBarList("patrimonyChart",assets.map(a=>({label:a.name,value:a.value,color:tok("--chart-neutral"),text:`${euro.format(a.value)} · ${pct1(a.pct)} %`})),{empty:"Sin activos"});return}
  showChartCanvas("patrimonyChart");
- mountChart("patrimonyChart",{type:"bar",data:{labels:assets.map(a=>a.name),datasets:[{label:"Valor",data:assets.map(a=>a.value),backgroundColor:"#0f172a",borderRadius:3}]},
+ mountChart("patrimonyChart",{type:"bar",data:{labels:assets.map(a=>a.name),datasets:[{label:"Valor",data:assets.map(a=>a.value),backgroundColor:tok("--chart-neutral"),borderRadius:3}]},
   options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,animation:{duration:250},layout:{padding:{right:130}},
    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${euro.format(c.parsed.x)} · ${pct1(assets[c.dataIndex].pct)} %`}},barValueLabels:{format:(v,i)=>`${euro.format(v)} · ${pct1(assets[i].pct)} %`}},
    scales:{x:{beginAtZero:true,ticks:{callback:v=>shortNum(v)},grid:{display:false}},y:{ticks:{autoSkip:false,callback:truncTick}}}},
@@ -1242,11 +1261,14 @@ function drawCompoundReturnChart(){
  mountChart("compoundReturnChart",{type:"bar",data:{labels:data.map(d=>d.name),datasets:[{label:"Rentabilidad anualizada",data:data.map(d=>Math.round(d.rate*10000)/100),backgroundColor:data.map(d=>d.rate>=0?colors.Ingreso:colors.Gasto),borderRadius:3}]},
   options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,animation:{duration:250},layout:{padding:{right:80,left:10}},
    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const d=data[c.dataIndex];return[` ${c.parsed.x.toFixed(2).replace(".",",")} % anual`,` Aportado ${euro.format(d.invested)} · valor ${euro.format(d.value)}`,d.since?` Desde ${formatDate(d.since)} hasta ${formatDate(d.asOf)}`:""].filter(Boolean)}}},barValueLabels:{format:v=>`${v.toFixed(2).replace(".",",")} %`}},
-   scales:{x:{ticks:{callback:v=>v+" %"},grid:{color:"#e5e7eb"}},y:{ticks:{autoSkip:false,callback:truncTick}}}},
+   scales:{x:{ticks:{callback:v=>v+" %"},grid:{color:tok("--border")}},y:{ticks:{autoSkip:false,callback:truncTick}}}},
   plugins:[barValueLabels]});
 }
 function renderCharts(){
  if(typeof Chart==="undefined"){document.querySelectorAll(".chart-sub").forEach(n=>n.textContent="No se ha podido cargar la librería de gráficos (sin conexión).");return}
+ // Colores de los gráficos según el tema activo (claro u oscuro)
+ colors.Ingreso=tok("--income");colors.Gasto=tok("--expense");colors["Inversión"]=tok("--investment");
+ Chart.defaults.color=tok("--muted");Chart.defaults.borderColor=tok("--border");Chart.defaults.font.family=FONT;
  drawMonthlyChart();drawSavingsChart();drawCategoryChart();drawPatrimonyChart();drawCompoundReturnChart();
 }
 
@@ -1415,6 +1437,8 @@ el("periodModeSeg").querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{el
 el("periodPrev").onclick=()=>shiftPeriod(-1);el("periodNext").onclick=()=>shiftPeriod(1);
 el("toggleFilters").onclick=()=>el("searchbar").classList.toggle("collapsed");
 el("monthlyToggle").onclick=()=>{monthlyShowAll=!monthlyShowAll;drawMonthlyChart()};
+// Si el sistema cambia entre claro y oscuro con la app abierta, se repintan los gráficos con los colores del nuevo tema.
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{if(el("page-dashboard").classList.contains("active"))renderCharts()});
 el("assetFormDetails").open=!isMobile();
 let lastMobile=isMobile(),resizeTimer=null;
 window.addEventListener("resize",()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(isMobile()!==lastMobile){lastMobile=isMobile();el("assetFormDetails").open=!lastMobile;if(el("page-dashboard").classList.contains("active"))renderCharts()}},200)});
