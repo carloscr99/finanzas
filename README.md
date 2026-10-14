@@ -48,7 +48,7 @@ Cada vez que cambies un fichero y lo subas, Pages se vuelve a publicar solo.
 
 ## 6. Cotizaciones automáticas (`prices.json`)
 
-La app lee `prices.json` de este mismo repositorio. Lo actualiza solo un **workflow de GitHub Actions** (`.github/workflows/update-prices.yml`) que corre en los servidores de GitHub todos los días a las 06:00 UTC, con el ordenador apagado:
+La app lee `prices.json` de este mismo repositorio. Lo actualiza solo un **workflow de GitHub Actions** (`.github/workflows/update-prices.yml`) que corre en los servidores de GitHub dos veces al día, a las 06:00 y a las 18:00 UTC (08:00 y 20:00 en verano, hora de Madrid), con el ordenador apagado. La pasada de la tarde recoge el valor liquidativo del día anterior, que los fondos publican a lo largo del día; la de la mañana es un respaldo. Las fechas de "Cotizaciones" en Patrimonio significan: *sincronizadas* = cuándo tu navegador descargó el fichero, *fichero GitHub* = última vez que el robot encontró un precio nuevo, *cotización más reciente* = fecha de valor del fondo (siempre uno o dos días atrás; Bitcoin es en tiempo real):
 
 1. Ejecuta `scripts/update-prices.mjs`, que para cada clave de `assets` en `prices.json` consulta el valor liquidativo en el Financial Times (fondos, por ISIN) o el precio en CoinGecko (clave `BTC`).
 2. Si obtiene un precio válido, actualiza `price`, `priceDate` (fecha real del dato) y `source`. Si una fuente falla, conserva el precio anterior y lo deja anotado en el registro de la ejecución.
