@@ -2,8 +2,11 @@ name: Actualizar cotizaciones
 
 on:
   schedule:
-    # Todos los días a las 06:00 UTC (08:00 en verano / 07:00 en invierno, hora de Madrid)
+    # Dos pasadas al día. La de la tarde (18:00 UTC = 20:00 verano / 19:00 invierno, hora de Madrid) recoge el valor
+    # liquidativo del día anterior, que los fondos publican a lo largo del día; la de la mañana (06:00 UTC) es un respaldo.
+    # GitHub ejecuta el cron "cuando puede": puede retrasarse o saltarse alguna pasada.
     - cron: "0 6 * * *"
+    - cron: "0 18 * * *"
   workflow_dispatch:
 
 permissions:
