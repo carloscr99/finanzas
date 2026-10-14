@@ -1435,8 +1435,9 @@ function drawNetWorthChart(){
    if(charts.netWorthChart){charts.netWorthChart.destroy();delete charts.netWorthChart}
    box.style.display="none";
    if(!note){note=document.createElement("div");note.className="empty-state";box.after(note)}
-   note.innerHTML=`<svg class="ico" aria-hidden="true"><use href="#i-trend"/></svg><p>${all.length?"Sin suficientes puntos en este periodo. Cambia a «Año» o «Todo».":"Se irá dibujando a medida que se sincronicen cotizaciones y registres movimientos."}</p>`;
-   el("subNetWorth").textContent=all.length?`${intFmt.format(all.length)} punto${all.length===1?"":"s"} guardados desde ${formatDate(all[0].date)}`:"Todavía sin histórico";return;
+   const n=all.length,msg=n===0?"Se irá dibujando a medida que se sincronicen cotizaciones y registres movimientos.":n===1?"Hoy se ha guardado el primer punto. A partir de mañana, con dos días o más, aparecerá la línea.":"Sin suficientes puntos en este periodo. Cambia a «Año» o «Todo».";
+   note.innerHTML=`<svg class="ico" aria-hidden="true"><use href="#i-trend"/></svg><p>${msg}</p>`;
+   el("subNetWorth").textContent=n===0?"Todavía sin histórico":n===1?`1 punto guardado (${formatDate(all[0].date)})`:`${intFmt.format(n)} puntos guardados desde ${formatDate(all[0].date)}`;return;
  }
  if(note)note.remove();box.style.display="";
  const first=series[0],last=series[series.length-1],delta=last.value-first.value;
