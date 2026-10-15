@@ -10,9 +10,14 @@ service cloud.firestore {
         && exists(/databases/$(database)/documents/allowlist/$(request.auth.token.email));
     }
 
-    // Cada usuario solo puede leer y escribir su propio documento.
+    // Cada usuario solo puede leer y escribir su propio documento principal
+    // y sus documentos de movimientos por año (users/{uid}/years/{yyyy}).
     match /users/{uid} {
       allow read, write: if allowed() && request.auth.uid == uid;
+
+      match /years/{year} {
+        allow read, write: if allowed() && request.auth.uid == uid;
+      }
     }
 
     // Cada usuario solo puede comprobar su propia entrada en la lista.

@@ -74,14 +74,17 @@ GitHub Pages (estático)                     Firebase (plan gratuito Spark)
 │ index.html + sw.js       │  popup Google  │ Authentication (Google)      │
 │ firebase-config.js       │◄──────────────►│                              │
 │ prices.json              │  SDK web 12.19 │ Firestore                    │
-│ (robot 2 veces al día)   │◄──────────────►│   users/{uid}  ← todo el     │
-└──────────────────────────┘                │                  estado      │
+│ (robot 2 veces al día)   │◄──────────────►│   users/{uid}  ← estado sin  │
+└──────────────────────────┘                │        movimientos (+meta)   │
+                                            │   users/{uid}/years/{yyyy}   │
+                                            │        ← movimientos del año │
                                             │   allowlist/{email}          │
                                             └──────────────────────────────┘
 ```
 
-- **Datos**: un documento `users/{uid}` con `{categories, movements, recurring, assets, transfers, meta}`. Límite 1 MiB; a 13/10 pesaba ~560 KB. `meta.netWorthHistory` guarda hasta 730 puntos diarios de patrimonio.
-- **Guardado**: 300 ms después de cada cambio, `setDoc` del documento entero. `onSnapshot` sincroniza entre dispositivos. Caché persistente de Firestore → funciona sin conexión.
+- **Datos** (desde el 15/10/2026): documento principal `users/{uid}` con `{categories, recurring, assets, transfers, budgets, meta, schema:2}` (~7 KB) y un documento por año `users/{uid}/years/{yyyy}` con `{movements:[…]}` (~90 KB/año). Límite 1 MiB por documento. `meta.netWorthHistory` guarda hasta 730 puntos diarios de patrimonio. Al abrir se cargan todos y se juntan en memoria (`assembleState`); la app siempre trabaja con la lista completa.
+- **Guardado**: 300 ms después de cada cambio, `writeBatch` atómico con solo los documentos cuyo JSON ha cambiado respecto a lo último leído o escrito (`written`); un año sin movimientos se borra. `onSnapshot` del principal y de la colección de años sincroniza entre dispositivos (se comparan firmas independientes del orden). Caché persistente de Firestore → funciona sin conexión.
+- **Migración**: si el principal aún trae `movements` (formato anterior al 15/10/2026), se reparten por años en el primer guardado. Si las reglas no permiten leer los años (`permission-denied`), `legacyWrites=true` y se guarda todo en el principal como antes, con aviso en consola: publicar `firestore.rules` en la consola de Firebase.
 - **Sesión**: Firebase la guarda en IndexedDB. Al abrir se muestra "Comprobando sesión…" (sin botón) hasta que se restaura. Solo se cierra sesión si la cuenta no está en `allowlist`; un fallo de red muestra "Reintentar" y conserva la sesión (veredicto cacheado en `localStorage` como `allow:<uid>`). El login es solo por ventana emergente: el flujo de redirección no funciona en github.io porque `authDomain` es otro dominio.
 - **Librerías CDN (versiones fijadas)**: Firebase 12.19.0 (gstatic), Chart.js 4.5.1 y SweetAlert2 11.14.5 (cdnjs), Inter (Google Fonts, con fallback al sistema).
 - **Temas**: claro por defecto y oscuro automático con `prefers-color-scheme`; todos los colores son tokens de `:root`, y Chart.js los lee con `tok()`.
@@ -159,7 +162,7 @@ En `C:\Users\Carlos\repos\finanzas`: `git pull` (el robot hace commits propios),
 ### Probar en local sin login
 `powershell -NoProfile -ExecutionPolicy Bypass -File .claude\serve.ps1` y abrir http://localhost:8000/.claude/test.html (datos del JSON de importación; "guardar" no persiste). Claude lo hace con el navegador integrado (`preview_start`, configuración "finanzas").
 
-**Regenerar `test.html` tras cambiar `index.html`**: copiar `index.html`, quitar las tres líneas `import … "https://www.gstatic.com/…"`, sustituir `import { firebaseConfig } from "./firebase-config.js";` por el bloque "SIMULADOR DE FIREBASE" (está en el propio `test.html`), quitar la línea `navigator.serviceWorker.register(…)` y cambiar las rutas `icon-192.png`, `manifest.webmanifest` y `./prices.json` por `../…`. Claude tiene un script Python que lo hace (`regen_test.py` en su scratchpad; se puede rehacer en un minuto).
+**Regenerar `test.html` tras cambiar `index.html`**: copiar `index.html`, quitar las tres líneas `import … "https://www.gstatic.com/…"`, sustituir `import { firebaseConfig } from "./firebase-config.js";` por el bloque "SIMULADOR DE FIREBASE" (está en el propio `test.html`), quitar la línea `navigator.serviceWorker.register(…)` y cambiar las rutas `icon-192.png`, `manifest.webmanifest` y `./prices.json` por `../…`. El script que lo hace está en `.claude/regen_test.py` (ejecutar desde la raíz del repo: `python .claude/regen_test.py`). El simulador sirve el JSON de importación repartido por años; con `?legacy=1` lo sirve en el formato antiguo (prueba la migración) y con `?legacy=1&denied=1` simula además las reglas antiguas. Los guardados se ven en la consola del navegador como `batch simulado` / `setDoc simulado`.
 
 La web real (`index.html` en http://localhost:8000/) también funciona en local con login, porque `localhost` está autorizado en Firebase.
 
@@ -182,7 +185,7 @@ Antes de tocar la interfaz, consultar la skill (`search.py … --domain ux|icons
 2. **Día 4 de cada mes**: las compras de fondos se generan con participaciones estimadas; comprobar contra el extracto de MyInvestor y corregir si hace falta (editar el movimiento).
 3. **Cuenta corriente**: cuando se mire el banco, "Actualizar manualmente" con el saldo real; la diferencia que muestre es dinero no registrado.
 4. Revisar las clasificaciones dudosas de la importación (§5) con el cambio en bloque, si se quiere.
-5. Vigilar el tamaño del documento de Firestore; si se acerca a 1 MiB, pasar `movements` a una subcolección. El histórico de patrimonio está limitado a 730 puntos.
+5. Tamaño de Firestore: resuelto el 15/10/2026 con un documento por año; ningún documento se acerca al límite. El histórico de patrimonio está limitado a 730 puntos (~50 KB en el principal).
 6. Opcional: restringir la clave de Firebase por referrer `carloscr99.github.io/*` en Google Cloud Console → Credenciales.
 7. Opcional: el recurrente de Revolut (50 €) sigue como Inversión; si se prefiere como provisión del seguro, cambiarlo a Gasto › Seguros.
 8. Seguir vigilando que el cron del robot dispare las dos pasadas (ver Actions).

@@ -601,7 +601,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, getDoc, getDocFromServer, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, collection, getDoc, getDocFromServer, getDocs, getDocsFromServer, setDoc, writeBatch, onSnapshot } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 
 const firebaseApp=initializeApp(firebaseConfig);
@@ -696,9 +696,42 @@ async function uiPrompt(msg,def,opts={}){
  const r=await S.fire({title:opts.title||"",text:msg,input:"text",inputValue:def==null?"":String(def),inputAttributes:{inputmode:opts.inputmode||"decimal",autocomplete:"off"},showCancelButton:true,confirmButtonText:opts.confirmText||"Guardar",cancelButtonText:"Cancelar"});
  return r.isConfirmed?r.value:null;
 }
-// ---------- Persistencia en Firestore (un documento users/{uid} con todo el estado) ----------
-let currentUser=null,userDocRef=null,unsubscribeSnapshot=null,remoteSaveTimer=null;
+// ---------- Persistencia en Firestore ----------
+// Documento principal users/{uid}: categorías, recurrentes, activos, traspasos, presupuestos y meta (pequeño).
+// Movimientos: un documento por año en users/{uid}/years/{yyyy} ({movements:[…]}), para no acercarse al límite de 1 MiB
+// por documento. Al abrir se cargan todos y se juntan en memoria: la app trabaja siempre con la lista completa.
+// Al guardar se escriben, en un solo lote atómico, solo los documentos cuyo contenido ha cambiado.
+// Las cuentas con el formato antiguo (movimientos dentro del principal) se migran la primera vez que se guardan.
+let currentUser=null,userDocRef=null,yearsColRef=null,unsubscribeMain=null,unsubscribeYears=null,remoteSaveTimer=null;
+let lastMainSnap=null,lastYearsSnap=null; // últimas instantáneas recibidas, para reconstruir el estado al cambiar cualquiera
+let written={main:null,years:new Map()}; // JSON de lo último escrito o leído por documento: solo se reescribe lo que cambia
+let legacyWrites=false; // true si las reglas de Firestore aún no permiten los documentos de año: se guarda todo en el principal, como antes
+const SCHEMA_VERSION=2;
 function cleanForFirestore(s){return JSON.parse(JSON.stringify(s))} // elimina undefined, que Firestore no admite
+function movementYear(m){const y=String(m?.date||"").slice(0,4);return /^\d{4}$/.test(y)?y:"otros"}
+function groupMovementsByYear(movs){const g=new Map();for(const m of movs){const y=movementYear(m);if(!g.has(y))g.set(y,[]);g.get(y).push(m)}return g}
+// Documento principal tal como se escribe (sin movimientos) y documentos de año, a partir del estado en memoria.
+function splitState(s){
+ const main=cleanForFirestore({...s,movements:undefined,schema:SCHEMA_VERSION});
+ const years=new Map();for(const [y,list] of groupMovementsByYear(s.movements))years.set(y,cleanForFirestore({movements:list}));
+ return{main,years};
+}
+// Junta el documento principal y los de año en un estado. Si el principal aún trae movimientos (formato antiguo, o escritos
+// por una versión anterior de la web), se añaden los que no estén ya en los años; el siguiente guardado deja todo en el formato nuevo.
+function assembleState(mainData,yearDocs){
+ const s=normalizeState(mainData);
+ const legacy=Array.isArray(mainData?.movements)?mainData.movements:[];
+ const movs=[];const seen=new Set();
+ for(const [,d] of [...yearDocs.entries()].sort((a,b)=>a[0].localeCompare(b[0])))for(const m of (Array.isArray(d?.movements)?d.movements:[])){if(m?.id&&seen.has(m.id))continue;if(m?.id)seen.add(m.id);movs.push(m)}
+ for(const m of legacy){if(m?.id&&seen.has(m.id))continue;if(m?.id)seen.add(m.id);movs.push(m)}
+ s.movements=movs;
+ return{state:s,needsMigration:legacy.length>0};
+}
+// Firma del estado independiente del orden de los movimientos (en memoria y en Firestore pueden ir en distinto orden).
+function stateSignature(s){
+ const movs=[...(s.movements||[])].sort((a,b)=>(a.date||"").localeCompare(b.date||"")||String(a.id||"").localeCompare(String(b.id||"")));
+ return JSON.stringify({...s,movements:movs});
+}
 // Histórico del patrimonio: un punto por día (se sobrescribe el del mismo día), máximo 730 puntos, para el gráfico de evolución.
 function recordNetWorthPoint(){
  if(!state.assets.length)return;
@@ -717,9 +750,25 @@ function saveState(){
 function flushRemoteSave(){
  if(!remoteSaveTimer||!userDocRef)return;
  clearTimeout(remoteSaveTimer);remoteSaveTimer=null;
- setDoc(userDocRef,cleanForFirestore(state)).catch(err=>{
+ if(legacyWrites){ // formato antiguo mientras no estén publicadas las reglas nuevas
+   setDoc(userDocRef,cleanForFirestore(state)).catch(err=>{console.error("Error guardando en Firestore",err);uiAlert("No se han podido guardar los cambios en tu cuenta ("+(err.code||err.message)+"). Exporta tus datos por seguridad.",{icon:"error",title:"Error al guardar"})});
+   return;
+ }
+ const {main,years}=splitState(state);
+ const batch=writeBatch(db);let ops=0;
+ const mainJson=JSON.stringify(main);
+ if(mainJson!==written.main){batch.set(userDocRef,main);ops++}
+ const next=new Map();
+ for(const [y,d] of years){const j=JSON.stringify(d);next.set(y,j);if(j!==written.years.get(y)){batch.set(doc(yearsColRef,y),d);ops++}}
+ for(const y of written.years.keys())if(!years.has(y)){batch.delete(doc(yearsColRef,y));ops++} // un año que se ha quedado sin movimientos
+ if(!ops)return;
+ const before={main:written.main,years:new Map(written.years)};
+ written={main:mainJson,years:next}; // se da por escrito al enviar; si falla, se vuelve atrás y el siguiente guardado lo reintenta
+ batch.commit().catch(err=>{
+   written=before;
    console.error("Error guardando en Firestore",err);
-   uiAlert("No se han podido guardar los cambios en tu cuenta ("+(err.code||err.message)+"). Exporta tus datos por seguridad.",{icon:"error",title:"Error al guardar"});
+   const hint=err.code==="permission-denied"?" Si acabas de actualizar la web, publica las reglas nuevas de firestore.rules en la consola de Firebase.":"";
+   uiAlert("No se han podido guardar los cambios en tu cuenta ("+(err.code||err.message)+")."+hint+" Exporta tus datos por seguridad.",{icon:"error",title:"Error al guardar"});
  });
 }
 function readLegacyLocalState(){
@@ -729,44 +778,82 @@ function readLegacyLocalState(){
    return(s.movements.length||s.assets.length||s.recurring.length)?s:null;
  }catch{return null}
 }
-async function loadInitialState(ref){
- try{return{snap:await getDocFromServer(ref),serverChecked:true}}
+// Lee el documento principal y los de año: primero del servidor; sin conexión, de la caché local.
+// Si las reglas de Firestore todavía no permiten leer los años (reglas antiguas), se sigue con el formato antiguo (yearsDenied).
+async function loadInitialState(ref,colRef){
+ const years=async get=>{try{return{snap:await get(colRef),denied:false}}catch(err){if(err.code==="permission-denied")return{snap:null,denied:true};throw err}};
+ const fromServer=async()=>{const [snap,y]=await Promise.all([getDocFromServer(ref),years(getDocsFromServer)]);return{snap,years:y.snap,yearsDenied:y.denied,serverChecked:true}};
+ const fromCache=async()=>{const [snap,y]=await Promise.all([getDoc(ref),years(getDocs)]);return{snap,years:y.snap,yearsDenied:y.denied,serverChecked:false}};
+ try{return await fromServer()}
  catch(err){
    if(err.code==="permission-denied")throw err;
-   try{return{snap:await getDoc(ref),serverChecked:false}}
-   catch(e2){if(e2.code==="permission-denied")throw e2;return{snap:null,serverChecked:false}}
+   try{return await fromCache()}
+   catch(e2){if(e2.code==="permission-denied")throw e2;return{snap:null,years:null,yearsDenied:false,serverChecked:false}}
  }
 }
+function yearDocsMap(yearsSnap){const m=new Map();if(yearsSnap)yearsSnap.forEach(d=>m.set(d.id,d.data()));return m}
+// Recuerda el contenido leído de cada documento para que el primer guardado solo escriba lo que cambie de verdad.
+function rememberWritten(mainData,yearDocs){
+ written={main:mainData?JSON.stringify(cleanForFirestore(mainData)):null,years:new Map()};
+ for(const [y,d] of yearDocs)written.years.set(y,JSON.stringify(cleanForFirestore(d)));
+}
+// Cambio llegado de otro dispositivo (o eco tardío): se reconstruye el estado con las últimas instantáneas de todo.
+function applyRemoteSnapshots(){
+ if(!lastMainSnap||!lastYearsSnap||!lastMainSnap.exists())return;
+ if(lastMainSnap.metadata.hasPendingWrites||lastYearsSnap.metadata.hasPendingWrites||remoteSaveTimer)return;
+ const mainData=lastMainSnap.data(),yearDocs=yearDocsMap(lastYearsSnap);
+ const {state:incoming,needsMigration}=assembleState(mainData,yearDocs);
+ if(stateSignature(incoming)===stateSignature(state))return;
+ rememberWritten(mainData,yearDocs);
+ state=incoming;editingId=null;updateYearOptions();renderAll();
+ if(needsMigration)saveState(); // otra versión de la web ha escrito movimientos en el principal: se pasan a los años
+}
+// Formato antiguo (reglas sin publicar): el documento principal lleva todo, como en la versión anterior.
+function applyLegacySnapshot(snap){
+ if(!snap.exists()||snap.metadata.hasPendingWrites||remoteSaveTimer)return;
+ const incoming=normalizeState(snap.data());
+ if(stateSignature(incoming)===stateSignature(state))return;
+ state=incoming;editingId=null;updateYearOptions();renderAll();
+}
 async function startApp(user){
- if(unsubscribeSnapshot){unsubscribeSnapshot();unsubscribeSnapshot=null} // por si se reintenta tras un error
- currentUser=user;userDocRef=doc(db,"users",user.uid);
+ if(unsubscribeMain){unsubscribeMain();unsubscribeMain=null} // por si se reintenta tras un error
+ if(unsubscribeYears){unsubscribeYears();unsubscribeYears=null}
+ currentUser=user;userDocRef=doc(db,"users",user.uid);yearsColRef=collection(userDocRef,"years");
+ lastMainSnap=null;lastYearsSnap=null;written={main:null,years:new Map()};legacyWrites=false;
  el("userEmail").textContent=user.email||"";el("settingsEmail").textContent=user.email||"";el("moreEmail").textContent=user.email||"";
  el("moreAvatar").textContent=(user.email||"?").trim().charAt(0).toUpperCase();
  setAuthStatus("Cargando tus datos…",false,true);
- const initial=await loadInitialState(userDocRef);
+ const initial=await loadInitialState(userDocRef,yearsColRef);
+ let needsMigration=false;
  if(initial.snap&&initial.snap.exists()){
-   state=normalizeState(initial.snap.data());
+   const mainData=initial.snap.data(),yearDocs=yearDocsMap(initial.years);
+   const r=assembleState(mainData,yearDocs);
+   state=r.state;needsMigration=r.needsMigration;
+   rememberWritten(mainData,yearDocs);
  }else{
    const legacy=readLegacyLocalState();
    if(initial.serverChecked&&legacy&&await uiConfirm("Hay datos de la versión anterior guardados en este navegador. ¿Quieres subirlos a tu cuenta?",{title:"Datos antiguos",confirmText:"Sí, subirlos"}))state=legacy;
    else state=defaultState();
    if(initial.serverChecked)saveState(); // cuenta nueva: crea el documento
  }
- unsubscribeSnapshot=onSnapshot(userDocRef,snap=>{
-   // Ignora el eco de nuestras propias escrituras y los cambios remotos mientras haya un guardado local pendiente.
-   if(!snap.exists()||snap.metadata.hasPendingWrites||remoteSaveTimer)return;
-   const incoming=normalizeState(snap.data());
-   if(JSON.stringify(incoming)===JSON.stringify(state))return;
-   state=incoming;editingId=null;updateYearOptions();renderAll();
- },err=>console.error("Firestore snapshot",err));
+ legacyWrites=!!initial.yearsDenied;
+ if(legacyWrites)console.warn("Las reglas de Firestore no permiten los documentos de año: se guarda en el formato antiguo. Publica firestore.rules en la consola de Firebase.");
+ else if(needsMigration&&initial.serverChecked){
+   // Formato antiguo: el principal todavía lleva los movimientos. Se escriben por años y se quitan del principal, todo en un lote.
+   written.main=null;saveState();
+   console.info(`Movimientos migrados a documentos por año: ${state.movements.length}`);
+ }
+ unsubscribeMain=onSnapshot(userDocRef,snap=>{lastMainSnap=snap;if(legacyWrites)applyLegacySnapshot(snap);else applyRemoteSnapshots()},err=>console.error("Firestore snapshot",err));
+ if(!legacyWrites)unsubscribeYears=onSnapshot(yearsColRef,snap=>{lastYearsSnap=snap;applyRemoteSnapshots()},err=>console.error("Firestore snapshot (años)",err));
  setAuthStatus("");
  showAuthScreen(false);
  updateYearOptions();ensureInitialPortfolioUpdateReference();generateRecurring(false);renderAll();updateMarketPrices(false);
 }
 function stopApp(){
  if(remoteSaveTimer)flushRemoteSave();
- if(unsubscribeSnapshot){unsubscribeSnapshot();unsubscribeSnapshot=null}
- userDocRef=null;currentUser=null;state=defaultState();editingId=null;
+ if(unsubscribeMain){unsubscribeMain();unsubscribeMain=null}
+ if(unsubscribeYears){unsubscribeYears();unsubscribeYears=null}
+ userDocRef=null;yearsColRef=null;currentUser=null;lastMainSnap=null;lastYearsSnap=null;written={main:null,years:new Map()};legacyWrites=false;state=defaultState();editingId=null;
  showAuthScreen(true);
 }
 
@@ -1160,15 +1247,16 @@ function renderSummary(){
  const all=calcSummary(state.movements);el("cumulativeSavings").textContent=euro.format(all.income-all.expense);
 }
 
-// Tamaño aproximado del documento de Firestore (límite 1 MiB): se mide como el JSON compacto del estado.
+// Tamaño de los documentos de Firestore (límite 1 MiB cada uno): el principal y el año con más movimientos.
 function renderDataSize(){
  const node=el("dataSize");if(!node)return;
- const bytes=new Blob([JSON.stringify(cleanForFirestore(state))]).size,limit=1024*1024,pct=bytes/limit*100;
- const kb=Math.round(bytes/1024),n=state.movements.length,perMov=n?bytes/n:180,monthsLeft=Math.max(0,Math.floor((limit-bytes)/(perMov*45)));
- const level=pct>=90?"peligro":pct>=70?"aviso":"ok";
+ const {main,years}=splitState(state),limit=1024*1024,size=o=>new Blob([JSON.stringify(o)]).size;
+ const mainBytes=size(main);let bigYear=null,bigBytes=0;for(const [y,d] of years){const b=size(d);if(b>bigBytes){bigBytes=b;bigYear=y}}
+ const worst=Math.max(mainBytes,bigBytes),pct=worst/limit*100,level=pct>=90?"peligro":pct>=70?"aviso":"ok";
+ const n=state.movements.length,h=(state.meta?.netWorthHistory||[]).length,kb=b=>intFmt.format(Math.round(b/1024));
  node.style.color=level==="ok"?"":level==="aviso"?"var(--warning)":"var(--danger)";
- node.innerHTML=`<b>Tamaño de tus datos:</b> ${intFmt.format(kb)} KB de 1.024 KB (${pct.toFixed(1).replace(".",",")} %) · ${intFmt.format(n)} movimientos, ${state.assets.length} activos, ${(()=>{const h=(state.meta?.netWorthHistory||[]).length;return `${intFmt.format(h)} punto${h===1?"":"s"} de patrimonio`})()}. `+
-  (level==="ok"?`A unos 45 movimientos al mes, margen para unos ${intFmt.format(monthsLeft)} meses.`:level==="aviso"?`Queda menos del 30 %: conviene planificar el paso de los movimientos a una subcolección (ver README).`:`Queda menos del 10 %: hay que mover los movimientos a una subcolección antes de que falle el guardado.`);
+ node.innerHTML=`<b>Tamaño de tus datos:</b> documento principal ${kb(mainBytes)} KB${bigYear?` · año ${bigYear} ${kb(bigBytes)} KB (el mayor)`:""} · límite 1.024 KB por documento (el mayor va al ${pct.toFixed(1).replace(".",",")} %) · ${intFmt.format(n)} movimientos, ${state.assets.length} activos, ${intFmt.format(h)} punto${h===1?"":"s"} de patrimonio. `+
+  (level==="ok"?`Cada año va en su propio documento: a unos 45 movimientos al mes, un año ocupa en torno a 100 KB.`:level==="aviso"?`Un documento pasa del 70 %: revisa si hay movimientos duplicados o descripciones muy largas en ese año.`:`Un documento pasa del 90 %: el guardado fallará al llegar al límite. Reduce ese año o pide ayuda para partirlo por meses.`);
 }
 function renderFreshness(){
  const mov=latestMovementReference(),port=latestPortfolioReference(),prices=state.meta?.lastPricesSyncAt;
