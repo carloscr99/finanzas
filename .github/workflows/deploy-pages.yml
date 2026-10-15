@@ -9,6 +9,12 @@ on:
     branches: [main]
   workflow_dispatch:
   workflow_call:
+    inputs:
+      ref:
+        description: "Commit a publicar (por defecto, el que disparó la ejecución)"
+        required: false
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -28,6 +34,8 @@ jobs:
     steps:
       - name: Descargar el repositorio
         uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }} # vacío en push y manual: actions/checkout usa entonces el commit del evento
 
       - name: Preparar Pages
         uses: actions/configure-pages@v5

@@ -17,6 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       changed: ${{ steps.commit.outputs.changed }}
+      sha: ${{ steps.commit.outputs.sha }}
     steps:
       - name: Descargar el repositorio
         uses: actions/checkout@v4
@@ -42,9 +43,12 @@ jobs:
             git commit -m "Cotizaciones $(date -u +%Y-%m-%d)"
             git push
             echo "changed=true" >> "$GITHUB_OUTPUT"
+            echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
           fi
 
   # Los commits hechos con GITHUB_TOKEN no disparan el workflow de publicación: se llama aquí explícitamente.
+  # Se le pasa el commit recién creado: si no, el workflow llamado descargaría el commit con el que arrancó esta
+  # ejecución (github.sha) y publicaría el prices.json anterior.
   publicar:
     needs: update
     if: needs.update.outputs.changed == 'true'
@@ -53,3 +57,5 @@ jobs:
       pages: write
       id-token: write
     uses: ./.github/workflows/deploy-pages.yml
+    with:
+      ref: ${{ needs.update.outputs.sha }}
