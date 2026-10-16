@@ -390,8 +390,9 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
           <h3>Datos de la inversión</h3>
           <div class="grid-2">
             <div><label>Activo del patrimonio</label><select id="mAsset"></select></div>
-            <div><label>Participaciones / títulos comprados</label><input id="mUnits" type="number" min="0" step="0.000001" placeholder="Ej. 18,499"></div>
+            <div><label>Participaciones / títulos comprados</label><input id="mUnits" type="number" min="0" step="0.000001" placeholder="Vacío = se estiman"></div>
           </div>
+          <div class="inline-note" id="mUnitsHint" style="margin-top:8px"></div>
           <div class="inline-note section-gap">El importe del movimiento se sumará al capital aportado y las participaciones al activo seleccionado. El valor actual se recalcula con la última cotización disponible.</div>
         </div>
         <div class="form-actions"><button class="primary" id="saveMovement">Guardar movimiento</button><button class="secondary" id="cancelEdit" style="display:none">Cancelar</button></div>
@@ -584,7 +585,8 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
   <label>Categoría</label><div class="chips" id="qsCats"></div>
   <div id="qsInvest" hidden>
     <label>Activo del patrimonio</label><select id="qsAsset"></select>
-    <label>Participaciones / títulos comprados</label><input id="qsUnits" type="text" inputmode="decimal" placeholder="Ej. 0,452" autocomplete="off">
+    <label>Participaciones / títulos comprados</label><input id="qsUnits" type="text" inputmode="decimal" placeholder="Vacío = se estiman" autocomplete="off">
+    <div class="inline-note" id="qsUnitsHint" style="margin-top:6px"></div>
   </div>
   <label>Concepto</label><input id="qsDesc" list="qsDescList" placeholder="Ej. Supermercado" autocomplete="off"><datalist id="qsDescList"></datalist>
   <label>Fecha</label><div class="date-row"><input id="qsDate" type="date"><button type="button" class="secondary small" data-day="0">Hoy</button><button type="button" class="secondary small" data-day="-1">Ayer</button></div>
@@ -1066,6 +1068,15 @@ function investmentCategoryUsesUnits(type,cname){
  if(bestAssetForText(cname,state.assets.filter(a=>assetMarketConfig(a))))return true;
  return /fondo|etf|indexad|bitcoin|btc|\boro\b|gold|accion|msci|world|emerging|bond|bono/.test(normText(cname));
 }
+// Pista bajo la casilla de participaciones: la estimación con la última cotización, o el aviso de que no hay cotización.
+function updateUnitsHint(amountEl,assetEl,unitsEl,hintEl){
+ const h=el(hintEl);if(!h)return;
+ const a=state.assets.find(x=>x.id===el(assetEl).value),amount=parseAmount(el(amountEl).value),typed=parseAmount(el(unitsEl).value);
+ if(typed>0){h.textContent="Se guardan las participaciones indicadas.";return}
+ const est=estimateUnits(amount,a);
+ h.textContent=!a?"":est==null?(Number(a.unitPrice)>0?"Escribe el importe para ver la estimación.":"El activo aún no tiene cotización: indica las participaciones.")
+  :`Vacío = se estiman ≈ ${assetDisplayUnits(est)} part. (${euro.format(amount)} ÷ ${euro.format(a.unitPrice)}); se ajustan solas al llegar la cotización del día.`;
+}
 function updateInvestmentFields(){
  const show=investmentCategoryUsesUnits();
  el("investmentFields").style.display=show?"block":"none";
@@ -1074,6 +1085,7 @@ function updateInvestmentFields(){
  const cur=el("mAsset").value;
  el("mAsset").innerHTML=compatible.length?compatible.map(a=>`<option value="${a.id}">${escapeHtml(a.name)}</option>`).join(""):`<option value="">Añade primero un activo con cotización compatible en Patrimonio</option>`;
  if(cur&&compatible.some(a=>a.id===cur))el("mAsset").value=cur;else autoSelectAssetForCategory();
+ updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint");
 }
 function autoSelectAssetForCategory(){
  if(!investmentCategoryUsesUnits()||!el("mAsset"))return;
@@ -1336,21 +1348,34 @@ async function deleteCategory(id){
  if(!(await uiConfirm("Solo se pueden borrar categorías sin movimientos ni recurrentes.",{title:"¿Eliminar esta categoría?",danger:true,confirmText:"Eliminar"})))return;state.categories=state.categories.filter(c=>c.id!==id);if(state.budgets)delete state.budgets[id];saveState();renderAll();
 }
 // Guardado único de movimientos (formulario de escritorio y hoja rápida). Devuelve un mensaje de error o null.
+// Participaciones a partir del importe y la última cotización del activo (6 decimales). null si el activo no tiene cotización.
+function estimateUnits(amount,asset){
+ const price=Number(asset?.unitPrice);
+ return price>0&&Number.isFinite(amount)&&amount>0?Math.round(amount/price*1e6)/1e6:null;
+}
 function persistMovement(d,id){
- const {date,type,categoryId,description,amount,usesUnits,assetId,units}=d;
+ const {date,type,categoryId,description,amount,usesUnits,assetId}=d;let units=d.units,estimated=false;
  if(!date||!categoryId||!description||!Number.isFinite(amount)||amount<=0)return "Completa importe, categoría, concepto y fecha con valores válidos.";
- if(usesUnits&&(!assetId||!Number.isFinite(units)||units<=0))return "Para esta inversión selecciona el activo e indica las participaciones o títulos comprados.";
+ if(usesUnits){
+   if(!assetId)return "Para esta inversión selecciona el activo del patrimonio.";
+   if(!(Number.isFinite(units)&&units>0)){
+     // Casilla vacía: se estiman con la última cotización y quedan marcadas como estimadas (se ajustan al llegar la cotización del día).
+     units=estimateUnits(amount,state.assets.find(x=>x.id===assetId));
+     if(units==null)return "Indica las participaciones o títulos comprados: el activo todavía no tiene cotización para estimarlas.";
+     estimated=true;
+   }
+ }
  if(id){
    const i=state.movements.findIndex(m=>m.id===id);
    if(i>=0){
      applyInvestmentMovementToAsset(state.movements[i],-1);
      const next={...state.movements[i],date,type,categoryId,description,amount};
-     if(usesUnits){next.assetId=assetId;next.units=units;delete next.unitsEstimated}else{const wasLinked=!!state.movements[i].assetId;delete next.assetId;delete next.units;if(wasLinked)linkSavingsAccount(next)}
+     if(usesUnits){next.assetId=assetId;next.units=units;if(estimated)next.unitsEstimated=true;else delete next.unitsEstimated}else{const wasLinked=!!state.movements[i].assetId;delete next.assetId;delete next.units;if(wasLinked)linkSavingsAccount(next)}
      state.movements[i]=next;applyInvestmentMovementToAsset(next,1);
    }
  }else{
    const m={id:uuid(),date,type,categoryId,description,amount};
-   if(usesUnits){m.assetId=assetId;m.units=units}else linkSavingsAccount(m);
+   if(usesUnits){m.assetId=assetId;m.units=units;if(estimated)m.unitsEstimated=true}else linkSavingsAccount(m);
    state.movements.push(m);applyInvestmentMovementToAsset(m,1);
  }
  markDataUpdate(type==="Inversión"?"movement+portfolio":"movement");
@@ -1749,6 +1774,7 @@ function updateQsInvest(){
  const compatible=state.assets.filter(a=>assetMarketConfig(a)),cur=el("qsAsset").value;
  el("qsAsset").innerHTML=compatible.length?compatible.map(a=>`<option value="${a.id}">${escapeHtml(a.name)}</option>`).join(""):`<option value="">Añade primero un activo con ISIN en Patrimonio</option>`;
  if(cur&&compatible.some(a=>a.id===cur))el("qsAsset").value=cur;else{const m=bestAssetForText(getCat(qs.categoryId)?.name||"",compatible);if(m)el("qsAsset").value=m.id}
+ updateUnitsHint("qsAmount","qsAsset","qsUnits","qsUnitsHint");
 }
 function setQsType(type){qs.type=type;qs.showAll=false;el("qsType").querySelectorAll("button").forEach(b=>b.classList.toggle("active",b.dataset.type===type));renderQsCats()}
 function updateDescSuggestions(){
@@ -1869,7 +1895,7 @@ function renderAll(){
 
 document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>showPage(b.dataset.page));
 el("mDate").value=todayISO();el("rStartDate").value=todayISO();setupPeriodSelectors();updatePeriodControls();
-el("mType").onchange=()=>{updateMovementCategories();updateInvestmentFields()};el("mCategory").onchange=()=>{updateInvestmentFields();autoSelectAssetForCategory()};el("rType").onchange=updateRecurringCategories;
+el("mType").onchange=()=>{updateMovementCategories();updateInvestmentFields()};["mAmount","mUnits"].forEach(id=>el(id).addEventListener("input",()=>updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint")));el("mAsset").onchange=()=>updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint");el("mCategory").onchange=()=>{updateInvestmentFields();autoSelectAssetForCategory()};el("rType").onchange=updateRecurringCategories;
 el("addCategory").onclick=addCategory;
 el("bpPrev").onclick=()=>shiftBudgetMonth(-1);el("bpNext").onclick=()=>shiftBudgetMonth(1);el("bpToday").onclick=()=>{const n=new Date();bp.y=n.getFullYear();bp.m=n.getMonth()+1;renderBudgets()};
 el("budgetFillAvg").onclick=async()=>{if(!(await uiConfirm("Se sustituirán los presupuestos actuales por la propuesta calculada con tu histórico. Las categorías sin propuesta se quedan como están.",{title:"¿Rellenar con la propuesta?",confirmText:"Rellenar"})))return;const n=fillBudgetsFromProposal();saveState();renderAll();toast(`${n} presupuestos rellenados`)};
@@ -1890,6 +1916,7 @@ el("qsType").querySelectorAll("[data-type]").forEach(b=>b.onclick=()=>setQsType(
 el("quickSheet").querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{el("qsDate").value=addDaysISO(todayISO(),Number(b.dataset.day))});
 el("qsDesc").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();quickSave(false)}});
 el("qsAmount").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();el("qsDesc").focus()}});
+["qsAmount","qsUnits"].forEach(id=>el(id).addEventListener("input",()=>updateUnitsHint("qsAmount","qsAsset","qsUnits","qsUnitsHint")));el("qsAsset").addEventListener("change",()=>updateUnitsHint("qsAmount","qsAsset","qsUnits","qsUnitsHint"));
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!el("quickSheet").hidden)closeQuickSheet()});
 el("periodModeSeg").querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{el("periodMode").value=b.dataset.mode;updatePeriodControls();renderAll()});
 el("periodPrev").onclick=()=>shiftPeriod(-1);el("periodNext").onclick=()=>shiftPeriod(1);

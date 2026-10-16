@@ -182,7 +182,7 @@ Antes de tocar la interfaz, consultar la skill (`search.py … --domain ux|icons
 
 ### Pendiente
 1. **Fechas marcadas** (detalle en el resumen privado): traspasos de cuentas de ahorro a la corriente para un pago grande y vencimiento de un depósito, en 2027.
-2. **Día 4 de cada mes**: las compras de fondos se generan con participaciones estimadas; comprobar contra el extracto de MyInvestor y corregir si hace falta (editar el movimiento).
+2. **Día 4 de cada mes**: las compras de fondos se generan con participaciones estimadas; comprobar contra el extracto de MyInvestor y corregir si hace falta (editar el movimiento). Desde el 16/10/2026 las compras manuales también se estiman si la casilla de participaciones va vacía (`estimateUnits`, pista en vivo `updateUnitsHint`).
 3. **Cuenta corriente**: cuando se mire el banco, "Actualizar manualmente" con el saldo real; la diferencia que muestre es dinero no registrado.
 4. Revisar las clasificaciones dudosas de la importación (§5) con el cambio en bloque, si se quiere.
 5. Tamaño de Firestore: resuelto el 15/10/2026 con un documento por año; ningún documento se acerca al límite. El histórico de patrimonio está limitado a 730 puntos (~50 KB en el principal).

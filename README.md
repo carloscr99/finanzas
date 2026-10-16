@@ -105,9 +105,11 @@ Opciones sin instalar nada:
 - **Ahorro acumulado** = ingresos − gastos de todo el histórico. Las inversiones no se restan: no son gasto, es dinero que sigue siendo tuyo en fondos y cuentas de ahorro. **Liquidez restante** (por periodo) sí las resta: es lo que queda en la cuenta corriente ese mes o ese año.
 - **Evolución del patrimonio** (en Patrimonio, no en el Dashboard): la app guarda un punto por día (`meta.netWorthHistory`, máximo 730) cada vez que cambia algo: cotizaciones, movimientos, traspasos o actualizaciones manuales. Muestra patrimonio total, valor de los fondos y capital aportado a los fondos, según el periodo elegido. Hasta que no haya dos días con datos no se dibuja.
 
-## Recurrentes de fondos: participaciones estimadas
+## Compras de fondos: participaciones estimadas
 
 Cuando un recurrente de Inversión apunta a un fondo con ISIN (por ejemplo "Compra Amundi MSCI World"), la app no sabe cuántas participaciones compró MyInvestor. Las **estima** con la última cotización (importe ÷ precio), las suma al activo y marca el movimiento con «≈ … part. (estimadas)». Cuando llega una cotización con fecha igual o posterior a la compra, recalcula las participaciones con ese precio y las da por definitivas. Si el extracto dice otra cifra, edita el movimiento y escribe las participaciones reales.
+
+Lo mismo vale para las compras que se escriben a mano (formulario de escritorio y hoja rápida del móvil): basta con el importe en euros. Si la casilla "Participaciones / títulos comprados" se deja vacía, se estiman igual y bajo la casilla se ve la estimación en vivo (≈ N part., importe ÷ precio). Si se escribe una cifra, esa es la que se guarda, como definitiva. Si el activo aún no tiene cotización, hay que indicar las participaciones.
 
 ## Presupuesto mensual por categoría (sección propia)
 
