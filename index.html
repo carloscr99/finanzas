@@ -197,6 +197,8 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 .auth-card button{width:100%}
 .auth-status{margin-top:14px;font-size:13px;color:var(--muted);min-height:18px}
 .auth-status.error{color:var(--expense)}
+.gis-button{display:flex;justify-content:center;min-height:44px}
+.auth-card button.auth-alt{width:auto;margin-top:16px;background:none;border:0;box-shadow:none;color:var(--muted);font-size:13px;text-decoration:underline;padding:4px 8px;cursor:pointer}
 
 @media(max-width:1100px){
  .app{grid-template-columns:190px 1fr}.grid-4,.summary-grid,.asset-grid{grid-template-columns:repeat(2,1fr)}
@@ -267,9 +269,11 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
     <img class="auth-logo" src="icon-192.png" alt="" width="72" height="72">
     <h1>Mis Finanzas</h1>
     <p>Control personal de ingresos, gastos e inversiones.</p>
+    <div class="gis-button" id="gisButton" hidden></div>
     <button class="primary" id="loginGoogle" hidden>Entrar con Google</button>
     <div class="auth-status" id="authStatus" aria-live="polite"><span class="spinner" aria-hidden="true"></span>Comprobando sesión…</div>
     <button class="secondary" id="authRetry" hidden style="margin-top:12px">Reintentar</button>
+    <button class="auth-alt" id="loginFallback" hidden>¿No se abre? Entrar con la ventana de Google</button>
   </div>
 </div>
 <div class="app" hidden>
@@ -598,9 +602,10 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.14.5/sweetalert2.all.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
-import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithCredential, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, collection, getDoc, getDocFromServer, getDocs, getDocsFromServer, setDoc, writeBatch, onSnapshot } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
 
@@ -873,6 +878,37 @@ async function checkAllowed(email){
  try{const snap=await getDoc(doc(db,"allowlist",String(email||"").toLowerCase()));return snap.exists()?"yes":"no"}
  catch(err){return err.code==="permission-denied"?"no":"unknown"}
 }
+// Botón oficial de Google (Google Identity Services): entrega el token de identidad directamente a la web, sin pasar por
+// el dominio intermedio de Firebase (authDomain), que algunos navegadores aíslan (Safari, navegadores dentro de apps…) y
+// provoca "missing initial state". Necesita googleClientId en firebase-config.js y el dominio en los orígenes autorizados
+// del cliente OAuth (Google Cloud → Credenciales). Sin eso, o si la librería no carga, se usa la ventana emergente de siempre.
+const GIS_CLIENT_ID=String(firebaseConfig.googleClientId||"").trim();
+let gisRendered=false;
+function gisAvailable(){return !!(GIS_CLIENT_ID&&window.google&&google.accounts&&google.accounts.id)}
+function renderGisButton(){
+ if(gisRendered||!gisAvailable())return;
+ try{
+   google.accounts.id.initialize({client_id:GIS_CLIENT_ID,callback:onGisCredential,ux_mode:"popup",auto_select:false,itp_support:true,use_fedcm_for_prompt:true});
+   const box=el("gisButton");box.hidden=false;
+   const dark=window.matchMedia("(prefers-color-scheme: dark)").matches;
+   google.accounts.id.renderButton(box,{type:"standard",theme:dark?"filled_black":"outline",size:"large",text:"signin_with",shape:"pill",logo_alignment:"left",locale:"es",width:Math.min(320,Math.max(200,box.clientWidth||320))});
+   gisRendered=true;
+ }catch(err){console.warn("No se pudo mostrar el botón de Google; se usa la ventana emergente",err);gisRendered=false}
+}
+async function onGisCredential(resp){
+ setAuthStatus("Entrando…",false,true);
+ try{await signInWithCredential(auth,GoogleAuthProvider.credential(resp&&resp.credential))}
+ catch(err){console.error(err);setAuthStatus("No se pudo iniciar sesión: "+(err.code||err.message),true)}
+}
+// Muestra el botón oficial si está disponible; si no, el de la ventana emergente. El enlace de reserva siempre acompaña al oficial.
+function showLoginButtons(show){
+ if(!show){el("gisButton").hidden=true;el("loginGoogle").hidden=true;el("loginFallback").hidden=true;return}
+ renderGisButton();
+ const useGis=gisRendered;
+ el("gisButton").hidden=!useGis;el("loginGoogle").hidden=useGis;el("loginFallback").hidden=!useGis;
+}
+// La librería carga en segundo plano: si llega después de mostrar la pantalla de acceso, se cambia al botón oficial.
+window.onGoogleLibraryLoad=()=>{if(!pendingUser&&!el("authScreen").hidden&&!el("loginGoogle").hidden)showLoginButtons(true)};
 async function login(){
  setAuthStatus("Abriendo la ventana de Google…",false,true);
  const provider=new GoogleAuthProvider();provider.setCustomParameters({prompt:"select_account"});
@@ -892,7 +928,7 @@ async function login(){
 }
 async function logout(){if(!(await uiConfirm("Tendrás que volver a entrar con Google la próxima vez.",{title:"¿Cerrar sesión?",confirmText:"Cerrar sesión"})))return;stopApp();await signOut(auth)}
 async function enterApp(user){
- el("loginGoogle").hidden=true;el("authRetry").hidden=true;
+ showLoginButtons(false);el("authRetry").hidden=true;
  setAuthStatus("Comprobando acceso…",false,true);
  const verdict=await checkAllowed(user.email);
  if(verdict==="no"){
@@ -920,7 +956,7 @@ async function enterApp(user){
 onAuthStateChanged(auth,user=>{
  pendingUser=user;
  if(!user){
-   el("loginGoogle").hidden=false;el("authRetry").hidden=true;
+   showLoginButtons(true);el("authRetry").hidden=true;
    if(authBusy)setAuthStatus(""); // deja visibles los mensajes de error; quita solo el "Comprobando…"
    stopApp();return;
  }
@@ -1865,7 +1901,7 @@ el("assetFormDetails").open=!isMobile();el("transferDetails").open=false;
 el("aType").onchange=()=>{el("aCurrentNote").hidden=el("aType").value!=="Cuenta corriente";el("aDebtNote").hidden=el("aType").value!=="Deuda"};
 let lastMobile=isMobile(),resizeTimer=null;
 window.addEventListener("resize",()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(isMobile()!==lastMobile){lastMobile=isMobile();el("assetFormDetails").open=!lastMobile;if(el("page-dashboard").classList.contains("active"))renderCharts()}},200)});
-el("loginGoogle").onclick=login;el("logoutSidebar").onclick=logout;el("logoutSettings").onclick=logout;el("logoutMore").onclick=logout;
+el("loginGoogle").onclick=login;el("loginFallback").onclick=login;el("logoutSidebar").onclick=logout;el("logoutSettings").onclick=logout;el("logoutMore").onclick=logout;
 el("authRetry").onclick=()=>{if(pendingUser)enterApp(pendingUser)};
 enableSheetSwipe();
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flushRemoteSave()});
