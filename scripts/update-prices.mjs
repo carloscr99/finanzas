@@ -1,4 +1,5 @@
-// Actualiza prices.json con el valor liquidativo de cada fondo (Financial Times) y el precio de Bitcoin (CoinGecko).
+// Actualiza prices.json con el valor liquidativo de cada fondo (Financial Times, por ISIN), el precio de los ETF/ETC
+// (Financial Times, por símbolo de cotización en el campo "symbol", p. ej. "PPFB:GER:EUR") y el precio de Bitcoin (CoinGecko).
 // Se ejecuta en GitHub Actions (.github/workflows/update-prices.yml). Sin dependencias: Node 20 o superior.
 // Reglas: si no se obtiene un precio fiable para un activo, se conserva el anterior y se anota el motivo en la salida.
 import { readFile, writeFile } from "node:fs/promises";
@@ -26,8 +27,15 @@ async function fetchText(url) {
   return res.text();
 }
 
+// Ficha de un fondo (por ISIN, clase en euros) o de un ETF/ETC (por símbolo "TICKER:MERCADO:MONEDA"); misma estructura de página.
 async function fundPriceFromFT(isin) {
-  const html = await fetchText(`https://markets.ft.com/data/funds/tearsheet/summary?s=${encodeURIComponent(isin)}:EUR`);
+  return priceFromFT(`https://markets.ft.com/data/funds/tearsheet/summary?s=${encodeURIComponent(isin)}:EUR`);
+}
+async function etfPriceFromFT(symbol) {
+  return priceFromFT(`https://markets.ft.com/data/etfs/tearsheet/summary?s=${encodeURIComponent(symbol)}`);
+}
+async function priceFromFT(url) {
+  const html = await fetchText(url);
   const priceMatch = /mod-ui-data-list__value">([\d.,]+)</.exec(html);
   if (!priceMatch) throw new Error("no se encontró el precio en la página del FT");
   const price = Number(priceMatch[1].replace(/,/g, ""));
@@ -49,7 +57,7 @@ async function main() {
   let updated = 0;
   for (const [key, asset] of Object.entries(feed.assets || {})) {
     try {
-      const result = key === "BTC" ? await bitcoinPriceFromCoinGecko() : await fundPriceFromFT(key);
+      const result = key === "BTC" ? await bitcoinPriceFromCoinGecko() : asset.symbol ? await etfPriceFromFT(asset.symbol) : await fundPriceFromFT(key);
       const changed = result.price !== asset.price || result.priceDate !== asset.priceDate;
       Object.assign(asset, result);
       updated++;

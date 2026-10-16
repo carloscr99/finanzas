@@ -25,6 +25,31 @@
       "price": 72919,
       "priceDate": "2026-10-16",
       "source": "CoinGecko"
+    },
+    "IE00BYX5NX33": {
+      "name": "Fidelity MSCI World Index Fund EUR P Acc",
+      "price": 0,
+      "priceDate": null,
+      "source": null
+    },
+    "IE0031786696": {
+      "name": "Vanguard Emerging Markets Stock Index Fund EUR Acc",
+      "price": 0,
+      "priceDate": null,
+      "source": null
+    },
+    "IE00B4ND3602": {
+      "name": "iShares Physical Gold ETC",
+      "symbol": "PPFB:GER:EUR",
+      "price": 0,
+      "priceDate": null,
+      "source": null
+    },
+    "IE00BH65QP47": {
+      "name": "Vanguard Global Short-Term Bond Index Fund EUR Hedged Acc",
+      "price": 0,
+      "priceDate": null,
+      "source": null
     }
   }
 }
