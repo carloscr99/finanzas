@@ -36,7 +36,17 @@ Ficheros:
 2. ID del documento: tu correo de Gmail **en minúsculas** (por ejemplo `nombre@gmail.com`). Añade un campo `enabled` de tipo boolean con valor `true`. Guardar.
 3. Repite con cada persona que deba tener acceso. Para quitar a alguien, borra su documento.
 
-Quien no esté en la lista verá "Tu cuenta no está autorizada" al intentar entrar, y las reglas de Firestore le impiden leer o escribir nada aunque se salte la pantalla.
+Quien no esté en la lista verá "La cuenta … no está autorizada" al intentar entrar, y las reglas de Firestore le impiden leer o escribir nada aunque se salte la pantalla. Lo único que cuenta es el **ID** del documento: debe coincidir con el correo que muestra ese mensaje (las reglas y la app lo comparan en minúsculas). Fallos típicos: ID automático con el correo como campo, un espacio al final, o la persona ha entrado con otra cuenta de Google. No hay que crear nada en `users`: la app crea el documento de cada persona en su primer acceso.
+
+### Botón oficial de Google (Google Identity Services)
+
+El login con la ventana emergente de Firebase pasa por un dominio intermedio (`finanzas-3effc.firebaseapp.com`) que algunos navegadores aíslan (Safari con "Impedir rastreo entre sitios", navegadores integrados en WhatsApp/Instagram/Teams, modo privado) y entonces la ventana de Google termina con "Unable to process request due to missing initial state". Para evitarlo, la pantalla de acceso usa el botón oficial "Iniciar sesión con Google", que entrega la identidad directamente a la web y esta se la pasa a Firebase (`signInWithCredential`). Requiere:
+
+1. Consola de Firebase → **Authentication → Sign-in method → Google** → desplegar "Configuración del SDK web" → copiar el **ID de cliente web** (termina en `.apps.googleusercontent.com`).
+2. [Google Cloud Console → APIs y servicios → Credenciales](https://console.cloud.google.com/apis/credentials) (proyecto `finanzas-3effc`) → abrir ese cliente ("Web client (auto created by Google Service)") → en **Orígenes autorizados de JavaScript** añadir `https://carloscr99.github.io` y, para pruebas, `http://localhost:8000` → Guardar. Los cambios tardan unos minutos en aplicarse.
+3. Pegar el ID en `googleClientId` de `firebase-config.js` y publicar.
+
+Con `googleClientId` vacío, o si la librería de Google no carga, la pantalla muestra el botón de la ventana emergente de siempre; con el botón oficial, debajo queda el enlace "¿No se abre? Entrar con la ventana de Google" como reserva.
 
 ## 5. Publicar en GitHub Pages
 

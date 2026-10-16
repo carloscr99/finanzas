@@ -71,7 +71,7 @@ Requisitos fijados al principio y que se mantienen:
 ```
 GitHub Pages (estático)                     Firebase (plan gratuito Spark)
 ┌──────────────────────────┐                ┌──────────────────────────────┐
-│ index.html + sw.js       │  popup Google  │ Authentication (Google)      │
+│ index.html + sw.js       │ botón Google   │ Authentication (Google)      │
 │ firebase-config.js       │◄──────────────►│                              │
 │ prices.json              │  SDK web 12.19 │ Firestore                    │
 │ (robot 2 veces al día)   │◄──────────────►│   users/{uid}  ← estado sin  │
@@ -85,7 +85,7 @@ GitHub Pages (estático)                     Firebase (plan gratuito Spark)
 - **Datos** (desde el 15/10/2026): documento principal `users/{uid}` con `{categories, recurring, assets, transfers, budgets, meta, schema:2}` (~7 KB) y un documento por año `users/{uid}/years/{yyyy}` con `{movements:[…]}` (~90 KB/año). Límite 1 MiB por documento. `meta.netWorthHistory` guarda hasta 730 puntos diarios de patrimonio. Al abrir se cargan todos y se juntan en memoria (`assembleState`); la app siempre trabaja con la lista completa.
 - **Guardado**: 300 ms después de cada cambio, `writeBatch` atómico con solo los documentos cuyo JSON ha cambiado respecto a lo último leído o escrito (`written`); un año sin movimientos se borra. `onSnapshot` del principal y de la colección de años sincroniza entre dispositivos (se comparan firmas independientes del orden). Caché persistente de Firestore → funciona sin conexión.
 - **Migración**: si el principal aún trae `movements` (formato anterior al 15/10/2026), se reparten por años en el primer guardado. Si las reglas no permiten leer los años (`permission-denied`), `legacyWrites=true` y se guarda todo en el principal como antes, con aviso en consola: publicar `firestore.rules` en la consola de Firebase.
-- **Sesión**: Firebase la guarda en IndexedDB. Al abrir se muestra "Comprobando sesión…" (sin botón) hasta que se restaura. Solo se cierra sesión si la cuenta no está en `allowlist`; un fallo de red muestra "Reintentar" y conserva la sesión (veredicto cacheado en `localStorage` como `allow:<uid>`). El login es solo por ventana emergente: el flujo de redirección no funciona en github.io porque `authDomain` es otro dominio.
+- **Sesión**: Firebase la guarda en IndexedDB. Al abrir se muestra "Comprobando sesión…" (sin botón) hasta que se restaura. Solo se cierra sesión si la cuenta no está en `allowlist`; un fallo de red muestra "Reintentar" y conserva la sesión (veredicto cacheado en `localStorage` como `allow:<uid>`). Login (desde el 16/10/2026): botón oficial de Google Identity Services → `signInWithCredential`, que no pasa por `authDomain` y evita el error "missing initial state" de navegadores que aíslan el almacenamiento (Safari, navegadores integrados en apps). Necesita `googleClientId` en `firebase-config.js` y el dominio en los orígenes autorizados del cliente OAuth (README §5). Reserva: ventana emergente de Firebase (`signInWithPopup`), que es lo que se muestra si el id está vacío o la librería no carga. El flujo de redirección no funciona en github.io porque `authDomain` es otro dominio. Las reglas comparan el correo en minúsculas (`.lower()`).
 - **Librerías CDN (versiones fijadas)**: Firebase 12.19.0 (gstatic), Chart.js 4.5.1 y SweetAlert2 11.14.5 (cdnjs), Inter (Google Fonts, con fallback al sistema).
 - **Temas**: claro por defecto y oscuro automático con `prefers-color-scheme`; todos los colores son tokens de `:root`, y Chart.js los lee con `tok()`.
 
