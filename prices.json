@@ -1,29 +1,29 @@
 {
-  "updatedAt": "2026-10-15T20:43:35.733Z",
+  "updatedAt": "2026-10-16T10:55:46.243Z",
   "currency": "EUR",
   "assets": {
     "LU0996182563": {
       "name": "Amundi Index MSCI World AE-C",
-      "price": 441.68,
-      "priceDate": "2026-10-14",
+      "price": 440.04,
+      "priceDate": "2026-10-15",
       "source": "Financial Times (markets.ft.com)"
     },
     "LU0996177134": {
       "name": "Amundi Index MSCI Emerging Markets AE-C",
-      "price": 256.03,
-      "priceDate": "2026-10-14",
+      "price": 246.35,
+      "priceDate": "2026-10-15",
       "source": "Financial Times (markets.ft.com)"
     },
     "IE00BFZMJT78": {
       "name": "Neuberger Berman Short Duration Euro Bond Fund EUR I Acc",
-      "price": 118.27,
-      "priceDate": "2026-10-14",
+      "price": 118.23,
+      "priceDate": "2026-10-15",
       "source": "Financial Times (markets.ft.com)"
     },
     "BTC": {
       "name": "Bitcoin",
-      "price": 73383,
-      "priceDate": "2026-10-15",
+      "price": 72919,
+      "priceDate": "2026-10-16",
       "source": "CoinGecko"
     }
   }
