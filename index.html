@@ -385,7 +385,9 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
           <div><label>Categoría</label><select id="mCategory"></select></div>
           <div><label>Concepto</label><input id="mDescription" placeholder="Ej. Supermercado"></div>
           <div><label>Importe (€)</label><input id="mAmount" type="number" min="0" step="0.01" placeholder="0,00"></div>
+          <div id="mAccountWrap" hidden><label>Cuenta</label><select id="mAccount"></select></div>
         </div>
+        <div class="inline-note" id="mAccountHint" hidden style="margin-top:10px"></div>
         <div id="investmentFields" class="panel section-gap" style="display:none;background:var(--soft);box-shadow:none">
           <h3>Datos de la inversión</h3>
           <div class="grid-2">
@@ -419,7 +421,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
             <div><label>Nueva categoría</label><select id="bulkCategory"></select></div>
             <div style="display:flex;align-items:end;gap:8px"><button class="primary" id="bulkApply">Aplicar</button><button class="secondary" id="bulkCancel">Cancelar</button></div>
           </div>
-          <div class="section-gap">Se cambian solo el tipo y la categoría; los saldos de las cuentas del patrimonio no se tocan (sirve para corregir el histórico). Las compras de fondos con participaciones pierden su enlace con el activo.</div>
+          <div class="section-gap">Se cambian solo el tipo y la categoría (sirve para corregir el histórico). Las compras de fondos con participaciones pierden su enlace con el activo. Los movimientos con cuenta asignada se recalculan en esa cuenta con el nuevo tipo.</div>
         </div>
         <div id="movementList" class="mlist mobile-only section-gap"></div>
         <div class="table-wrap desktop-only section-gap">
@@ -449,6 +451,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
           <div><label>Categoría</label><select id="rCategory"></select></div>
           <div><label>Concepto</label><input id="rDescription" placeholder="Ej. Alquiler"></div>
           <div><label>Importe (€)</label><input id="rAmount" type="number" min="0" step="0.01"></div>
+          <div id="rAccountWrap" hidden><label>Cuenta</label><select id="rAccount"></select></div>
           <div><label>Frecuencia</label><select id="rFrequency"><option value="monthly">Mensual</option><option value="weekly">Semanal</option><option value="yearly">Anual</option></select></div>
         </div>
         <div class="grid-2 section-gap">
@@ -500,7 +503,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
           <div><label>Tipo</label><select id="aType"><option>Cuenta</option><option>Cuenta corriente</option><option>Fondo</option><option>Cripto</option><option>Oro</option><option>Efectivo</option><option>Otro</option><option>Deuda</option></select></div>
           <div><label>Valor actual (€)</label><input id="aValue" type="number" min="0" step="0.01" placeholder="Manual / inicial"></div>
           <div id="aDebtNote" class="inline-note" hidden style="grid-column:1/-1">Deuda: escribe en «Valor actual» lo que queda por pagar (por ejemplo, cuotas pendientes más el pago final). Restará del patrimonio neto y no cuenta como inversión.</div>
-          <div id="aCurrentNote" class="inline-note" hidden style="grid-column:1/-1">Cuenta corriente: el valor que pongas es el <b>saldo real de hoy</b>. A partir de ahora la app lo moverá sola con cada ingreso, gasto e inversión que registres. Cuando mires el banco, usa «Actualizar manualmente» para fijar el saldo real como nueva referencia.</div>
+          <div id="aCurrentNote" class="inline-note" hidden style="grid-column:1/-1">Cuenta corriente: el valor que pongas es el <b>saldo real de hoy</b>. A partir de ahora la app lo moverá sola con cada ingreso, gasto e inversión que registres en esta cuenta. Cuando mires el banco, usa «Actualizar manualmente» para fijar el saldo real como nueva referencia. Puedes tener varias (por ejemplo, Santander y Revolut) y elegir cuál es la cuenta por defecto de los movimientos.</div>
           <div><label>Capital aportado (€)</label><input id="aInvested" type="number" min="0" step="0.01" placeholder="Opcional"></div>
           <div><label>Participaciones / títulos</label><input id="aUnits" type="number" min="0" step="0.000001" placeholder="Opcional"></div>
           <div><label>ISIN</label><input id="aIsin" placeholder="Opcional, para cotización automática"></div>
@@ -583,6 +586,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
   <label>Importe (€)</label><input id="qsAmount" class="big-amount" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off">
   <div class="seg seg-full" id="qsType" style="margin-top:12px"><button type="button" data-type="Gasto" class="active">Gasto</button><button type="button" data-type="Ingreso">Ingreso</button><button type="button" data-type="Inversión">Inversión</button></div>
   <label>Categoría</label><div class="chips" id="qsCats"></div>
+  <div id="qsAccountWrap" hidden><label>Cuenta</label><select id="qsAccount"></select></div>
   <div id="qsInvest" hidden>
     <label>Activo del patrimonio</label><select id="qsAsset"></select>
     <label>Participaciones / títulos comprados</label><input id="qsUnits" type="text" inputmode="decimal" placeholder="Vacío = se estiman" autocomplete="off">
@@ -665,7 +669,7 @@ function defaultState(){return{
     {id:uuid(),type:"Gasto",name:"Ocio"},{id:uuid(),type:"Inversión",name:"Fondos"},
     {id:uuid(),type:"Inversión",name:"Bitcoin"},{id:uuid(),type:"Inversión",name:"Oro"}
   ],movements:[],recurring:[],assets:[],transfers:[],budgets:{},
-  meta:{lastMovementUpdateAt:null,lastPortfolioUpdateAt:null,lastPricesSyncAt:null,lastPriceFeedUpdateAt:null,lastDataUpdateAt:null}
+  meta:{lastMovementUpdateAt:null,lastPortfolioUpdateAt:null,lastPricesSyncAt:null,lastPriceFeedUpdateAt:null,lastDataUpdateAt:null,defaultAccountId:null}
 }}
 function normalizeState(s){
   const d=defaultState();
@@ -682,6 +686,7 @@ function normalizeState(s){
       lastPricesSyncAt:s?.meta?.lastPricesSyncAt||null,
       lastPriceFeedUpdateAt:s?.meta?.lastPriceFeedUpdateAt||null,
       lastDataUpdateAt:s?.meta?.lastDataUpdateAt||null,
+      defaultAccountId:s?.meta?.defaultAccountId||null,
       netWorthHistory:Array.isArray(s?.meta?.netWorthHistory)?s.meta.netWorthHistory:[]
     }
   };
@@ -1105,11 +1110,51 @@ function applyInvestmentMovementToAsset(m,sign){
 // refDayNet guarda lo que ya había apuntado ese mismo día al fijar la referencia, para no contarlo dos veces.
 function isCurrentAccount(a){return String(a?.type||"")==="Cuenta corriente"}
 function savingsAccounts(){return state.assets.filter(a=>!assetMarketConfig(a)&&!isCurrentAccount(a)&&!isDebt(a))}
+// ---------- Cuenta de cada movimiento ----------
+// Cada ingreso, gasto o inversión sale de (o entra en) una cuenta: accountId. Puede ser cualquier cuenta corriente, cuenta de
+// ahorro, efectivo u "otro" del patrimonio (no fondos ni deudas), o NO_ACCOUNT para dinero que no está en el patrimonio.
+// Los movimientos anteriores a este campo (sin accountId) pertenecen a la cuenta corriente original (la más antigua).
+const NO_ACCOUNT="none";
+function movementAccounts(){return state.assets.filter(a=>!assetMarketConfig(a)&&!isDebt(a))}
+function legacyCurrentAccount(){return state.assets.filter(isCurrentAccount).sort((a,b)=>String(a.createdAt||"").localeCompare(String(b.createdAt||"")))[0]||null}
+// Cuenta por defecto al dar de alta un movimiento: la marcada en Patrimonio («Usar por defecto») o, si no hay, la cuenta corriente original.
+function defaultAccount(){const id=state.meta?.defaultAccountId;return (id&&movementAccounts().find(a=>a.id===id))||legacyCurrentAccount()}
+function movementAccountId(m,legacyId){if(m.accountId===NO_ACCOUNT)return "";return m.accountId||(legacyId!==undefined?legacyId:(legacyCurrentAccount()?.id||""))}
+function movementAccount(m){const id=movementAccountId(m);return id?state.assets.find(a=>a.id===id)||null:null}
+function accountLabel(m){if(m.accountId===NO_ACCOUNT)return "Fuera del patrimonio";const a=movementAccount(m);return a?a.name:(m.accountId?"(cuenta borrada)":"")}
+// Saldo de una cuenta que no es corriente (ahorro, efectivo, otro): se mueve al guardar, editar o borrar el movimiento.
+// Ingreso: suma al saldo sin tocar lo aportado (intereses). Gasto o Inversión: resta del saldo y de lo aportado.
+// La cuenta corriente no se toca aquí porque su saldo se calcula a partir de los movimientos (ver más abajo).
+function applyMovementToAccount(m,sign){
+ const id=movementAccountId(m);if(!id)return;const a=state.assets.find(x=>x.id===id);
+ if(!a||isCurrentAccount(a)||isDebt(a)||assetMarketConfig(a)||a.id===m.assetId)return;
+ const delta=sign*movementNet(m);
+ a.value=Math.max(0,Number(a.value||0)+delta);
+ if(m.type!=="Ingreso")a.invested=Math.max(0,Number(a.invested||0)+delta);
+ a.updatedAt=todayISO();
+}
+function applyMovementEffects(m,sign){applyInvestmentMovementToAsset(m,sign);applyMovementToAccount(m,sign)}
+function accountAffectsPortfolio(accountId){const a=accountId&&accountId!==NO_ACCOUNT?state.assets.find(x=>x.id===accountId):null;return !!a&&!isCurrentAccount(a)}
+function accountOptionsHtml(){return `<option value="${NO_ACCOUNT}">Ninguna (fuera del patrimonio)</option>`+movementAccounts().map(a=>`<option value="${a.id}">${escapeHtml(a.name)} (${euro.format(a.value||0)})</option>`).join("")}
+// Rellena un selector de cuenta. selected: id a marcar; undefined = conservar la selección actual (o la cuenta por defecto si no hay).
+function renderAccountSelect(selId,wrapId,selected){
+ const sel=el(selId),wrap=el(wrapId),accs=movementAccounts();
+ wrap.hidden=!accs.length;if(!accs.length){sel.innerHTML="";return}
+ const want=selected!==undefined?selected:sel.value;sel.innerHTML=accountOptionsHtml();
+ const fallback=defaultAccount()?.id||NO_ACCOUNT;
+ sel.value=want&&[...sel.options].some(o=>o.value===want)?want:fallback;
+}
+function resetAccountSelect(selId){const sel=el(selId);if(sel.options.length)sel.value=defaultAccount()?.id||NO_ACCOUNT}
+function updateAccountHint(){
+ const h=el("mAccountHint"),sel=el("mAccount");if(el("mAccountWrap").hidden){h.hidden=true;return}
+ const a=state.assets.find(x=>x.id===sel.value),type=el("mType").value;h.hidden=false;
+ h.textContent=!a?"El movimiento no toca ningún saldo del patrimonio.":isCurrentAccount(a)?`${a.name}: el saldo calculado se mueve solo con este movimiento.`:type==="Ingreso"?`${a.name}: el importe se suma al saldo (no cuenta como aportado).`:`${a.name}: el importe se resta del saldo y de lo aportado.`;
+}
 function movementNet(m){const v=Number(m.amount)||0;return m.type==="Ingreso"?v:-v}
-function netOnDate(date){return state.movements.filter(m=>m.date===date).reduce((s,m)=>s+movementNet(m),0)}
-function netSince(date){return state.movements.filter(m=>m.date>=date).reduce((s,m)=>s+movementNet(m),0)}
-function setAccountReference(a,balance,date){a.refBalance=Number(balance)||0;a.refDate=date||todayISO();a.refDayNet=netOnDate(a.refDate);a.updatedAt=a.refDate;a.priceSource="Saldo real";refreshDerivedAssets()}
-function currentAccountValue(a){return Number(a.refBalance||0)+netSince(a.refDate||todayISO())-Number(a.refDayNet||0)}
+function netOnDate(date,accountId){const legacy=legacyCurrentAccount()?.id||"";return state.movements.filter(m=>m.date===date&&movementAccountId(m,legacy)===accountId).reduce((s,m)=>s+movementNet(m),0)}
+function netSince(date,accountId){const legacy=legacyCurrentAccount()?.id||"";return state.movements.filter(m=>m.date>=date&&movementAccountId(m,legacy)===accountId).reduce((s,m)=>s+movementNet(m),0)}
+function setAccountReference(a,balance,date){a.refBalance=Number(balance)||0;a.refDate=date||todayISO();a.refDayNet=netOnDate(a.refDate,a.id);a.updatedAt=a.refDate;a.priceSource="Saldo real";refreshDerivedAssets()}
+function currentAccountValue(a){return Number(a.refBalance||0)+netSince(a.refDate||todayISO(),a.id)-Number(a.refDayNet||0)}
 function refreshDerivedAssets(){state.assets.forEach(a=>{if(isCurrentAccount(a)){if(a.refDate==null)setAccountReference(a,a.value,a.createdAt||todayISO());a.value=currentAccountValue(a);a.invested=a.value}})}
 // Compra recurrente de un fondo con ISIN: no sabemos las participaciones exactas hasta que MyInvestor ejecuta la orden, así que
 // se estiman con la última cotización (importe / precio) y se marcan como estimadas. Cuando llega una cotización con fecha
@@ -1289,7 +1334,7 @@ function renderSummary(){
  el("portfolioReturnPct").textContent=invested?`${portfolioPct>=0?"+":""}${portfolioPct.toFixed(1).replace(".",",")} % sobre lo aportado`:"Sin capital aportado";
  const tot=portfolioTotals();el("netWorth").textContent=euro.format(nw);el("netWorth").classList.toggle("negative",nw<0);
  el("assetCount").textContent=tot.debts>0?`${euro.format(tot.gross)} en activos − ${euro.format(tot.debts)} de deudas`:`${state.assets.length} activo${state.assets.length===1?"":"s"}`;
- const cc=state.assets.find(isCurrentAccount);el("currentAccountNote").hidden=!cc;if(cc)el("currentAccountNote").textContent=`Cuenta corriente: ${euro.format(cc.value||0)}`;
+ const cc=defaultAccount();el("currentAccountNote").hidden=!cc;if(cc)el("currentAccountNote").textContent=`${cc.name}: ${euro.format(cc.value||0)}`;
  const portfolioRef=latestPortfolioReference();
  el("portfolioUpdateDashboard").textContent=portfolioRef?`Actualizado ${formatDateTime(portfolioRef)}`:(state.assets.length?"Pendiente de registrar actualización":"Sin patrimonio");
  const all=calcSummary(state.movements);el("cumulativeSavings").textContent=euro.format(all.income-all.expense);
@@ -1354,7 +1399,7 @@ function estimateUnits(amount,asset){
  return price>0&&Number.isFinite(amount)&&amount>0?Math.round(amount/price*1e6)/1e6:null;
 }
 function persistMovement(d,id){
- const {date,type,categoryId,description,amount,usesUnits,assetId}=d;let units=d.units,estimated=false;
+ const {date,type,categoryId,description,amount,usesUnits,assetId,accountId}=d;let units=d.units,estimated=false;
  if(!date||!categoryId||!description||!Number.isFinite(amount)||amount<=0)return "Completa importe, categoría, concepto y fecha con valores válidos.";
  if(usesUnits){
    if(!assetId)return "Para esta inversión selecciona el activo del patrimonio.";
@@ -1368,26 +1413,28 @@ function persistMovement(d,id){
  if(id){
    const i=state.movements.findIndex(m=>m.id===id);
    if(i>=0){
-     applyInvestmentMovementToAsset(state.movements[i],-1);
-     const next={...state.movements[i],date,type,categoryId,description,amount};
-     if(usesUnits){next.assetId=assetId;next.units=units;if(estimated)next.unitsEstimated=true;else delete next.unitsEstimated}else{const wasLinked=!!state.movements[i].assetId;delete next.assetId;delete next.units;if(wasLinked)linkSavingsAccount(next)}
-     state.movements[i]=next;applyInvestmentMovementToAsset(next,1);
+     const prev=state.movements[i];applyMovementEffects(prev,-1);
+     const next={...prev,date,type,categoryId,description,amount};
+     if(accountId)next.accountId=accountId;
+     if(usesUnits){next.assetId=assetId;next.units=units;if(estimated)next.unitsEstimated=true;else delete next.unitsEstimated}else{const wasLinked=!!prev.assetId;delete next.assetId;delete next.units;if(wasLinked)linkSavingsAccount(next)}
+     state.movements[i]=next;applyMovementEffects(next,1);
    }
  }else{
    const m={id:uuid(),date,type,categoryId,description,amount};
+   if(accountId)m.accountId=accountId;
    if(usesUnits){m.assetId=assetId;m.units=units;if(estimated)m.unitsEstimated=true}else linkSavingsAccount(m);
-   state.movements.push(m);applyInvestmentMovementToAsset(m,1);
+   state.movements.push(m);applyMovementEffects(m,1);
  }
- markDataUpdate(type==="Inversión"?"movement+portfolio":"movement");
+ markDataUpdate(type==="Inversión"||accountAffectsPortfolio(accountId)?"movement+portfolio":"movement");
  saveState();updateYearOptions();renderAll();if(usesUnits)updateMarketPrices(false);
  return null;
 }
 function saveMovement(){
  const type=el("mType").value,usesUnits=type==="Inversión"&&investmentCategoryUsesUnits();
- const err=persistMovement({date:el("mDate").value,type,categoryId:el("mCategory").value,description:el("mDescription").value.trim(),amount:Number(el("mAmount").value),usesUnits,assetId:usesUnits?el("mAsset").value:"",units:usesUnits?Number(el("mUnits").value):0},editingId);
+ const err=persistMovement({date:el("mDate").value,type,categoryId:el("mCategory").value,description:el("mDescription").value.trim(),amount:Number(el("mAmount").value),usesUnits,assetId:usesUnits?el("mAsset").value:"",units:usesUnits?Number(el("mUnits").value):0,accountId:el("mAccountWrap").hidden?"":el("mAccount").value},editingId);
  if(err)return uiError(err);
  const wasEdit=!!editingId;
- editingId=null;el("cancelEdit").style.display="none";el("saveMovement").textContent="Guardar movimiento";el("mDescription").value="";el("mAmount").value="";el("mUnits").value="";
+ editingId=null;el("cancelEdit").style.display="none";el("saveMovement").textContent="Guardar movimiento";el("mDescription").value="";el("mAmount").value="";el("mUnits").value="";resetAccountSelect("mAccount");updateAccountHint();
  toast(wasEdit?"Cambios guardados":"Movimiento guardado");
 }
 function editMovement(id){
@@ -1395,10 +1442,11 @@ function editMovement(id){
  if(isMobile()){openQuickSheet(m);return}
  editingId=id;showPage("movements");
  el("mDate").value=m.date;el("mType").value=m.type;updateMovementCategories();el("mCategory").value=m.categoryId;updateInvestmentFields();if(m.assetId)el("mAsset").value=m.assetId;el("mUnits").value=m.units||"";el("mDescription").value=m.description;el("mAmount").value=m.amount;
+ renderAccountSelect("mAccount","mAccountWrap",movementAccountId(m)||NO_ACCOUNT);updateAccountHint();
  el("saveMovement").textContent="Guardar cambios";el("cancelEdit").style.display="inline-block";window.scrollTo({top:0,behavior:"smooth"});
 }
-function cancelEdit(){editingId=null;el("cancelEdit").style.display="none";el("saveMovement").textContent="Guardar movimiento";el("mDate").value=todayISO();el("mType").value="Gasto";updateMovementCategories();el("mDescription").value="";el("mAmount").value="";el("mUnits").value=""}
-function deleteMovementById(id){const m=state.movements.find(x=>x.id===id);if(m)applyInvestmentMovementToAsset(m,-1);state.movements=state.movements.filter(x=>x.id!==id);markDataUpdate(m?.type==="Inversión"?"movement+portfolio":"movement");saveState();renderAll()}
+function cancelEdit(){editingId=null;el("cancelEdit").style.display="none";el("saveMovement").textContent="Guardar movimiento";el("mDate").value=todayISO();el("mType").value="Gasto";updateMovementCategories();el("mDescription").value="";el("mAmount").value="";el("mUnits").value="";resetAccountSelect("mAccount");updateAccountHint()}
+function deleteMovementById(id){const m=state.movements.find(x=>x.id===id);if(m)applyMovementEffects(m,-1);state.movements=state.movements.filter(x=>x.id!==id);markDataUpdate(m?.type==="Inversión"||accountAffectsPortfolio(m?.accountId)?"movement+portfolio":"movement");saveState();renderAll()}
 async function deleteMovement(id){if(!(await uiConfirm("Esta acción no se puede deshacer.",{title:"¿Eliminar este movimiento?",danger:true,confirmText:"Eliminar"})))return;deleteMovementById(id);toast("Movimiento eliminado")}
 function movementSearchResults(){
  const q=el("searchText").value.trim().toLowerCase(),type=el("searchType").value,cat=el("searchCategory").value,from=el("searchFrom").value,to=el("searchTo").value;
@@ -1417,15 +1465,17 @@ async function bulkRecategorize(){
  const movs=movementSearchResults(),type=el("bulkType").value,categoryId=el("bulkCategory").value,cat=getCat(categoryId);
  if(!movs.length)return uiError("No hay movimientos visibles. Usa el buscador y los filtros para elegirlos.");
  if(!cat)return uiError("Elige la nueva categoría.");
- if(!(await uiConfirm(`${intFmt.format(movs.length)} movimiento${movs.length===1?"":"s"} pasarán a ${type} › ${cat.name}. Los saldos del patrimonio no cambian.`,{title:"¿Cambiar categoría?",confirmText:"Aplicar"})))return;
+ if(!(await uiConfirm(`${intFmt.format(movs.length)} movimiento${movs.length===1?"":"s"} pasarán a ${type} › ${cat.name}. Las cuentas con movimientos asignados se recalculan con el nuevo tipo.`,{title:"¿Cambiar categoría?",confirmText:"Aplicar"})))return;
  const ids=new Set(movs.map(m=>m.id));
- state.movements.forEach(m=>{if(!ids.has(m.id))return;if(m.assetId&&m.units>0)applyInvestmentMovementToAsset(m,-1);delete m.assetId;delete m.units;m.type=type;m.categoryId=categoryId});
- markDataUpdate("movement");saveState();toggleBulkPanel(false);renderAll();
+ state.movements.forEach(m=>{if(!ids.has(m.id))return;if(m.assetId&&m.units>0)applyInvestmentMovementToAsset(m,-1);applyMovementToAccount(m,-1);delete m.assetId;delete m.units;m.type=type;m.categoryId=categoryId;applyMovementToAccount(m,1)});
+ markDataUpdate("movement+portfolio");saveState();toggleBulkPanel(false);renderAll();
  toast(`${intFmt.format(movs.length)} movimientos pasados a ${type} › ${cat.name}`);
 }
+// Etiqueta de cuenta en los listados: solo cuando el movimiento no va a la cuenta por defecto (el caso normal no se etiqueta).
+function movementAccountTag(m){if(!m.accountId)return "";const def=defaultAccount()?.id||"";return m.accountId===def?"":accountLabel(m)}
 function renderMovements(){
  const movs=movementSearchResults();el("visibleCount").textContent=intFmt.format(movs.length);
- el("movementTable").innerHTML=movs.length?movs.map(m=>`<tr><td>${formatDate(m.date)}</td><td><span class="pill ${m.type}">${m.type}</span></td><td>${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")}</td><td>${escapeHtml(m.description)}</td><td class="amount">${euro.format(m.amount)}${m.unitsEstimated?` <span class="badge" title="Participaciones estimadas con la última cotización; se ajustan solas al llegar la cotización del día de compra">≈ ${assetDisplayUnits(m.units)} part.</span>`:""}</td><td class="actions"><button class="secondary small" data-edit="${m.id}">Editar</button> <button class="danger small" data-del="${m.id}">Borrar</button></td></tr>`).join(""):`<tr><td colspan="6" class="empty">No hay movimientos.</td></tr>`;
+ el("movementTable").innerHTML=movs.length?movs.map(m=>`<tr><td>${formatDate(m.date)}</td><td><span class="pill ${m.type}">${m.type}</span></td><td>${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")}</td><td>${escapeHtml(m.description)}${movementAccountTag(m)?`<br><small class="muted">${escapeHtml(movementAccountTag(m))}</small>`:""}</td><td class="amount">${euro.format(m.amount)}${m.unitsEstimated?` <span class="badge" title="Participaciones estimadas con la última cotización; se ajustan solas al llegar la cotización del día de compra">≈ ${assetDisplayUnits(m.units)} part.</span>`:""}</td><td class="actions"><button class="secondary small" data-edit="${m.id}">Editar</button> <button class="danger small" data-del="${m.id}">Borrar</button></td></tr>`).join(""):`<tr><td colspan="6" class="empty">No hay movimientos.</td></tr>`;
  el("movementTable").querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editMovement(b.dataset.edit));
  el("movementTable").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>deleteMovement(b.dataset.del));
  // Lista táctil para móvil (agrupada por día; tocar abre la hoja de edición). Icono + signo + texto: el tipo nunca se indica solo por color.
@@ -1434,7 +1484,7 @@ function renderMovements(){
  shown.forEach(m=>{
    if(m.date!==lastDate){lastDate=m.date;html+=`<div class="mday">${formatDate(m.date)}</div>`}
    const t=TYPE_UI[m.type]||TYPE_UI.Gasto;
-   html+=`<button type="button" class="mitem" data-id="${m.id}"><span class="mico ${t.k}"><svg class="ico sm" aria-hidden="true"><use href="#${t.icon}"/></svg></span><span class="mtext"><b>${escapeHtml(m.description)}</b><small>${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")} · ${m.type}${m.unitsEstimated?" · ≈ "+assetDisplayUnits(m.units)+" part. (estimadas)":""}</small></span><span class="amt ${t.cls}">${t.sign}${euro.format(m.amount)}</span></button>`;
+   html+=`<button type="button" class="mitem" data-id="${m.id}"><span class="mico ${t.k}"><svg class="ico sm" aria-hidden="true"><use href="#${t.icon}"/></svg></span><span class="mtext"><b>${escapeHtml(m.description)}</b><small>${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")} · ${m.type}${movementAccountTag(m)?" · "+escapeHtml(movementAccountTag(m)):""}${m.unitsEstimated?" · ≈ "+assetDisplayUnits(m.units)+" part. (estimadas)":""}</small></span><span class="amt ${t.cls}">${t.sign}${euro.format(m.amount)}</span></button>`;
  });
  if(!html)html=`<div class="empty-state"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg><p>${state.movements.length?"Ningún movimiento coincide con los filtros.":"Todavía no hay movimientos."}</p><button type="button" class="primary" data-empty-add>Añadir movimiento</button></div>`;
  if(movs.length>LIMIT)html+=`<div class="empty">Mostrando ${intFmt.format(LIMIT)} de ${intFmt.format(movs.length)}. Usa los filtros para acotar.</div>`;
@@ -1448,7 +1498,8 @@ function renderMovements(){
 function addRecurring(){
  const type=el("rType").value,categoryId=el("rCategory").value,description=el("rDescription").value.trim(),amount=Number(el("rAmount").value),frequency=el("rFrequency").value,startDate=el("rStartDate").value;
  if(!categoryId||!description||!startDate||!Number.isFinite(amount)||amount<=0)return uiError("Completa todos los campos.");
- state.recurring.push({id:uuid(),type,categoryId,description,amount,frequency,nextDate:startDate,active:true});
+ const r={id:uuid(),type,categoryId,description,amount,frequency,nextDate:startDate,active:true},accountId=el("rAccountWrap").hidden?"":el("rAccount").value;if(accountId)r.accountId=accountId;
+ state.recurring.push(r);resetAccountSelect("rAccount");
  el("rDescription").value="";el("rAmount").value="";saveState();renderAll();
 }
 function generateRecurring(showAlert=false){
@@ -1457,16 +1508,16 @@ function generateRecurring(showAlert=false){
    let guard=0;
    while(r.nextDate&&r.nextDate<=today&&guard<500){
      const exists=state.movements.some(m=>m.recurringId===r.id&&m.recurrenceDate===r.nextDate);
-     if(!exists){const m={id:uuid(),date:r.nextDate,type:r.type,categoryId:r.categoryId,description:r.description,amount:Number(r.amount),recurringId:r.id,recurrenceDate:r.nextDate};if(linkSavingsAccount(m)||linkFundEstimate(m))applyInvestmentMovementToAsset(m,1);state.movements.push(m);created++}
+     if(!exists){const m={id:uuid(),date:r.nextDate,type:r.type,categoryId:r.categoryId,description:r.description,amount:Number(r.amount),recurringId:r.id,recurrenceDate:r.nextDate};if(r.accountId)m.accountId=r.accountId;linkSavingsAccount(m)||linkFundEstimate(m);applyMovementEffects(m,1);state.movements.push(m);created++}
      r.nextDate=nextDate(r.nextDate,r.frequency);guard++;
    }
  });
- if(created){markDataUpdate("movement");saveState();updateYearOptions();renderAll()}
+ if(created){markDataUpdate("movement+portfolio");saveState();updateYearOptions();renderAll()}
  if(showAlert)uiAlert(created?`Se han generado ${created} movimiento${created===1?"":"s"} pendiente${created===1?"":"s"}.`:"No había movimientos pendientes.");
 }
 function renderRecurring(){
  const rows=[...state.recurring].sort((a,b)=>(a.nextDate||"").localeCompare(b.nextDate||""));
- el("recurringTable").innerHTML=rows.length?rows.map(r=>`<tr><td>${escapeHtml(r.description)}</td><td><span class="pill ${r.type}">${r.type}</span></td><td>${escapeHtml(getCat(r.categoryId)?.name||"Sin categoría")}</td><td>${euro.format(r.amount)}</td><td>${freqLabel(r.frequency)}</td><td>${formatDate(r.nextDate)}</td><td class="actions"><button class="secondary small" data-toggle="${r.id}">${r.active===false?"Activar":"Pausar"}</button> <button class="danger small" data-delrec="${r.id}">Borrar</button></td></tr>`).join(""):`<tr><td colspan="7" class="empty">No hay recurrentes.</td></tr>`;
+ el("recurringTable").innerHTML=rows.length?rows.map(r=>`<tr><td>${escapeHtml(r.description)}${movementAccountTag(r)?`<br><small class="muted">${escapeHtml(movementAccountTag(r))}</small>`:""}</td><td><span class="pill ${r.type}">${r.type}</span></td><td>${escapeHtml(getCat(r.categoryId)?.name||"Sin categoría")}</td><td>${euro.format(r.amount)}</td><td>${freqLabel(r.frequency)}</td><td>${formatDate(r.nextDate)}</td><td class="actions"><button class="secondary small" data-toggle="${r.id}">${r.active===false?"Activar":"Pausar"}</button> <button class="danger small" data-delrec="${r.id}">Borrar</button></td></tr>`).join(""):`<tr><td colspan="7" class="empty">No hay recurrentes.</td></tr>`;
  el("recurringTable").querySelectorAll("[data-toggle]").forEach(b=>b.onclick=()=>{const r=state.recurring.find(x=>x.id===b.dataset.toggle);r.active=r.active===false?true:false;saveState();renderAll()});
  el("recurringTable").querySelectorAll("[data-delrec]").forEach(b=>b.onclick=async()=>{if(await uiConfirm("Dejará de generarse; los movimientos ya creados se conservan.",{title:"¿Eliminar este recurrente?",danger:true,confirmText:"Eliminar"})){state.recurring=state.recurring.filter(x=>x.id!==b.dataset.delrec);saveState();renderAll()}});
 }
@@ -1475,7 +1526,7 @@ function addAsset(){
  const name=el("aName").value.trim(),type=el("aType").value,value=Number(el("aValue").value||0),invested=el("aInvested").value===""?0:Number(el("aInvested").value),units=el("aUnits").value===""?0:Number(el("aUnits").value),isin=el("aIsin").value.trim().toUpperCase();
  if(!name||!Number.isFinite(value)||value<0||!Number.isFinite(invested)||invested<0||!Number.isFinite(units)||units<0)return uiError("Completa los datos correctamente.");
  const asset={id:uuid(),name,type,value,invested,units,isin,createdAt:todayISO()};
- if(isCurrentAccount(asset)){if(state.assets.some(isCurrentAccount))return uiError("Ya hay una cuenta corriente. Actualiza su saldo con «Actualizar manualmente» o bórrala antes.");setAccountReference(asset,value,todayISO())}
+ if(isCurrentAccount(asset))setAccountReference(asset,value,todayISO());
  state.assets.push(asset);["aName","aValue","aInvested","aUnits","aIsin"].forEach(id=>el(id).value="");markDataUpdate("portfolio");saveState();renderAll();updateMarketPrices(false);
 }
 function renderAssets(){
@@ -1484,7 +1535,8 @@ function renderAssets(){
  el("assetTotal").classList.toggle("negative",total<0);
  el("assetTotal").textContent=euro.format(total);el("assetInvested").textContent=euro.format(invested);el("assetGain").textContent=euro.format(gain);el("assetGain").classList.toggle("negative",gain<0);el("assetGain").classList.toggle("positive",gain>=0);el("assetTotalCount").textContent=state.assets.length;
  el("assetLastUpdate").textContent=portfolioRef?`Actualizado ${formatDateTime(portfolioRef)}`:(state.assets.length?"Pendiente de registrar actualización":"Sin patrimonio");
- el("assetGrid").innerHTML=state.assets.length?state.assets.map(a=>{const g=Number(a.value)-Number(a.invested||0),units=Number(a.units||0),price=Number(a.unitPrice||0),meta=units>0?`<div class="sub">${assetDisplayUnits(units)} participaciones/títulos${price>0?` · ${euro.format(price)} / ud.`:""}</div>`:"",irr=assetAnnualizedReturn(a),irrHtml=irr===null?`<div class="sub">Rentabilidad anualizada: —${assetInvestmentMovements(a).length&&!(Number(a.units)>0)?" (las aportaciones registradas no cuadran con el capital aportado)":""}</div>`:`<div class="sub ${irr<0?"negative":"positive"}">Rentabilidad anualizada: ${(irr*100).toFixed(2).replace(".",",")} %</div>`,priceInfo=isDebt(a)?`<div class="sub">Pendiente de pagar. Resta del patrimonio neto; actualízalo cuando cambie o usa un traspaso hacia la deuda para registrar un pago.</div>`:isCurrentAccount(a)?`<div class="sub">Saldo calculado: referencia ${euro.format(a.refBalance||0)} el ${formatDate(a.refDate)} más los movimientos posteriores</div>`:a.updatedAt?`<div class="sub">Cotización: ${formatDate(a.updatedAt)}${a.priceSource?` · ${escapeHtml(a.priceSource)}`:""}</div>`:"";return`<div class="asset-card"><span class="badge">${escapeHtml(a.type)}</span><h3>${escapeHtml(a.name)}</h3><div class="big${isDebt(a)?" negative":""}">${isDebt(a)?"−":""}${euro.format(a.value)}</div>${isCurrentAccount(a)||isDebt(a)?"":`<div class="sub">Aportado: ${euro.format(a.invested||0)}</div>${meta}<div class="sub ${g<0?"negative":"positive"}">Diferencia: ${euro.format(g)}</div>${irrHtml}`}${priceInfo}<div class="form-actions"><button class="secondary small" data-editasset="${a.id}">Actualizar manualmente</button><button class="danger small" data-delasset="${a.id}">Borrar</button></div></div>`}).join(""):`<div class="empty" style="grid-column:1/-1">No has añadido activos.</div>`;
+ el("assetGrid").innerHTML=state.assets.length?state.assets.map(a=>{const g=Number(a.value)-Number(a.invested||0),units=Number(a.units||0),price=Number(a.unitPrice||0),meta=units>0?`<div class="sub">${assetDisplayUnits(units)} participaciones/títulos${price>0?` · ${euro.format(price)} / ud.`:""}</div>`:"",irr=assetAnnualizedReturn(a),irrHtml=irr===null?`<div class="sub">Rentabilidad anualizada: —${assetInvestmentMovements(a).length&&!(Number(a.units)>0)?" (las aportaciones registradas no cuadran con el capital aportado)":""}</div>`:`<div class="sub ${irr<0?"negative":"positive"}">Rentabilidad anualizada: ${(irr*100).toFixed(2).replace(".",",")} %</div>`,priceInfo=isDebt(a)?`<div class="sub">Pendiente de pagar. Resta del patrimonio neto; actualízalo cuando cambie o usa un traspaso hacia la deuda para registrar un pago.</div>`:isCurrentAccount(a)?`<div class="sub">Saldo calculado: referencia ${euro.format(a.refBalance||0)} el ${formatDate(a.refDate)} más los movimientos posteriores</div>`:a.updatedAt?`<div class="sub">Cotización: ${formatDate(a.updatedAt)}${a.priceSource?` · ${escapeHtml(a.priceSource)}`:""}</div>`:"";return`<div class="asset-card"><span class="badge">${escapeHtml(a.type)}</span><h3>${escapeHtml(a.name)}</h3><div class="big${isDebt(a)?" negative":""}">${isDebt(a)?"−":""}${euro.format(a.value)}</div>${isCurrentAccount(a)||isDebt(a)?"":`<div class="sub">Aportado: ${euro.format(a.invested||0)}</div>${meta}<div class="sub ${g<0?"negative":"positive"}">Diferencia: ${euro.format(g)}</div>${irrHtml}`}${priceInfo}${movementAccounts().includes(a)?(a.id===defaultAccount()?.id?`<div class="sub"><b>Cuenta por defecto</b> de los nuevos movimientos</div>`:""):""}<div class="form-actions"><button class="secondary small" data-editasset="${a.id}">Actualizar manualmente</button>${movementAccounts().includes(a)&&a.id!==defaultAccount()?.id?`<button class="secondary small" data-defacc="${a.id}">Usar por defecto</button>`:""}<button class="danger small" data-delasset="${a.id}">Borrar</button></div></div>`}).join(""):`<div class="empty" style="grid-column:1/-1">No has añadido activos.</div>`;
+ el("assetGrid").querySelectorAll("[data-defacc]").forEach(b=>b.onclick=()=>{const a=state.assets.find(x=>x.id===b.dataset.defacc);if(!a)return;state.meta.defaultAccountId=a.id;saveState();renderAll();resetAccountSelect("mAccount");resetAccountSelect("rAccount");updateAccountHint();toast(`${a.name} es ahora la cuenta por defecto`)});
  el("assetGrid").querySelectorAll("[data-delasset]").forEach(b=>b.onclick=async()=>{if(await uiConfirm("Desaparecerá del patrimonio; los movimientos no se tocan.",{title:"¿Eliminar este activo?",danger:true,confirmText:"Eliminar"})){state.assets=state.assets.filter(x=>x.id!==b.dataset.delasset);markDataUpdate("portfolio");saveState();renderAll()}});
  el("assetGrid").querySelectorAll("[data-editasset]").forEach(b=>b.onclick=async()=>{const a=state.assets.find(x=>x.id===b.dataset.editasset);if(isCurrentAccount(a)){const calc=currentAccountValue(a);const nv=await uiPrompt(`Saldo real de ${a.name} hoy (la app calcula ${euro.format(calc)}):`,calc.toFixed(2));if(nv===null)return;const n=Number(String(nv).replace(",","."));if(!Number.isFinite(n))return uiError("Valor no válido.");const diff=n-calc;setAccountReference(a,n,todayISO());markDataUpdate("portfolio");saveState();renderAll();toast(Math.abs(diff)<0.005?"Saldo confirmado: cuadra con lo registrado":`Nueva referencia. Diferencia con lo registrado: ${diff>0?"+":""}${euro.format(diff)}`);return}if(Number(a.units)>0){const nv=await uiPrompt(`Nuevo precio por participación/título de ${a.name}:`,a.unitPrice||"");if(nv===null)return;const n=Number(String(nv).replace(",","."));if(!Number.isFinite(n)||n<0)return uiError("Valor no válido.");a.unitPrice=n;a.value=Number(a.units)*n;a.updatedAt=todayISO();a.priceSource="Manual"}else{const nv=await uiPrompt(`Nuevo valor actual de ${a.name}:`,a.value);if(nv===null)return;const n=Number(String(nv).replace(",","."));if(!Number.isFinite(n)||n<0)return uiError("Valor no válido.");a.value=n;a.updatedAt=todayISO();a.priceSource="Manual"}markDataUpdate("portfolio");saveState();renderAll()});
 }
@@ -1794,6 +1846,7 @@ function openQuickSheet(movement){
  qs.categoryId=movement?movement.categoryId:(qs.lastCategory[type]||"");
  setQsType(type);
  if(movement?.assetId)el("qsAsset").value=movement.assetId;
+ renderAccountSelect("qsAccount","qsAccountWrap",movement?(movementAccountId(movement)||NO_ACCOUNT):(defaultAccount()?.id||NO_ACCOUNT));
  updateDescSuggestions();
  const sheet=el("quickSheet"),backdrop=el("sheetBackdrop");
  clearTimeout(sheetCloseTimer);sheet.style.transform="";sheet.classList.remove("dragging");
@@ -1821,13 +1874,13 @@ function enableSheetSwipe(){
 }
 function quickSave(keepOpen){
  const amount=parseAmount(el("qsAmount").value),description=el("qsDesc").value.trim(),date=el("qsDate").value,type=qs.type,categoryId=qs.categoryId;
- const usesUnits=qsUsesUnits(),assetId=usesUnits?el("qsAsset").value:"",units=usesUnits?parseAmount(el("qsUnits").value):0;
+ const usesUnits=qsUsesUnits(),assetId=usesUnits?el("qsAsset").value:"",units=usesUnits?parseAmount(el("qsUnits").value):0,accountId=el("qsAccountWrap").hidden?"":el("qsAccount").value;
  const wasEdit=!!qs.editId;
- const err=persistMovement({date,type,categoryId,description,amount,usesUnits,assetId,units},qs.editId);
+ const err=persistMovement({date,type,categoryId,description,amount,usesUnits,assetId,units,accountId},qs.editId);
  if(err)return uiError(err);
  qs.lastType=type;qs.lastCategory[type]=categoryId;
  toast(wasEdit?"Cambios guardados":`${type} guardado: ${euro.format(amount)}`);
- if(keepOpen){qs.editId=null;el("qsAmount").value="";el("qsDesc").value="";el("qsUnits").value="";el("qsTitle").textContent="Nuevo movimiento";el("qsDelete").hidden=true;el("qsSaveMore").hidden=false;el("qsSave").textContent="Guardar";el("qsAmount").focus()}
+ if(keepOpen){qs.editId=null;el("qsAmount").value="";el("qsDesc").value="";el("qsUnits").value="";resetAccountSelect("qsAccount");el("qsTitle").textContent="Nuevo movimiento";el("qsDelete").hidden=true;el("qsSaveMore").hidden=false;el("qsSave").textContent="Guardar";el("qsAmount").focus()}
  else closeQuickSheet();
 }
 async function quickDelete(){if(!qs.editId)return;if(!(await uiConfirm("Esta acción no se puede deshacer.",{title:"¿Eliminar este movimiento?",danger:true,confirmText:"Eliminar"})))return;deleteMovementById(qs.editId);closeQuickSheet();toast("Movimiento eliminado")}
@@ -1887,7 +1940,7 @@ function importData(file){
 async function clearAll(){if(!(await uiConfirm("Se borrarán movimientos, categorías, recurrentes y patrimonio de tu cuenta. Exporta antes una copia.",{title:"¿Borrar todos los datos?",danger:true,confirmText:"Borrar todo"})))return;state=defaultState();saveState();setupPeriodSelectors();renderAll()}
 function renderAll(){
  refreshDerivedAssets();renderTransferForm();
- renderCategoryList();updateMovementCategories();updateRecurringCategories();renderSearchCategories();updateInvestmentFields();
+ renderCategoryList();updateMovementCategories();updateRecurringCategories();renderSearchCategories();updateInvestmentFields();renderAccountSelect("mAccount","mAccountWrap");renderAccountSelect("rAccount","rAccountWrap");updateAccountHint();
  renderSummary();renderMovements();renderRecurring();renderAssets();renderCategorySummary();renderBudgets();renderBudgetTable();renderFreshness();renderDataSize();syncPeriodCompact();
  if(el("page-dashboard").classList.contains("active"))renderCharts();
  if(el("page-assets").classList.contains("active"))drawNetWorthChart();
@@ -1895,7 +1948,7 @@ function renderAll(){
 
 document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>showPage(b.dataset.page));
 el("mDate").value=todayISO();el("rStartDate").value=todayISO();setupPeriodSelectors();updatePeriodControls();
-el("mType").onchange=()=>{updateMovementCategories();updateInvestmentFields()};["mAmount","mUnits"].forEach(id=>el(id).addEventListener("input",()=>updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint")));el("mAsset").onchange=()=>updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint");el("mCategory").onchange=()=>{updateInvestmentFields();autoSelectAssetForCategory()};el("rType").onchange=updateRecurringCategories;
+el("mType").onchange=()=>{updateMovementCategories();updateInvestmentFields();updateAccountHint()};el("mAccount").onchange=updateAccountHint;["mAmount","mUnits"].forEach(id=>el(id).addEventListener("input",()=>updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint")));el("mAsset").onchange=()=>updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint");el("mCategory").onchange=()=>{updateInvestmentFields();autoSelectAssetForCategory()};el("rType").onchange=updateRecurringCategories;
 el("addCategory").onclick=addCategory;
 el("bpPrev").onclick=()=>shiftBudgetMonth(-1);el("bpNext").onclick=()=>shiftBudgetMonth(1);el("bpToday").onclick=()=>{const n=new Date();bp.y=n.getFullYear();bp.m=n.getMonth()+1;renderBudgets()};
 el("budgetFillAvg").onclick=async()=>{if(!(await uiConfirm("Se sustituirán los presupuestos actuales por la propuesta calculada con tu histórico. Las categorías sin propuesta se quedan como están.",{title:"¿Rellenar con la propuesta?",confirmText:"Rellenar"})))return;const n=fillBudgetsFromProposal();saveState();renderAll();toast(`${n} presupuestos rellenados`)};
