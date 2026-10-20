@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-20T11:04:17.115Z",
+  "updatedAt": "2026-10-20T21:00:30.069Z",
   "currency": "EUR",
   "assets": {
     "LU0996182563": {
@@ -22,7 +22,7 @@
     },
     "BTC": {
       "name": "Bitcoin",
-      "price": 72738,
+      "price": 73645,
       "priceDate": "2026-10-20",
       "source": "CoinGecko"
     },
@@ -41,7 +41,7 @@
     "IE00B4ND3602": {
       "name": "iShares Physical Gold ETC",
       "symbol": "PPFB:GER:EUR",
-      "price": 71.29,
+      "price": 71.36,
       "priceDate": "2026-10-20",
       "source": "Financial Times (markets.ft.com)"
     },
