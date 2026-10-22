@@ -1,54 +1,54 @@
 {
-  "updatedAt": "2026-10-21T21:02:45.294Z",
+  "updatedAt": "2026-10-22T11:19:57.321Z",
   "currency": "EUR",
   "assets": {
     "LU0996182563": {
       "name": "Amundi Index MSCI World AE-C",
-      "price": 437.34,
-      "priceDate": "2026-10-20",
+      "price": 440.9,
+      "priceDate": "2026-10-21",
       "source": "Financial Times (markets.ft.com)"
     },
     "LU0996177134": {
       "name": "Amundi Index MSCI Emerging Markets AE-C",
-      "price": 244.17,
-      "priceDate": "2026-10-20",
+      "price": 247.05,
+      "priceDate": "2026-10-21",
       "source": "Financial Times (markets.ft.com)"
     },
     "IE00BFZMJT78": {
       "name": "Neuberger Berman Short Duration Euro Bond Fund EUR I Acc",
-      "price": 117.97,
-      "priceDate": "2026-10-20",
+      "price": 117.89,
+      "priceDate": "2026-10-21",
       "source": "Financial Times (markets.ft.com)"
     },
     "BTC": {
       "name": "Bitcoin",
-      "price": 75333,
-      "priceDate": "2026-10-21",
+      "price": 73118,
+      "priceDate": "2026-10-22",
       "source": "CoinGecko"
     },
     "IE00BYX5NX33": {
       "name": "Fidelity MSCI World Index Fund EUR P Acc",
-      "price": 14.53,
-      "priceDate": "2026-10-20",
+      "price": 14.64,
+      "priceDate": "2026-10-21",
       "source": "Financial Times (markets.ft.com)"
     },
     "IE0031786696": {
       "name": "Vanguard Emerging Markets Stock Index Fund EUR Acc",
-      "price": 300.23,
-      "priceDate": "2026-10-20",
+      "price": 303.76,
+      "priceDate": "2026-10-21",
       "source": "Financial Times (markets.ft.com)"
     },
     "IE00B4ND3602": {
       "name": "iShares Physical Gold ETC",
       "symbol": "PPFB:GER:EUR",
-      "price": 71.51,
-      "priceDate": "2026-10-21",
+      "price": 70.53,
+      "priceDate": "2026-10-22",
       "source": "Financial Times (markets.ft.com)"
     },
     "IE00BH65QP47": {
       "name": "Vanguard Global Short-Term Bond Index Fund EUR Hedged Acc",
-      "price": 104.74,
-      "priceDate": "2026-10-20",
+      "price": 104.68,
+      "priceDate": "2026-10-21",
       "source": "Financial Times (markets.ft.com)"
     }
   }
