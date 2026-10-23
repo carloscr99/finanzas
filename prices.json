@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-22T20:59:02.349Z",
+  "updatedAt": "2026-10-23T11:10:37.493Z",
   "currency": "EUR",
   "assets": {
     "LU0996182563": {
@@ -16,39 +16,39 @@
     },
     "IE00BFZMJT78": {
       "name": "Neuberger Berman Short Duration Euro Bond Fund EUR I Acc",
-      "price": 117.89,
-      "priceDate": "2026-10-21",
+      "price": 117.7,
+      "priceDate": "2026-10-22",
       "source": "Financial Times (markets.ft.com)"
     },
     "BTC": {
       "name": "Bitcoin",
-      "price": 72347,
-      "priceDate": "2026-10-22",
+      "price": 72830,
+      "priceDate": "2026-10-23",
       "source": "CoinGecko"
     },
     "IE00BYX5NX33": {
       "name": "Fidelity MSCI World Index Fund EUR P Acc",
-      "price": 14.64,
-      "priceDate": "2026-10-21",
+      "price": 14.51,
+      "priceDate": "2026-10-22",
       "source": "Financial Times (markets.ft.com)"
     },
     "IE0031786696": {
       "name": "Vanguard Emerging Markets Stock Index Fund EUR Acc",
-      "price": 303.76,
-      "priceDate": "2026-10-21",
+      "price": 297.03,
+      "priceDate": "2026-10-22",
       "source": "Financial Times (markets.ft.com)"
     },
     "IE00B4ND3602": {
       "name": "iShares Physical Gold ETC",
       "symbol": "PPFB:GER:EUR",
-      "price": 70.2,
-      "priceDate": "2026-10-22",
+      "price": 69.67,
+      "priceDate": "2026-10-23",
       "source": "Financial Times (markets.ft.com)"
     },
     "IE00BH65QP47": {
       "name": "Vanguard Global Short-Term Bond Index Fund EUR Hedged Acc",
-      "price": 104.68,
-      "priceDate": "2026-10-21",
+      "price": 104.91,
+      "priceDate": "2026-10-22",
       "source": "Financial Times (markets.ft.com)"
     }
   }
