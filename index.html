@@ -734,13 +734,14 @@ const db=initializeFirestore(firebaseApp,{localCache:persistentLocalCache({tabMa
 const LEGACY_STORAGE_KEY="controlFinanzas_v1"; // clave de la versión anterior (solo lectura, para migrar)
 // Importes con punto de miles también en cifras de 4 dígitos (2.952,70 €): el español de Intl no lo pone por defecto.
 // useGrouping:"always" lo fuerza en navegadores modernos; si el navegador lo ignora, se usa el formato alemán (idéntico al español).
-function makeEuro(){
- let f=new Intl.NumberFormat("es-ES",{style:"currency",currency:"EUR",useGrouping:"always"});
- if(!f.format(1234).includes("."))f=new Intl.NumberFormat("de-DE",{style:"currency",currency:"EUR"});
- return f;
+// Formato español con punto de miles también en números de 4 cifras (es-ES por defecto escribe "1234", norma de la RAE).
+// Los navegadores sin useGrouping:"always" caen a de-DE, que usa los mismos signos y siempre agrupa.
+function esNumberFormat(opts={}){
+ const f=new Intl.NumberFormat("es-ES",{...opts,useGrouping:"always"});
+ return f.format(1234).includes(".")?f:new Intl.NumberFormat("de-DE",opts);
 }
-const euro=makeEuro();
-const intFmt=new Intl.NumberFormat("de-DE",{maximumFractionDigits:0}); // 1.370 (recuento de movimientos)
+const euro=esNumberFormat({style:"currency",currency:"EUR"});
+const intFmt=esNumberFormat({maximumFractionDigits:0}); // 1.370 (recuento de movimientos)
 const months=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
 const colors={Ingreso:"#16803b",Gasto:"#c73737","Inversión":"#2563eb"}; // se refresca desde los tokens CSS en renderCharts (modo claro/oscuro)
 function tok(name){return getComputedStyle(document.documentElement).getPropertyValue(name).trim()}
@@ -1111,7 +1112,14 @@ function latestPortfolioReference(){
 }
 function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]))}
 function formatDate(iso){if(!iso)return"—";const [y,m,d]=iso.split("-");return`${d}/${m}/${y}`}
-function shortNum(v){if(v>=1e6)return(v/1e6).toFixed(1)+"M";if(v>=1e3)return(v/1e3).toFixed(v>=1e4?0:1)+"k";return String(Math.round(v))}
+// Etiquetas del eje de importes de los gráficos: con los decimales que hagan falta para que dos marcas seguidas nunca se
+// lean igual (con un paso de 50 € en torno a 6.300 € salía "6.3k" en todas). Por debajo de 10.000 €, el importe entero.
+function axisMoney(v,i,ticks){
+ const step=ticks?.length>1?Math.abs(ticks[1].value-ticks[0].value):0,maxAbs=Math.max(...(ticks||[{value:v}]).map(t=>Math.abs(t.value)));
+ const unit=maxAbs>=1e6?1e6:maxAbs>=1e4?1e3:1,x=step/unit;let dec=0;
+ while(step&&dec<3&&Math.abs(Math.round(x*10**dec)-x*10**dec)>1e-6)dec++;if(Math.abs(v)<1e-9)return "0";
+ return esNumberFormat({minimumFractionDigits:dec,maximumFractionDigits:dec}).format(v/unit)+(unit===1e6?"M":unit===1e3?"K":" €");
+}
 function getCat(id){return state.categories.find(c=>c.id===id)}
 // ---------- Iconos de categoría ----------
 // Cada categoría puede guardar su icono en c.icon; si no lo tiene, se deduce del nombre (y, en último caso, del tipo).
@@ -2041,7 +2049,7 @@ function drawMonthlyChart(){
  mountChart("monthlyChart",{type:"bar",data:{labels,datasets:[ds("Ingresos","income",colors.Ingreso,"Ingreso"),ds("Gastos","expense",colors.Gasto,"Gasto"),ds("Inversiones","investment",colors["Inversión"],"Inversión")]},
   options:{responsive:true,maintainAspectRatio:false,animation:{duration:250},
    plugins:{legend:{labels:{usePointStyle:true,boxWidth:8,font:{family:FONT}}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${euro.format(c.parsed.y)}`}}},
-   scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:false}},y:{beginAtZero:true,ticks:{callback:v=>shortNum(v)}}},
+   scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:false}},y:{beginAtZero:true,ticks:{callback:axisMoney}}},
    onClick:(e,els,chart)=>{if(!els.length)return;const {datasetIndex,index}=els[0],r=ranges[index],ds=chart.data.datasets[datasetIndex];chartTap("monthlyChart",`${r.label} · ${ds.label}: ${euro.format(ds.data[index])}`,()=>goToMovements({type:ds._type,from:r.from,to:r.to,label:r.label}))},
    onHover:pointerCursor}});
 }
@@ -2060,7 +2068,7 @@ function drawSavingsChart(){
  mountChart("savingsChart",{type:"line",data:{labels,datasets:[{label:"Ahorro acumulado",data:series.map(x=>x.cum),borderColor:tok("--chart-neutral"),backgroundColor:withAlpha(tok("--chart-neutral"),0.08),fill:true,tension:0.25,pointRadius:series.map((_,i)=>i===sel?5:2),pointBackgroundColor:series.map((_,i)=>i===sel?colors["Inversión"]:tok("--chart-neutral"))}]},
   options:{responsive:true,maintainAspectRatio:false,animation:{duration:250},
    plugins:{legend:{display:false},tooltip:{callbacks:{title:items=>{const x=series[items[0].dataIndex];return `${months[x.m-1]} ${x.y}`},label:c=>{const x=series[c.dataIndex];return[` Acumulado: ${euro.format(x.cum)}`,` Este mes: ${x.net>=0?"+":""}${euro.format(x.net)}`]}}}},
-   scales:{x:{grid:{display:false}},y:{ticks:{callback:v=>shortNum(v)}}},
+   scales:{x:{grid:{display:false}},y:{ticks:{callback:axisMoney}}},
    onClick:(e,els)=>{if(!els.length)return;const x=series[els[0].index],r=monthRange(x.y,x.m),lbl=`${months[x.m-1]} ${x.y}`;chartTap("savingsChart",`${lbl} · acumulado ${euro.format(x.cum)} (${x.net>=0?"+":""}${euro.format(x.net)} este mes)`,()=>goToMovements({from:r.from,to:r.to,label:lbl}))},
    onHover:pointerCursor}});
 }
@@ -2077,7 +2085,7 @@ function drawCategoryChart(){
  mountChart("categoryChart",{type:"bar",data:{labels:rows.map(r=>r.name),datasets:[{label:typeLabel,data:rows.map(r=>r.total),backgroundColor:rows.map(r=>r.id?color:withAlpha(color,0.45)),borderRadius:3}]},
   options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,animation:{duration:250},layout:{padding:{right:120,left:24}},
    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${euro.format(c.parsed.x)} · ${total?pct1(c.parsed.x/total*100):"0"} %`}},barValueLabels:{format:v=>`${euro.format(v)} · ${total?pct1(v/total*100):"0"} %`},axisIcons:{icons:rows.map(r=>r.id?categoryIcon(getCat(r.id)):"")}},
-   scales:{x:{beginAtZero:true,ticks:{callback:v=>shortNum(v)},grid:{display:false}},y:{ticks:{autoSkip:false,callback:truncTick}}},
+   scales:{x:{beginAtZero:true,ticks:{callback:axisMoney},grid:{display:false}},y:{ticks:{autoSkip:false,callback:truncTick}}},
    onClick:(e,els)=>{if(!els.length)return;const r=rows[els[0].index],pr=periodRange();goToMovements({type,categoryId:r.id||"",from:pr.from,to:pr.to,label:periodLabel()})},
    onHover:pointerCursor},
   plugins:[barValueLabels,axisIcons]});
@@ -2090,7 +2098,7 @@ function drawPatrimonyChart(){
  mountChart("patrimonyChart",{type:"bar",data:{labels:assets.map(a=>a.name),datasets:[{label:"Valor",data:assets.map(a=>a.value),backgroundColor:tok("--chart-neutral"),borderRadius:3}]},
   options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,animation:{duration:250},layout:{padding:{right:130,left:24}},
    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${euro.format(c.parsed.x)} · ${pct1(assets[c.dataIndex].pct)} %`}},barValueLabels:{format:(v,i)=>`${euro.format(v)} · ${pct1(assets[i].pct)} %`},axisIcons:{icons:assets.map(a=>assetIconId(state.assets.find(x=>x.id===a.id)))}},
-   scales:{x:{beginAtZero:true,ticks:{callback:v=>shortNum(v)},grid:{display:false}},y:{ticks:{autoSkip:false,callback:truncTick}}}},
+   scales:{x:{beginAtZero:true,ticks:{callback:axisMoney},grid:{display:false}},y:{ticks:{autoSkip:false,callback:truncTick}}}},
   plugins:[barValueLabels,axisIcons]});
 }
 function drawNetWorthChart(){
@@ -2115,7 +2123,7 @@ function drawNetWorthChart(){
    {label:"Fondos (aportado)",data:series.map(x=>x.invested),borderColor:colors["Inversión"],borderDash:[5,4],backgroundColor:"transparent",tension:0.25,pointRadius:0}]},
   options:{responsive:true,maintainAspectRatio:false,animation:{duration:250},interaction:{mode:"index",intersect:false},
    plugins:{legend:{labels:{usePointStyle:true,boxWidth:8,font:{family:FONT}}},tooltip:{callbacks:{title:items=>formatDate(series[items[0].dataIndex].date),label:c=>` ${c.dataset.label}: ${euro.format(c.parsed.y)}`}}},
-   scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:8}},y:{ticks:{callback:v=>shortNum(v)}}}}});
+   scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:8}},y:{ticks:{callback:axisMoney}}}}});
 }
 function drawCompoundReturnChart(){
  const data=state.assets.map(a=>({asset:a,name:a.name||"Activo",rate:assetAnnualizedReturn(a),invested:Number(a.invested||0),value:Number(a.value||0),since:assetInvestmentMovements(a)[0]?.date,asOf:a.updatedAt})).filter(x=>x.rate!==null&&Number.isFinite(x.rate)).sort((a,b)=>b.rate-a.rate);
