@@ -133,7 +133,7 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 .chip .chip-ico{color:var(--text);background:var(--panel);border:1px solid var(--border)}.chip .chip-ico .ico{width:18px;height:18px}
 .cat-cell{display:inline-flex;align-items:center;gap:8px}.cat-cell .ico{width:18px;height:18px;color:var(--muted)}
 .icon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:8px;margin-top:4px}
-.icon-scroll{max-height:min(52vh,420px);overflow:auto;margin-top:10px;padding:2px}.icon-sec{font-size:12px;font-weight:600;color:var(--muted);text-align:left;margin:10px 0 6px;text-transform:uppercase;letter-spacing:.04em}.icon-sec:first-child{margin-top:0}.icon-note{font-size:12px;color:var(--muted);text-align:left;margin:10px 0 0}
+.icon-pick-html{max-height:min(62vh,500px);overflow-y:auto!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-top:0!important}.icon-pick-html #icoQ{position:sticky;top:0;z-index:1;box-shadow:0 0 0 6px var(--panel)}.icon-scroll{margin-top:12px;padding:2px}.icon-sec{font-size:12px;font-weight:600;color:var(--muted);text-align:left;margin:10px 0 6px;text-transform:uppercase;letter-spacing:.04em}.icon-sec:first-child{margin-top:0}.icon-note{font-size:12px;color:var(--muted);text-align:left;margin:10px 0 0}
 .name-ico{display:flex;gap:8px;align-items:stretch}.name-ico .icon-opt{width:48px;height:auto;min-height:44px;flex:none}.name-ico input{flex:1;min-width:0}
 .icon-opt{display:flex;align-items:center;justify-content:center;height:48px;border-radius:12px;border:1px solid var(--border);background:var(--soft);color:var(--text);cursor:pointer}.icon-opt.active{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
 .chip-btn.active{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
@@ -306,6 +306,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
   <symbol id="c-paw" viewBox="0 0 24 24"><circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="20" cy="16" r="2"/><path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.05Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z"/></symbol>
   <symbol id="c-baby" viewBox="0 0 24 24"><path d="M9 12h.01"/><path d="M15 12h.01"/><path d="M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5"/><path d="M19 6.3a9 9 0 0 1 1.8 3.9 2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1"/></symbol>
   <symbol id="c-chart" viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></symbol>
+  <symbol id="c-invest" viewBox="0 0 24 24"><path d="M2.5 10c4.5-.6 8.3-2.8 11.5-6.5"/><path d="M10.5 3H14.5V7"/><path d="M3.5 21v-5"/><path d="M7.5 21v-7"/><path d="M11.5 21v-9"/><path d="M16.5 11.5h3"/><path d="M16.8 12c-1.8 1.4-2.8 3-2.8 4.9a3.6 3.6 0 0 0 3.6 3.6h.8a3.6 3.6 0 0 0 3.6-3.6c0-1.9-1-3.5-2.8-4.9"/><path d="M19 15h-1.3a.8.8 0 0 0 0 1.6h.6a.8.8 0 0 1 0 1.6H17"/></symbol>
   <symbol id="c-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></symbol>
   <symbol id="c-receipt" viewBox="0 0 24 24"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/></symbol>
   <symbol id="c-piggy" viewBox="0 0 24 24"><path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5z"/><path d="M2 9v1c0 1.1.9 2 2 2h1"/><path d="M16 11h.01"/></symbol>
@@ -1065,7 +1066,7 @@ function shortNum(v){if(v>=1e6)return(v/1e6).toFixed(1)+"M";if(v>=1e3)return(v/1
 function getCat(id){return state.categories.find(c=>c.id===id)}
 // ---------- Iconos de categoría ----------
 // Cada categoría puede guardar su icono en c.icon; si no lo tiene, se deduce del nombre (y, en último caso, del tipo).
-const CAT_ICONS=[["c-briefcase","Nómina"],["c-coins","Dinero"],["c-percent","Intereses"],["c-bizum","Bizum"],["c-smartphone","Móvil"],["c-send","Envío"],["c-users","Compartido"],["c-wallet","Cartera"],["i-house","Vivienda"],["c-sofa","Hogar"],["c-zap","Luz"],["c-droplet","Agua"],["c-flame","Gas"],["c-wifi","Internet"],["c-phone","Teléfono"],["c-cart","Supermercado"],["c-utensils","Restaurantes"],["c-coffee","Café"],["c-ticket","Ocio"],["c-tv","Suscripciones"],["c-music","Música"],["c-cloud","Nube"],["c-sparkles","IA"],["c-openai","ChatGPT"],["c-spotify","Spotify"],["c-card","Pago a plazos"],["c-klarna","Klarna"],["c-package","Compras online"],["c-shirt","Ropa"],["c-scissors","Cuidado personal"],["c-heart","Salud"],["c-pill","Farmacia"],["c-stethoscope","Médico"],["c-leaf","Bienestar"],["c-dumbbell","Deporte"],["c-ball","Fútbol"],["c-book","Formación"],["c-gift","Regalos"],["c-dice","Loterías"],["c-plane","Viajes"],["c-bus","Transporte"],["c-car","Coche"],["c-fuel","Gasolina"],["c-parking","Garaje"],["c-shield","Seguros"],["c-landmark","Impuestos"],["c-paw","Mascotas"],["c-baby","Hijos"],["c-chart","Fondos"],["c-globe","Indexados"],["c-receipt","Bonos"],["c-piggy","Ahorro"],["c-bitcoin","Bitcoin"],["c-gem","Oro"]];
+const CAT_ICONS=[["c-briefcase","Nómina"],["c-coins","Dinero"],["c-percent","Intereses"],["c-bizum","Bizum"],["c-smartphone","Móvil"],["c-send","Envío"],["c-users","Compartido"],["c-wallet","Cartera"],["i-house","Vivienda"],["c-sofa","Hogar"],["c-zap","Luz"],["c-droplet","Agua"],["c-flame","Gas"],["c-wifi","Internet"],["c-phone","Teléfono"],["c-cart","Supermercado"],["c-utensils","Restaurantes"],["c-coffee","Café"],["c-ticket","Ocio"],["c-tv","Suscripciones"],["c-music","Música"],["c-cloud","Nube"],["c-sparkles","IA"],["c-openai","ChatGPT"],["c-spotify","Spotify"],["c-card","Pago a plazos"],["c-klarna","Klarna"],["c-package","Compras online"],["c-shirt","Ropa"],["c-scissors","Cuidado personal"],["c-heart","Salud"],["c-pill","Farmacia"],["c-stethoscope","Médico"],["c-leaf","Bienestar"],["c-dumbbell","Deporte"],["c-ball","Fútbol"],["c-book","Formación"],["c-gift","Regalos"],["c-dice","Loterías"],["c-plane","Viajes"],["c-bus","Transporte"],["c-car","Coche"],["c-fuel","Gasolina"],["c-parking","Garaje"],["c-shield","Seguros"],["c-landmark","Impuestos"],["c-paw","Mascotas"],["c-baby","Hijos"],["c-chart","Fondos"],["c-invest","Indexados"],["i-trend","Tendencia"],["c-globe","Mundo"],["c-receipt","Bonos"],["c-piggy","Ahorro"],["c-bitcoin","Bitcoin"],["c-gem","Oro"]];
 const CAT_ICON_RULES=[
  [/nomina|salario|sueldo|paga extra/,"c-briefcase"],[/interes|dividend|cupon/,"c-percent"],[/bizum/,"c-bizum"],[/compartid/,"c-users"],
  [/gasolin|combustib|carburant|diesel/,"c-fuel"],[/garaje|parking|aparcamiento/,"c-parking"],[/coche|vehiculo|taller|itv/,"c-car"],[/transporte|metro|autobus|\bbus\b|\btren\b|taxi|cabify|\buber\b/,"c-bus"],
@@ -1078,10 +1079,10 @@ const CAT_ICON_RULES=[
  [/regalo/,"c-gift"],[/formacion|curso|educa|libro|colegio/,"c-book"],[/salud|dentista|optica/,"c-heart"],[/pelu|cuidado personal|belleza|estetica/,"c-scissors"],
  [/ropa|calzado|zapat/,"c-shirt"],[/impuesto|tasa|hacienda|\bibi\b|multa/,"c-landmark"],[/hogar|mueble|decoracion|bricolaje/,"c-sofa"],[/vivienda|alquiler|hipoteca|comunidad/,"i-house"],
  [/loter|apuesta|quiniela/,"c-dice"],[/viaje|vacacion|hotel|vuelo/,"c-plane"],[/deporte|gimnasio|\bgym\b|padel/,"c-dumbbell"],[/mascota|perro|gato|veterin/,"c-paw"],[/hijo|bebe|guarderia/,"c-baby"],
- [/bitcoin|cripto|\bbtc\b|ethereum/,"c-bitcoin"],[/\boro\b|\bplata\b/,"c-gem"],[/\bbonos?\b|renta fija/,"c-receipt"],[/world|global|msci|emerg|s&p|nasdaq|indice|index/,"c-globe"],
+ [/bitcoin|cripto|\bbtc\b|ethereum/,"c-bitcoin"],[/\boro\b|\bplata\b/,"c-gem"],[/\bbonos?\b|renta fija/,"c-receipt"],[/world|global|msci|emerg|s&p|nasdaq|indice|index/,"c-invest"],
  [/fondo|\betf\b|accion|bolsa|myinvestor|indexa/,"c-chart"],[/ahorro|deposito|cuenta|banco|bank|republic|revolut|sabadell|santander|pibank|\bbbva\b|\bing\b/,"c-piggy"]
 ];
-const CAT_ICON_DEFAULT={Ingreso:"c-coins",Gasto:"c-wallet","Inversión":"c-chart"};
+const CAT_ICON_DEFAULT={Ingreso:"c-coins",Gasto:"c-wallet","Inversión":"c-invest"};
 function normText(s){return String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")}
 function guessCategoryIcon(c){const n=normText(c?.name);const r=CAT_ICON_RULES.find(([re])=>re.test(n));return r?r[1]:(CAT_ICON_DEFAULT[c?.type]||"c-wallet")}
 // Iconos externos (Iconify): al elegirlos se guarda el dibujo en la categoría (c.icon="set:nombre", c.iconSvg) para que se vean sin conexión.
@@ -1105,6 +1106,7 @@ function applyIconChoice(c,choice){
 }
 // Selector con buscador: filtra los iconos de la app (por nombre y por las palabras de las reglas automáticas) y busca más en Iconify.
 // Devuelve {icon,iconSvg?}, "auto" o null si se cancela.
+// El scroll va en el propio contenedor de SweetAlert (icon-pick-html): en móvil bloquea el arrastre dentro de scrolls anidados.
 async function pickIcon(title,cur,canAuto){
  const S=swalBase();if(!S)return null;
  const html=`<input id="icoQ" type="search" placeholder="Buscar: pizza, gym, netflix…" autocomplete="off" aria-label="Buscar icono" style="width:100%">
@@ -1112,7 +1114,7 @@ async function pickIcon(title,cur,canAuto){
   <div class="icon-sec" id="icoMoreHead" hidden>Más iconos</div><div class="icon-grid" id="icoMore"></div><p class="icon-note" id="icoNote">Escribe para buscar entre miles de iconos (mejor en inglés: dog, music, baby…).</p></div>`;
  let picked=null,found={},timer=null,seq=0;
  const opt=(attr,val,label,inner,active)=>`<button type="button" class="icon-opt${active?" active":""}" ${attr}="${escapeHtml(val)}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">${inner}</button>`;
- const r=await S.fire({title,html,showConfirmButton:false,showCancelButton:true,cancelButtonText:"Cancelar",showDenyButton:canAuto,denyButtonText:"Automático",denyButtonColor:tok("--muted"),
+ const r=await S.fire({title,html,customClass:{htmlContainer:"icon-pick-html"},showConfirmButton:false,showCancelButton:true,cancelButtonText:"Cancelar",showDenyButton:canAuto,denyButtonText:"Automático",denyButtonColor:tok("--muted"),
   didOpen:p=>{
    const q=p.querySelector("#icoQ"),local=p.querySelector("#icoLocal"),more=p.querySelector("#icoMore"),head=p.querySelector("#icoMoreHead"),note=p.querySelector("#icoNote");
    const renderLocal=t=>{
