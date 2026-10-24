@@ -129,6 +129,11 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 .big-amount{font-size:34px;font-weight:800;text-align:right;min-height:60px}
 .seg-full{display:flex;width:100%;margin-bottom:12px}.seg-full button{flex:1;padding:10px 6px}
 .chip-btn{border:1px solid var(--border);background:var(--soft);border-radius:999px;padding:8px 12px;min-height:40px;font-size:13px;font-weight:600;color:var(--text);transition:background-color .12s,color .12s}
+.chip-btn{display:inline-flex;align-items:center;gap:6px}.chip-btn .ico{width:16px;height:16px}
+.chip .chip-ico{color:var(--text);background:var(--panel);border:1px solid var(--border)}.chip .chip-ico .ico{width:18px;height:18px}
+.cat-cell{display:inline-flex;align-items:center;gap:8px}.cat-cell .ico{width:18px;height:18px;color:var(--muted)}
+.icon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:8px;margin-top:4px}
+.icon-opt{display:flex;align-items:center;justify-content:center;height:48px;border-radius:12px;border:1px solid var(--border);background:var(--soft);color:var(--text);cursor:pointer}.icon-opt.active{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
 .chip-btn.active{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
 .sheet label{margin-top:12px}.sheet .chips{gap:8px}
 .date-row{display:flex;gap:8px;align-items:center}.date-row input{flex:1}.date-row button{width:auto}
@@ -263,6 +268,47 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
   <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></symbol>
   <symbol id="i-gauge" viewBox="0 0 24 24"><path d="m12 14 3.5-3.5"/><path d="M4.93 19.07A10 10 0 1 1 19.07 19.07"/></symbol>
   <symbol id="i-caret-left" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></symbol>
+  <!-- Iconos de categoría (c-…): misma familia outline. -->
+  <symbol id="c-briefcase" viewBox="0 0 24 24"><path d="M16 20V4a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/><rect width="20" height="14" x="2" y="6" rx="2"/></symbol>
+  <symbol id="c-coins" viewBox="0 0 24 24"><circle cx="8" cy="8" r="6"/><path d="M18.09 10.37A6 6 0 1 1 10.34 18"/><path d="M7 6h1v4"/><path d="m16.71 13.88.7.71-2.82 2.82"/></symbol>
+  <symbol id="c-percent" viewBox="0 0 24 24"><path d="M19 5 5 19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/></symbol>
+  <symbol id="c-bizum" viewBox="-4.45 0 36 36"><path fill="currentColor" stroke="none" d="M6.61567 12.8655c1.31327.9553 3.14387.6767 4.09893-.6368l3.4225-4.73643c.9551-1.31346.6765-3.14434-.6367-4.09959-1.3133-.95524-3.1439-.67663-4.09902.63683L5.93914 8.76593c-.9153 1.31347-.63673 3.14437.67653 4.09957ZM22.2952 6.17881c-1.3133-.95524-3.1439-.67663-4.099.63683L4.42685 25.7613c-.9551 1.3135-.67653 3.1444.63673 4.0996 1.31326.9553 3.14387.6767 4.09897-.6368L22.9319 10.2784c.9949-1.31345.6765-3.14434-.6367-4.09959ZM5.3024 4.66637c.9551-1.31346.67652-3.14435-.63674-4.099591C3.3524-.388466 1.52179-.109853.566693 1.20361c-.9551 1.31346-.676529 3.14435.636737 4.09959 1.31326.95525 3.14387.67663 4.09897-.63683ZM26.1952 30.6968c-1.3132-.9553-3.1438-.6766-4.0989.6368-.9551 1.3135-.6766 3.1444.6367 4.0996 1.3133.9553 3.1439.6766 4.099-.6368.9551-1.3135.6765-3.1444-.6368-4.0996Zm-5.3724-7.5226c-1.3132-.9552-3.1438-.6766-4.0989.6369l-3.4623 4.7364c-.9551 1.3134-.6765 3.1443.6367 4.0996 1.3133.9552 3.1439.6766 4.099-.6369l3.4623-4.7364c.9551-1.3134.6765-3.1443-.6368-4.0996Z"/></symbol>
+  <symbol id="c-smartphone" viewBox="0 0 24 24"><rect width="14" height="20" x="5" y="2" rx="2"/><path d="M12 18h.01"/></symbol>
+  <symbol id="c-users" viewBox="0 0 24 24"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
+  <symbol id="c-wallet" viewBox="0 0 24 24"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"/><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"/></symbol>
+  <symbol id="c-cart" viewBox="0 0 24 24"><circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/></symbol>
+  <symbol id="c-utensils" viewBox="0 0 24 24"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></symbol>
+  <symbol id="c-coffee" viewBox="0 0 24 24"><path d="M10 2v2"/><path d="M14 2v2"/><path d="M6 2v2"/><path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1h14a4 4 0 1 1 0 8h-1"/></symbol>
+  <symbol id="c-ticket" viewBox="0 0 24 24"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></symbol>
+  <symbol id="c-bus" viewBox="0 0 24 24"><path d="M8 6v6"/><path d="M15 6v6"/><path d="M2 12h19.6"/><path d="M18 18h3s.5-1.7.8-2.8c.1-.4.2-.8.2-1.2 0-.4-.1-.8-.2-1.2l-1.4-5C20.1 6.8 19.1 6 18 6H4a2 2 0 0 0-2 2v10h3"/><circle cx="7" cy="18" r="2"/><path d="M9 18h5"/><circle cx="16" cy="18" r="2"/></symbol>
+  <symbol id="c-car" viewBox="0 0 24 24"><path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/></symbol>
+  <symbol id="c-fuel" viewBox="0 0 24 24"><path d="M3 22h12"/><path d="M4 9h10"/><path d="M14 22V4a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v18"/><path d="M14 13h2a2 2 0 0 1 2 2v2a2 2 0 0 0 4 0V9.83a2 2 0 0 0-.59-1.42L18 5"/></symbol>
+  <symbol id="c-parking" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M9 17V7h4a3 3 0 0 1 0 6H9"/></symbol>
+  <symbol id="c-plane" viewBox="0 0 24 24"><path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/></symbol>
+  <symbol id="c-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/></symbol>
+  <symbol id="c-phone" viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></symbol>
+  <symbol id="c-wifi" viewBox="0 0 24 24"><path d="M12 20h.01"/><path d="M2 8.82a15 15 0 0 1 20 0"/><path d="M5 12.86a10 10 0 0 1 14 0"/><path d="M8.5 16.43a5 5 0 0 1 7 0"/></symbol>
+  <symbol id="c-zap" viewBox="0 0 24 24"><path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/></symbol>
+  <symbol id="c-sofa" viewBox="0 0 24 24"><path d="M20 9V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v3"/><path d="M2 16a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-5a2 2 0 0 0-4 0v1.5a.5.5 0 0 1-.5.5h-11a.5.5 0 0 1-.5-.5V11a2 2 0 0 0-4 0z"/><path d="M4 18v2"/><path d="M20 18v2"/></symbol>
+  <symbol id="c-send" viewBox="0 0 24 24"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></symbol>
+  <symbol id="c-package" viewBox="0 0 24 24"><path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/></symbol>
+  <symbol id="c-tv" viewBox="0 0 24 24"><rect width="20" height="15" x="2" y="7" rx="2"/><path d="m17 2-5 5-5-5"/></symbol>
+  <symbol id="c-gift" viewBox="0 0 24 24"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13"/><path d="M19 12v7a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-7"/><path d="M7.5 8a2.5 2.5 0 0 1 0-5A4.8 8 0 0 1 12 8a4.8 8 0 0 1 4.5-5 2.5 2.5 0 0 1 0 5"/></symbol>
+  <symbol id="c-book" viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></symbol>
+  <symbol id="c-heart" viewBox="0 0 24 24"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/><path d="M3.22 12H9.5l.5-1 2 4.5 2-7 1.5 3.5h5.27"/></symbol>
+  <symbol id="c-scissors" viewBox="0 0 24 24"><circle cx="6" cy="6" r="3"/><path d="M8.12 8.12 12 12"/><path d="M20 4 8.12 15.88"/><circle cx="6" cy="18" r="3"/><path d="M14.8 14.8 20 20"/></symbol>
+  <symbol id="c-shirt" viewBox="0 0 24 24"><path d="M20.38 3.46 16 2a4 4 0 0 1-8 0L3.62 3.46a2 2 0 0 0-1.34 2.23l.58 3.47a1 1 0 0 0 .99.84H6v10c0 1.1.9 2 2 2h8a2 2 0 0 0 2-2V10h2.15a1 1 0 0 0 .99-.84l.58-3.47a2 2 0 0 0-1.34-2.23z"/></symbol>
+  <symbol id="c-landmark" viewBox="0 0 24 24"><path d="M3 22h18"/><path d="M6 18v-7"/><path d="M10 18v-7"/><path d="M14 18v-7"/><path d="M18 18v-7"/><path d="M12 2 20 7H4z"/></symbol>
+  <symbol id="c-dice" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M16 8h.01"/><path d="M8 8h.01"/><path d="M8 16h.01"/><path d="M16 16h.01"/><path d="M12 12h.01"/></symbol>
+  <symbol id="c-dumbbell" viewBox="0 0 24 24"><path d="M14.4 14.4 9.6 9.6"/><path d="M18.66 21.49a2 2 0 1 1-2.83-2.83l-1.77 1.77a2 2 0 1 1-2.83-2.83l6.36-6.36a2 2 0 1 1 2.83 2.83l-1.77 1.77a2 2 0 1 1 2.83 2.83z"/><path d="m21.5 21.5-1.4-1.4"/><path d="M3.9 3.9 2.5 2.5"/><path d="M6.4 12.77a2 2 0 1 1-2.83-2.83l1.77-1.77a2 2 0 1 1-2.83-2.83l2.83-2.83a2 2 0 1 1 2.83 2.83l1.77-1.77a2 2 0 1 1 2.83 2.83z"/></symbol>
+  <symbol id="c-paw" viewBox="0 0 24 24"><circle cx="11" cy="4" r="2"/><circle cx="18" cy="8" r="2"/><circle cx="20" cy="16" r="2"/><path d="M9 10a5 5 0 0 1 5 5v3.5a3.5 3.5 0 0 1-6.84 1.05Q6.52 17.48 4.46 16.84A3.5 3.5 0 0 1 5.5 10Z"/></symbol>
+  <symbol id="c-baby" viewBox="0 0 24 24"><path d="M9 12h.01"/><path d="M15 12h.01"/><path d="M10 16c.5.3 1.2.5 2 .5s1.5-.2 2-.5"/><path d="M19 6.3a9 9 0 0 1 1.8 3.9 2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1"/></symbol>
+  <symbol id="c-chart" viewBox="0 0 24 24"><path d="M3 3v16a2 2 0 0 0 2 2h16"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></symbol>
+  <symbol id="c-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></symbol>
+  <symbol id="c-receipt" viewBox="0 0 24 24"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 17.5v-11"/></symbol>
+  <symbol id="c-piggy" viewBox="0 0 24 24"><path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5z"/><path d="M2 9v1c0 1.1.9 2 2 2h1"/><path d="M16 11h.01"/></symbol>
+  <symbol id="c-bitcoin" viewBox="0 0 24 24"><path d="M11.77 19.09c4.92.87 6.14-6.03 1.21-6.9m-1.21 6.9-5.91-1.04m5.91 1.04-.35 1.97m1.56-8.87c4.93.87 6.14-6.02 1.22-6.89m-1.22 6.89-3.94-.69m5.16-6.2L8.29 4.26m5.91 1.04.35-1.97M7.48 20.36l3.13-17.72"/></symbol>
+  <symbol id="c-gem" viewBox="0 0 24 24"><path d="M6 3h12l4 6-10 13L2 9Z"/><path d="M11 3 8 9l4 13 4-13-3-6"/><path d="M2 9h20"/></symbol>
 </svg>
 <div id="authScreen" class="auth-screen">
   <div class="auth-card">
@@ -1002,6 +1048,35 @@ function escapeHtml(s){return String(s??"").replace(/[&<>"']/g,ch=>({"&":"&amp;"
 function formatDate(iso){if(!iso)return"—";const [y,m,d]=iso.split("-");return`${d}/${m}/${y}`}
 function shortNum(v){if(v>=1e6)return(v/1e6).toFixed(1)+"M";if(v>=1e3)return(v/1e3).toFixed(v>=1e4?0:1)+"k";return String(Math.round(v))}
 function getCat(id){return state.categories.find(c=>c.id===id)}
+// ---------- Iconos de categoría ----------
+// Cada categoría puede guardar su icono en c.icon; si no lo tiene, se deduce del nombre (y, en último caso, del tipo).
+const CAT_ICONS=[["c-briefcase","Nómina"],["c-coins","Dinero"],["c-percent","Intereses"],["c-bizum","Bizum"],["c-smartphone","Móvil"],["c-send","Envío"],["c-users","Compartido"],["c-wallet","Cartera"],["i-house","Vivienda"],["c-sofa","Hogar"],["c-zap","Luz"],["c-wifi","Internet"],["c-phone","Teléfono"],["c-cart","Supermercado"],["c-utensils","Restaurantes"],["c-coffee","Café"],["c-ticket","Ocio"],["c-tv","Suscripciones"],["c-package","Compras online"],["c-shirt","Ropa"],["c-scissors","Cuidado personal"],["c-heart","Salud"],["c-dumbbell","Deporte"],["c-book","Formación"],["c-gift","Regalos"],["c-dice","Loterías"],["c-plane","Viajes"],["c-bus","Transporte"],["c-car","Coche"],["c-fuel","Gasolina"],["c-parking","Garaje"],["c-shield","Seguros"],["c-landmark","Impuestos"],["c-paw","Mascotas"],["c-baby","Hijos"],["c-chart","Fondos"],["c-globe","Indexados"],["c-receipt","Bonos"],["c-piggy","Ahorro"],["c-bitcoin","Bitcoin"],["c-gem","Oro"]];
+const CAT_ICON_RULES=[
+ [/nomina|salario|sueldo|paga extra/,"c-briefcase"],[/interes|dividend|cupon/,"c-percent"],[/bizum/,"c-bizum"],[/compartid/,"c-users"],
+ [/gasolin|combustib|carburant|diesel/,"c-fuel"],[/garaje|parking|aparcamiento/,"c-parking"],[/coche|vehiculo|taller|itv/,"c-car"],[/transporte|metro|autobus|\bbus\b|\btren\b|taxi|cabify|\buber\b/,"c-bus"],
+ [/super|mercadona|aliment|compra semanal/,"c-cart"],[/restaurant|\bbar(es)?\b|comida fuera|cena/,"c-utensils"],[/cafe/,"c-coffee"],
+ [/ocio|cine|concierto|entreten|fiesta/,"c-ticket"],[/suscrip|netflix|spotify|streaming|hbo|disney/,"c-tv"],[/online|amazon|aliexpress/,"c-package"],
+ [/seguro/,"c-shield"],[/telefon|movil/,"c-phone"],[/internet|fibra/,"c-wifi"],[/\bluz\b|electric|\bgas\b|agua|suministro/,"c-zap"],
+ [/regalo/,"c-gift"],[/formacion|curso|educa|libro|colegio/,"c-book"],[/salud|farmacia|medic|dentista|optica/,"c-heart"],[/pelu|cuidado personal|belleza|estetica/,"c-scissors"],
+ [/ropa|calzado|zapat/,"c-shirt"],[/impuesto|tasa|hacienda|\bibi\b|multa/,"c-landmark"],[/hogar|mueble|decoracion|bricolaje/,"c-sofa"],[/vivienda|alquiler|hipoteca|comunidad/,"i-house"],
+ [/loter|apuesta|quiniela/,"c-dice"],[/viaje|vacacion|hotel|vuelo/,"c-plane"],[/deporte|gimnasio|\bgym\b|padel/,"c-dumbbell"],[/mascota|perro|gato|veterin/,"c-paw"],[/hijo|bebe|guarderia/,"c-baby"],
+ [/bitcoin|cripto|\bbtc\b|ethereum/,"c-bitcoin"],[/\boro\b|\bplata\b/,"c-gem"],[/\bbonos?\b|renta fija/,"c-receipt"],[/world|global|msci|emerg|s&p|nasdaq|indice|index/,"c-globe"],
+ [/fondo|\betf\b|accion|bolsa|myinvestor|indexa/,"c-chart"],[/ahorro|deposito|cuenta|banco|bank|republic|revolut|sabadell|santander|pibank|\bbbva\b|\bing\b/,"c-piggy"]
+];
+const CAT_ICON_DEFAULT={Ingreso:"c-coins",Gasto:"c-wallet","Inversión":"c-chart"};
+function normText(s){return String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")}
+function guessCategoryIcon(c){const n=normText(c?.name);const r=CAT_ICON_RULES.find(([re])=>re.test(n));return r?r[1]:(CAT_ICON_DEFAULT[c?.type]||"c-wallet")}
+function categoryIcon(c){return c?.icon&&CAT_ICONS.some(([id])=>id===c.icon)?c.icon:guessCategoryIcon(c)}
+function catIconSvg(c,cls="ico sm"){return `<svg class="${cls}" aria-hidden="true"><use href="#${c?categoryIcon(c):"c-wallet"}"/></svg>`}
+async function chooseCategoryIcon(id){
+ const c=getCat(id);if(!c)return;const cur=categoryIcon(c),S=swalBase();if(!S)return;
+ const grid=`<div class="icon-grid">${CAT_ICONS.map(([ic,label])=>`<button type="button" class="icon-opt${ic===cur?" active":""}" data-ic="${ic}" aria-label="${label}" title="${label}"><svg class="ico" aria-hidden="true"><use href="#${ic}"/></svg></button>`).join("")}</div>`;
+ let picked=null;
+ const r=await S.fire({title:`Icono de «${escapeHtml(c.name)}»`,html:grid,showConfirmButton:false,showCancelButton:true,cancelButtonText:"Cancelar",showDenyButton:!!c.icon,denyButtonText:"Automático",denyButtonColor:tok("--muted"),
+  didOpen:p=>p.querySelectorAll("[data-ic]").forEach(b=>b.onclick=()=>{picked=b.dataset.ic;Swal.close()})});
+ if(r.isDenied)delete c.icon;else if(picked)c.icon=picked;else return;
+ saveState();renderAll();
+}
 function assetMarketConfig(a){
  const isin=String(a?.isin||"").trim().toUpperCase();if(isin)return{feedKey:isin,label:a.name||isin};
  const n=normText(a?.name),type=normText(a?.type);
@@ -1369,9 +1444,10 @@ function renderSearchCategories(){
 }
 function renderCategoryList(){
  const sorted=[...state.categories].sort((a,b)=>a.type.localeCompare(b.type)||a.name.localeCompare(b.name,"es"));
- el("categoryList").innerHTML=sorted.length?sorted.map(c=>`<span class="chip"><span class="pill ${c.type}">${c.type}</span>${escapeHtml(c.name)}<button type="button" data-rencat="${c.id}" aria-label="Renombrar ${escapeHtml(c.name)}" title="Renombrar"><svg class="ico" aria-hidden="true"><use href="#i-pencil"/></svg></button><button type="button" data-delcat="${c.id}" aria-label="Eliminar ${escapeHtml(c.name)}" title="Eliminar"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button></span>`).join(""):`<span class="muted">No hay categorías.</span>`;
+ el("categoryList").innerHTML=sorted.length?sorted.map(c=>`<span class="chip"><button type="button" class="chip-ico" data-iconcat="${c.id}" aria-label="Cambiar icono de ${escapeHtml(c.name)}" title="Cambiar icono">${catIconSvg(c)}</button><span class="pill ${c.type}">${c.type}</span>${escapeHtml(c.name)}<button type="button" data-rencat="${c.id}" aria-label="Renombrar ${escapeHtml(c.name)}" title="Renombrar"><svg class="ico" aria-hidden="true"><use href="#i-pencil"/></svg></button><button type="button" data-delcat="${c.id}" aria-label="Eliminar ${escapeHtml(c.name)}" title="Eliminar"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button></span>`).join(""):`<span class="muted">No hay categorías.</span>`;
  el("categoryList").querySelectorAll("[data-delcat]").forEach(b=>b.onclick=()=>deleteCategory(b.dataset.delcat));
  el("categoryList").querySelectorAll("[data-rencat]").forEach(b=>b.onclick=()=>renameCategory(b.dataset.rencat));
+ el("categoryList").querySelectorAll("[data-iconcat]").forEach(b=>b.onclick=()=>chooseCategoryIcon(b.dataset.iconcat));
 }
 // Renombrar conserva el id, así que movimientos, recurrentes y presupuestos siguen apuntando a la misma categoría.
 async function renameCategory(id){
@@ -1475,16 +1551,16 @@ async function bulkRecategorize(){
 function movementAccountTag(m){if(!m.accountId)return "";const def=defaultAccount()?.id||"";return m.accountId===def?"":accountLabel(m)}
 function renderMovements(){
  const movs=movementSearchResults();el("visibleCount").textContent=intFmt.format(movs.length);
- el("movementTable").innerHTML=movs.length?movs.map(m=>`<tr><td>${formatDate(m.date)}</td><td><span class="pill ${m.type}">${m.type}</span></td><td>${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")}</td><td>${escapeHtml(m.description)}${movementAccountTag(m)?`<br><small class="muted">${escapeHtml(movementAccountTag(m))}</small>`:""}</td><td class="amount">${euro.format(m.amount)}${m.unitsEstimated?` <span class="badge" title="Participaciones estimadas con la última cotización; se ajustan solas al llegar la cotización del día de compra">≈ ${assetDisplayUnits(m.units)} part.</span>`:""}</td><td class="actions"><button class="secondary small" data-edit="${m.id}">Editar</button> <button class="danger small" data-del="${m.id}">Borrar</button></td></tr>`).join(""):`<tr><td colspan="6" class="empty">No hay movimientos.</td></tr>`;
+ el("movementTable").innerHTML=movs.length?movs.map(m=>`<tr><td>${formatDate(m.date)}</td><td><span class="pill ${m.type}">${m.type}</span></td><td><span class="cat-cell">${catIconSvg(getCat(m.categoryId))}${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")}</span></td><td>${escapeHtml(m.description)}${movementAccountTag(m)?`<br><small class="muted">${escapeHtml(movementAccountTag(m))}</small>`:""}</td><td class="amount">${euro.format(m.amount)}${m.unitsEstimated?` <span class="badge" title="Participaciones estimadas con la última cotización; se ajustan solas al llegar la cotización del día de compra">≈ ${assetDisplayUnits(m.units)} part.</span>`:""}</td><td class="actions"><button class="secondary small" data-edit="${m.id}">Editar</button> <button class="danger small" data-del="${m.id}">Borrar</button></td></tr>`).join(""):`<tr><td colspan="6" class="empty">No hay movimientos.</td></tr>`;
  el("movementTable").querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editMovement(b.dataset.edit));
  el("movementTable").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>deleteMovement(b.dataset.del));
- // Lista táctil para móvil (agrupada por día; tocar abre la hoja de edición). Icono + signo + texto: el tipo nunca se indica solo por color.
+ // Lista táctil para móvil (agrupada por día; tocar abre la hoja de edición). El círculo lleva el icono de la categoría con el color del tipo; signo + texto: el tipo nunca se indica solo por color.
  const list=el("movementList"),LIMIT=300,shown=movs.slice(0,LIMIT);let html="",lastDate="";
- const TYPE_UI={Gasto:{cls:"negative",k:"g",icon:"i-arrow-down",sign:"−"},Ingreso:{cls:"positive",k:"i",icon:"i-arrow-up",sign:"+"},"Inversión":{cls:"inv",k:"v",icon:"i-trend",sign:""}};
+ const TYPE_UI={Gasto:{cls:"negative",k:"g",sign:"−"},Ingreso:{cls:"positive",k:"i",sign:"+"},"Inversión":{cls:"inv",k:"v",sign:""}};
  shown.forEach(m=>{
    if(m.date!==lastDate){lastDate=m.date;html+=`<div class="mday">${formatDate(m.date)}</div>`}
    const t=TYPE_UI[m.type]||TYPE_UI.Gasto;
-   html+=`<button type="button" class="mitem" data-id="${m.id}"><span class="mico ${t.k}"><svg class="ico sm" aria-hidden="true"><use href="#${t.icon}"/></svg></span><span class="mtext"><b>${escapeHtml(m.description)}</b><small>${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")} · ${m.type}${movementAccountTag(m)?" · "+escapeHtml(movementAccountTag(m)):""}${m.unitsEstimated?" · ≈ "+assetDisplayUnits(m.units)+" part. (estimadas)":""}</small></span><span class="amt ${t.cls}">${t.sign}${euro.format(m.amount)}</span></button>`;
+   html+=`<button type="button" class="mitem" data-id="${m.id}"><span class="mico ${t.k}">${catIconSvg(getCat(m.categoryId))}</span><span class="mtext"><b>${escapeHtml(m.description)}</b><small>${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")} · ${m.type}${movementAccountTag(m)?" · "+escapeHtml(movementAccountTag(m)):""}${m.unitsEstimated?" · ≈ "+assetDisplayUnits(m.units)+" part. (estimadas)":""}</small></span><span class="amt ${t.cls}">${t.sign}${euro.format(m.amount)}</span></button>`;
  });
  if(!html)html=`<div class="empty-state"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg><p>${state.movements.length?"Ningún movimiento coincide con los filtros.":"Todavía no hay movimientos."}</p><button type="button" class="primary" data-empty-add>Añadir movimiento</button></div>`;
  if(movs.length>LIMIT)html+=`<div class="empty">Mostrando ${intFmt.format(LIMIT)} de ${intFmt.format(movs.length)}. Usa los filtros para acotar.</div>`;
@@ -1816,7 +1892,7 @@ function renderQsCats(){
  if(!cats.some(c=>c.id===qs.categoryId))qs.categoryId=cats[0]?.id||"";
  const mustShow=cats.findIndex(c=>c.id===qs.categoryId)>=MAX;
  const shown=qs.showAll||mustShow?cats:cats.slice(0,MAX);
- el("qsCats").innerHTML=(shown.map(c=>`<button type="button" class="chip-btn${c.id===qs.categoryId?" active":""}" data-cat="${c.id}">${escapeHtml(c.name)}</button>`).join("")||`<span class="muted">No hay categorías de este tipo. Créalas en Categorías.</span>`)+(shown.length<cats.length?`<button type="button" class="chip-btn" data-more="1">Más… (${cats.length-shown.length})</button>`:"");
+ el("qsCats").innerHTML=(shown.map(c=>`<button type="button" class="chip-btn${c.id===qs.categoryId?" active":""}" data-cat="${c.id}">${catIconSvg(c)}${escapeHtml(c.name)}</button>`).join("")||`<span class="muted">No hay categorías de este tipo. Créalas en Categorías.</span>`)+(shown.length<cats.length?`<button type="button" class="chip-btn" data-more="1">Más… (${cats.length-shown.length})</button>`:"");
  el("qsCats").querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{qs.categoryId=b.dataset.cat;renderQsCats()});
  const more=el("qsCats").querySelector("[data-more]");if(more)more.onclick=()=>{qs.showAll=true;renderQsCats()};
  updateQsInvest();
