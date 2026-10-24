@@ -2045,12 +2045,20 @@ function drawMonthlyChart(){
  el("subMonthly").textContent=sub;
  el("monthlyToggle").hidden=p.mode==="all";el("monthlyToggle").textContent=monthlyShowAll?"Ver 6 meses":"Ver 12 meses";
  const sel=p.mode==="month"?labels.findIndex((_,i)=>ranges[i].from===monthRange(p.year,p.month).from):-1;
- const ds=(label,key,color,type)=>({label,data:rows.map(r=>r[key]),backgroundColor:rows.map((_,i)=>sel<0||i===sel?color:withAlpha(color,0.35)),borderRadius:3,_type:type});
+ // Resaltado: por defecto el mes elegido en el periodo; al pulsar una barra, solo esa barra (hasta cerrar su aviso o pulsar fuera).
+ const shade=(color,i,dsi,hit)=>(hit?i===hit.index&&dsi===hit.datasetIndex:sel<0||i===sel)?color:withAlpha(color,0.35);
+ const ds=(label,key,color,type)=>({label,data:rows.map(r=>r[key]),backgroundColor:rows.map((_,i)=>shade(color,i,DS_COLORS.indexOf(color),null)),borderRadius:3,_type:type,_color:color});
+ const highlight=(chart,hit)=>{chart.data.datasets.forEach((d,dsi)=>{d.backgroundColor=rows.map((_,i)=>shade(d._color,i,dsi,hit))});chart.update("none")};
+ const DS_COLORS=[colors.Ingreso,colors.Gasto,colors["Inversión"]];
  mountChart("monthlyChart",{type:"bar",data:{labels,datasets:[ds("Ingresos","income",colors.Ingreso,"Ingreso"),ds("Gastos","expense",colors.Gasto,"Gasto"),ds("Inversiones","investment",colors["Inversión"],"Inversión")]},
   options:{responsive:true,maintainAspectRatio:false,animation:{duration:250},
    plugins:{legend:{labels:{usePointStyle:true,boxWidth:8,font:{family:FONT}}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${euro.format(c.parsed.y)}`}}},
    scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:false}},y:{beginAtZero:true,ticks:{callback:axisMoney}}},
-   onClick:(e,els,chart)=>{if(!els.length)return;const {datasetIndex,index}=els[0],r=ranges[index],ds=chart.data.datasets[datasetIndex];chartTap("monthlyChart",`${r.label} · ${ds.label}: ${euro.format(ds.data[index])}`,()=>goToMovements({type:ds._type,from:r.from,to:r.to,label:r.label}))},
+   onClick:(e,els,chart)=>{
+    if(!els.length){highlight(chart,null);el("monthlyChart").closest(".panel").querySelector(".chart-pop")?.remove();return}
+    const {datasetIndex,index}=els[0],r=ranges[index],ds=chart.data.datasets[datasetIndex];
+    if(isTouch())highlight(chart,{datasetIndex,index});
+    chartTap("monthlyChart",`${r.label} · ${ds.label}: ${euro.format(ds.data[index])}`,()=>goToMovements({type:ds._type,from:r.from,to:r.to,label:r.label}),()=>highlight(chart,null))},
    onHover:pointerCursor}});
 }
 function cumulativeSeries(){
@@ -2254,12 +2262,12 @@ function renderBarList(id,rows,opts){
  list.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>rows[b.dataset.i].onClick?.());
 }
 function showChartCanvas(id){const box=chartBoxFor(id);box.style.display="";const list=box.parentElement.querySelector(".barlist");if(list)list.remove()}
-function chartTap(id,text,action){
+function chartTap(id,text,action,onClose){
  if(!isTouch()){action();return}
  const panel=el(id).closest(".panel");let pop=panel.querySelector(".chart-pop");
  if(!pop){pop=document.createElement("div");pop.className="chart-pop";chartBoxFor(id).after(pop)}
  pop.innerHTML=`<span>${escapeHtml(text)}</span><span><button type="button" class="secondary small" data-go>Ver movimientos</button> <button type="button" class="secondary small" data-x aria-label="Cerrar">×</button></span>`;
- pop.querySelector("[data-go]").onclick=()=>{pop.remove();action()};pop.querySelector("[data-x]").onclick=()=>pop.remove();
+ pop.querySelector("[data-go]").onclick=()=>{pop.remove();action()};pop.querySelector("[data-x]").onclick=()=>{pop.remove();onClose?.()};
 }
 let monthlyShowAll=false;
 
