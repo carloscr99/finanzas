@@ -2052,7 +2052,9 @@ function drawMonthlyChart(){
  const DS_COLORS=[colors.Ingreso,colors.Gasto,colors["Inversión"]];
  mountChart("monthlyChart",{type:"bar",data:{labels,datasets:[ds("Ingresos","income",colors.Ingreso,"Ingreso"),ds("Gastos","expense",colors.Gasto,"Gasto"),ds("Inversiones","investment",colors["Inversión"],"Inversión")]},
   options:{responsive:true,maintainAspectRatio:false,animation:{duration:250},
-   plugins:{legend:{labels:{usePointStyle:true,boxWidth:8,font:{family:FONT}}},tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${euro.format(c.parsed.y)}`}}},
+   // La leyenda y el tooltip toman por defecto el color de la primera barra de cada serie, que puede estar atenuada o resaltada: se usa el color pleno.
+   plugins:{legend:{labels:{usePointStyle:true,boxWidth:8,font:{family:FONT},generateLabels:chart=>Chart.defaults.plugins.legend.labels.generateLabels(chart).map(l=>{const c=chart.data.datasets[l.datasetIndex]._color;return{...l,fillStyle:c,strokeStyle:c}})}},
+    tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${euro.format(c.parsed.y)}`,labelColor:c=>({borderColor:c.dataset._color,backgroundColor:c.dataset._color})}}},
    scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:false}},y:{beginAtZero:true,ticks:{callback:axisMoney}}},
    onClick:(e,els,chart)=>{
     if(!els.length){highlight(chart,null);el("monthlyChart").closest(".panel").querySelector(".chart-pop")?.remove();return}
