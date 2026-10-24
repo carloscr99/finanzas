@@ -1496,7 +1496,7 @@ function persistMovement(d,id){
      state.movements[i]=next;applyMovementEffects(next,1);
    }
  }else{
-   const m={id:uuid(),date,type,categoryId,description,amount};
+   const m={id:uuid(),date,type,categoryId,description,amount,createdAt:nowISO()};
    if(accountId)m.accountId=accountId;
    if(usesUnits){m.assetId=assetId;m.units=units;if(estimated)m.unitsEstimated=true}else linkSavingsAccount(m);
    state.movements.push(m);applyMovementEffects(m,1);
@@ -1524,12 +1524,18 @@ function editMovement(id){
 function cancelEdit(){editingId=null;el("cancelEdit").style.display="none";el("saveMovement").textContent="Guardar movimiento";el("mDate").value=todayISO();el("mType").value="Gasto";updateMovementCategories();el("mDescription").value="";el("mAmount").value="";el("mUnits").value="";resetAccountSelect("mAccount");updateAccountHint()}
 function deleteMovementById(id){const m=state.movements.find(x=>x.id===id);if(m)applyMovementEffects(m,-1);state.movements=state.movements.filter(x=>x.id!==id);markDataUpdate(m?.type==="Inversión"||accountAffectsPortfolio(m?.accountId)?"movement+portfolio":"movement");saveState();renderAll()}
 async function deleteMovement(id){if(!(await uiConfirm("Esta acción no se puede deshacer.",{title:"¿Eliminar este movimiento?",danger:true,confirmText:"Eliminar"})))return;deleteMovementById(id);toast("Movimiento eliminado")}
+// Orden: fecha descendente y, dentro del mismo día, hora de creación descendente.
+// Los movimientos antiguos sin createdAt cuentan como anteriores y se desempatan por su posición (orden de alta).
+function movementComparator(){
+ const idx=new Map(state.movements.map((m,i)=>[m.id,i]));
+ return(a,b)=>b.date.localeCompare(a.date)||String(b.createdAt||"").localeCompare(String(a.createdAt||""))||(idx.get(b.id)??0)-(idx.get(a.id)??0);
+}
 function movementSearchResults(){
  const q=el("searchText").value.trim().toLowerCase(),type=el("searchType").value,cat=el("searchCategory").value,from=el("searchFrom").value,to=el("searchTo").value;
  return state.movements.filter(m=>{
    const c=getCat(m.categoryId)?.name||"";
    return(!q||(m.description+" "+c).toLowerCase().includes(q))&&(!type||m.type===type)&&(!cat||m.categoryId===cat)&&(!from||m.date>=from)&&(!to||m.date<=to);
- }).sort((a,b)=>b.date.localeCompare(a.date));
+ }).sort(movementComparator());
 }
 // ---------- Cambio de tipo y categoría en bloque (sobre el resultado del filtro) ----------
 function updateBulkCategories(){
@@ -1584,7 +1590,7 @@ function generateRecurring(showAlert=false){
    let guard=0;
    while(r.nextDate&&r.nextDate<=today&&guard<500){
      const exists=state.movements.some(m=>m.recurringId===r.id&&m.recurrenceDate===r.nextDate);
-     if(!exists){const m={id:uuid(),date:r.nextDate,type:r.type,categoryId:r.categoryId,description:r.description,amount:Number(r.amount),recurringId:r.id,recurrenceDate:r.nextDate};if(r.accountId)m.accountId=r.accountId;linkSavingsAccount(m)||linkFundEstimate(m);applyMovementEffects(m,1);state.movements.push(m);created++}
+     if(!exists){const m={id:uuid(),date:r.nextDate,type:r.type,categoryId:r.categoryId,description:r.description,amount:Number(r.amount),recurringId:r.id,recurrenceDate:r.nextDate,createdAt:nowISO()};if(r.accountId)m.accountId=r.accountId;linkSavingsAccount(m)||linkFundEstimate(m);applyMovementEffects(m,1);state.movements.push(m);created++}
      r.nextDate=nextDate(r.nextDate,r.frequency);guard++;
    }
  });
