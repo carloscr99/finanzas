@@ -990,7 +990,7 @@ function stopApp(){
 // onAuthStateChanged la restaura. Solo se cierra sesión cuando el acceso está denegado de verdad, nunca por un fallo de red.
 let authBusy=true,pendingUser=null; // true: el HTML inicial ya muestra "Comprobando sesión…"
 const allowKey=uid=>"allow:"+uid;
-function showAuthScreen(show){el("authScreen").hidden=!show;document.querySelector(".app").hidden=show;document.querySelector(".mobile-nav").hidden=show;el("fabAdd").hidden=show;if(show)closeQuickSheet()}
+function showAuthScreen(show){el("authScreen").hidden=!show;document.querySelector(".app").hidden=show;document.querySelector(".mobile-nav").hidden=show;el("fabAdd").hidden=show;if(show)closeQuickSheet();else syncBackTrap()}
 function setAuthStatus(msg,isError=false,busy=false){
  const n=el("authStatus");authBusy=busy;
  n.innerHTML=(busy?'<span class="spinner" aria-hidden="true"></span>':"")+escapeHtml(msg||"");
@@ -2232,6 +2232,7 @@ function openQuickSheet(movement){
  void sheet.offsetHeight; // fuerza el reflow para que la transición de entrada se ejecute desde display:none
  backdrop.classList.add("open");sheet.classList.add("open");
  setTimeout(()=>el("qsAmount").focus(),220);
+ syncBackTrap();
 }
 let sheetCloseTimer=null;
 function closeQuickSheet(){
@@ -2241,6 +2242,7 @@ function closeQuickSheet(){
  sheet.classList.remove("open","dragging");backdrop.classList.remove("open");sheet.style.transform="";
  clearTimeout(sheetCloseTimer);
  sheetCloseTimer=setTimeout(()=>{sheet.hidden=true;backdrop.hidden=true},160); // espera la animación de salida (más corta que la de entrada)
+ syncBackTrap();
 }
 // Deslizar hacia abajo desde el asa o la cabecera cierra la hoja (el botón × sigue disponible; el gesto no es el único camino).
 function enableSheetSwipe(){
@@ -2298,6 +2300,7 @@ function chartTap(id,text,action,onClose){
 let monthlyShowAll=false;
 
 function showPage(name){
+ currentPage=name;
  document.querySelectorAll(".page").forEach(p=>p.classList.toggle("active",p.id==="page-"+name));
  const navName=["categories","recurring","settings","budget"].includes(name)?"more":name;
  document.querySelectorAll("[data-page]").forEach(b=>{
@@ -2308,7 +2311,31 @@ function showPage(name){
  window.scrollTo({top:0,behavior:"smooth"});
  if(name==="dashboard")setTimeout(renderCharts,20);
  if(name==="assets")setTimeout(drawNetWorthChart,20);
+ syncBackTrap();
 }
+// ---------- Botón "atrás" (Android y navegador) ----------
+// Las secciones no son páginas distintas: sin esto, "atrás" sacaba de la app (y Firefox Android dejaba la pantalla en negro).
+// Mientras haya algo a lo que volver (otra sección, la hoja de alta o un diálogo) se mantiene una entrada de historial
+// extra {finanzasBack:1}; al pulsar "atrás" el navegador la consume y la app decide a dónde vuelve. En Inicio y sin nada
+// abierto no hay entrada extra, así que "atrás" sale de la app como siempre.
+let currentPage="dashboard",ignoreNextPop=false;
+const SUBPAGES=["categories","recurring","settings","budget"];
+function sheetIsOpen(){return el("quickSheet").classList.contains("open")}
+function needsBackTrap(){return !document.querySelector(".app").hidden&&(currentPage!=="dashboard"||sheetIsOpen())}
+function syncBackTrap(){
+ const trapped=history.state?.finanzasBack===1;
+ if(needsBackTrap()&&!trapped)history.pushState({finanzasBack:1},"");
+ else if(!needsBackTrap()&&trapped){ignoreNextPop=true;history.back()} // p. ej. al pulsar "Inicio": quita la entrada sobrante
+}
+window.addEventListener("popstate",()=>{
+ if(ignoreNextPop){ignoreNextPop=false;return}
+ if(window.Swal?.isVisible()){Swal.close();syncBackTrap()}
+ else if(document.querySelector(".chart-pop")){document.querySelectorAll(".chart-pop").forEach(p=>p.remove());syncBackTrap()}
+ else if(sheetIsOpen())closeQuickSheet();
+ else if(currentPage!=="dashboard")showPage(SUBPAGES.includes(currentPage)&&isMobile()?"more":"dashboard");
+});
+// Si el navegador restaura la página desde su caché al volver (bfcache), los lienzos de los gráficos pueden quedar vacíos.
+window.addEventListener("pageshow",e=>{if(!e.persisted)return;if(el("page-dashboard").classList.contains("active"))renderCharts();if(el("page-assets").classList.contains("active"))drawNetWorthChart()});
 function exportData(){
  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=`mis-finanzas-${todayISO()}.json`;a.click();URL.revokeObjectURL(url);
 }
