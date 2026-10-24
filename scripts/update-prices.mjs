@@ -2,10 +2,13 @@
 // (Financial Times, por símbolo de cotización en el campo "symbol", p. ej. "PPFB:GER:EUR") y el precio de Bitcoin (CoinGecko).
 // Se ejecuta en GitHub Actions (.github/workflows/update-prices.yml). Sin dependencias: Node 20 o superior.
 // Reglas: si no se obtiene un precio fiable para un activo, se conserva el anterior y se anota el motivo en la salida.
+// Cada activo guarda además "history" ({fecha: precio}) con los últimos HISTORY_DAYS días: la app lo usa para calcular las
+// participaciones de una compra con el valor liquidativo de su fecha, no con el de cuando se abre la app.
 import { readFile, writeFile } from "node:fs/promises";
 
 const FILE = new URL("../prices.json", import.meta.url);
 const UA = "Mozilla/5.0 (compatible; mis-finanzas-prices/1.0; +https://github.com/carloscr99/finanzas)";
+const HISTORY_DAYS = 120;
 const MONTHS = { jan: 1, feb: 2, mar: 3, apr: 4, may: 5, jun: 6, jul: 7, aug: 8, sep: 9, oct: 10, nov: 11, dec: 12 };
 
 function isoToday() {
@@ -52,6 +55,13 @@ async function bitcoinPriceFromCoinGecko() {
   return { price, priceDate: isoToday(), source: "CoinGecko" };
 }
 
+function addToHistory(asset) {
+  const history = { ...(asset.history || {}) };
+  if (asset.priceDate && asset.price > 0) history[asset.priceDate] = asset.price;
+  const cutoff = new Date(Date.now() - HISTORY_DAYS * 864e5).toISOString().slice(0, 10);
+  asset.history = Object.fromEntries(Object.entries(history).filter(([d]) => d >= cutoff).sort(([a], [b]) => a.localeCompare(b)));
+}
+
 async function main() {
   const feed = JSON.parse(await readFile(FILE, "utf8"));
   let updated = 0;
@@ -65,6 +75,7 @@ async function main() {
     } catch (err) {
       console.log(`${key} ${asset.name || ""}: se conserva el precio anterior (${asset.price} EUR, ${asset.priceDate}). Motivo: ${err.message}`);
     }
+    addToHistory(asset);
   }
   if (updated) feed.updatedAt = new Date().toISOString();
   await writeFile(FILE, JSON.stringify(feed, null, 2) + "\n", "utf8");
