@@ -133,6 +133,8 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 .chip .chip-ico{color:var(--text);background:var(--panel);border:1px solid var(--border)}.chip .chip-ico .ico{width:18px;height:18px}
 .cat-cell{display:inline-flex;align-items:center;gap:8px}.cat-cell .ico{width:18px;height:18px;color:var(--muted)}
 .icon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:8px;margin-top:4px}
+.icon-scroll{max-height:min(52vh,420px);overflow:auto;margin-top:10px;padding:2px}.icon-sec{font-size:12px;font-weight:600;color:var(--muted);text-align:left;margin:10px 0 6px;text-transform:uppercase;letter-spacing:.04em}.icon-sec:first-child{margin-top:0}.icon-note{font-size:12px;color:var(--muted);text-align:left;margin:10px 0 0}
+.name-ico{display:flex;gap:8px;align-items:stretch}.name-ico .icon-opt{width:48px;height:auto;min-height:44px;flex:none}.name-ico input{flex:1;min-width:0}
 .icon-opt{display:flex;align-items:center;justify-content:center;height:48px;border-radius:12px;border:1px solid var(--border);background:var(--soft);color:var(--text);cursor:pointer}.icon-opt.active{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
 .chip-btn.active{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
 .sheet label{margin-top:12px}.sheet .chips{gap:8px}
@@ -248,7 +250,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 </head>
 <body>
 <!-- Sprite de iconos (una sola familia outline, 24 px, trazo 1,75). Se usan con <svg class="ico"><use href="#i-…"/></svg>. -->
-<svg hidden aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+<svg hidden aria-hidden="true" id="iconSprite" xmlns="http://www.w3.org/2000/svg">
   <symbol id="i-house" viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></symbol>
   <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12"/><circle cx="4.5" cy="6" r="1.1" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="4.5" cy="18" r="1.1" fill="currentColor" stroke="none"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
@@ -494,7 +496,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
       <div class="panel">
         <div class="grid-3">
           <div><label>Tipo</label><select id="cType"><option>Gasto</option><option>Ingreso</option><option>Inversión</option></select></div>
-          <div><label>Nombre</label><input id="cName" placeholder="Ej. Restaurantes"></div>
+          <div><label for="cName">Nombre</label><div class="name-ico"><button type="button" class="icon-opt" id="cIconBtn" aria-label="Elegir icono" title="Elegir icono"></button><input id="cName" placeholder="Ej. Restaurantes"></div></div>
           <div style="display:flex;align-items:end"><button class="primary" id="addCategory">Añadir categoría</button></div>
         </div>
         <div id="categoryList" class="chips section-gap"></div>
@@ -1082,16 +1084,79 @@ const CAT_ICON_RULES=[
 const CAT_ICON_DEFAULT={Ingreso:"c-coins",Gasto:"c-wallet","Inversión":"c-chart"};
 function normText(s){return String(s||"").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"")}
 function guessCategoryIcon(c){const n=normText(c?.name);const r=CAT_ICON_RULES.find(([re])=>re.test(n));return r?r[1]:(CAT_ICON_DEFAULT[c?.type]||"c-wallet")}
-function categoryIcon(c){return c?.icon&&CAT_ICONS.some(([id])=>id===c.icon)?c.icon:guessCategoryIcon(c)}
+// Iconos externos (Iconify): al elegirlos se guarda el dibujo en la categoría (c.icon="set:nombre", c.iconSvg) para que se vean sin conexión.
+const ICONIFY_API="https://api.iconify.design",ICONIFY_SETS="lucide,tabler,mdi,simple-icons",EXT_ICON_RE=/^[a-z0-9-]+:[a-z0-9-]+$/;
+function validIconSvg(v){return !!v&&typeof v.body==="string"&&v.body.length<8000&&!/<script|<foreign|\son\w+\s*=|href|url\(/i.test(v.body)}
+function extIconInner(v){return `<g fill="currentColor" stroke="none">${v.body}</g>`}
+function ensureIconSymbol(name,v){
+ const id="x-"+name.replace(":","-");if(document.getElementById(id))return id;
+ const doc=new DOMParser().parseFromString(`<svg xmlns="http://www.w3.org/2000/svg"><symbol id="${id}" viewBox="0 0 ${+v.w||24} ${+v.h||24}">${extIconInner(v)}</symbol></svg>`,"image/svg+xml");
+ const sym=doc.querySelector("symbol");if(!sym||doc.querySelector("parsererror"))return null;
+ el("iconSprite").append(document.importNode(sym,true));return id;
+}
+function categoryIcon(c){
+ if(EXT_ICON_RE.test(c?.icon||"")&&validIconSvg(c.iconSvg))return ensureIconSymbol(c.icon,c.iconSvg)||guessCategoryIcon(c);
+ return c?.icon&&CAT_ICONS.some(([id])=>id===c.icon)?c.icon:guessCategoryIcon(c);
+}
 function catIconSvg(c,cls="ico sm"){return `<svg class="${cls}" aria-hidden="true"><use href="#${c?categoryIcon(c):"c-wallet"}"/></svg>`}
+function applyIconChoice(c,choice){
+ delete c.icon;delete c.iconSvg;
+ if(choice&&choice!=="auto"){c.icon=choice.icon;if(choice.iconSvg)c.iconSvg=choice.iconSvg}
+}
+// Selector con buscador: filtra los iconos de la app (por nombre y por las palabras de las reglas automáticas) y busca más en Iconify.
+// Devuelve {icon,iconSvg?}, "auto" o null si se cancela.
+async function pickIcon(title,cur,canAuto){
+ const S=swalBase();if(!S)return null;
+ const html=`<input id="icoQ" type="search" placeholder="Buscar: pizza, gym, netflix…" autocomplete="off" aria-label="Buscar icono" style="width:100%">
+  <div class="icon-scroll"><div class="icon-sec">Iconos de la app</div><div class="icon-grid" id="icoLocal"></div>
+  <div class="icon-sec" id="icoMoreHead" hidden>Más iconos</div><div class="icon-grid" id="icoMore"></div><p class="icon-note" id="icoNote">Escribe para buscar entre miles de iconos (mejor en inglés: dog, music, baby…).</p></div>`;
+ let picked=null,found={},timer=null,seq=0;
+ const opt=(attr,val,label,inner,active)=>`<button type="button" class="icon-opt${active?" active":""}" ${attr}="${escapeHtml(val)}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">${inner}</button>`;
+ const r=await S.fire({title,html,showConfirmButton:false,showCancelButton:true,cancelButtonText:"Cancelar",showDenyButton:canAuto,denyButtonText:"Automático",denyButtonColor:tok("--muted"),
+  didOpen:p=>{
+   const q=p.querySelector("#icoQ"),local=p.querySelector("#icoLocal"),more=p.querySelector("#icoMore"),head=p.querySelector("#icoMoreHead"),note=p.querySelector("#icoNote");
+   const renderLocal=t=>{
+    const list=CAT_ICONS.filter(([ic,label])=>!t||normText(label).includes(t)||CAT_ICON_RULES.some(([re,id])=>id===ic&&re.test(t)));
+    local.innerHTML=list.length?list.map(([ic,label])=>opt("data-ic",ic,label,`<svg class="ico" aria-hidden="true"><use href="#${ic}"/></svg>`,ic===cur)).join(""):`<p class="icon-note" style="grid-column:1/-1;margin:0">Ninguno coincide.</p>`;
+   };
+   const searchMore=async t=>{
+    const my=++seq;more.innerHTML="";head.hidden=true;
+    if(t.length<2){note.textContent="Escribe para buscar entre miles de iconos (mejor en inglés: dog, music, baby…).";return}
+    note.textContent="Buscando…";
+    try{
+     const res=await fetch(`${ICONIFY_API}/search?query=${encodeURIComponent(t)}&limit=48&prefixes=${ICONIFY_SETS}`).then(x=>x.json());
+     const bySet={};(res.icons||[]).filter(n=>EXT_ICON_RE.test(n)).forEach(n=>{const [s,i]=n.split(":");(bySet[s]=bySet[s]||[]).push(i)});
+     const packs=await Promise.all(Object.entries(bySet).map(([s,ids])=>fetch(`${ICONIFY_API}/${s}.json?icons=${ids.join(",")}`).then(x=>x.json()).then(d=>[s,d])));
+     if(my!==seq)return;
+     found={};
+     for(const [s,d] of packs)for(const [i,ic] of Object.entries(d.icons||{})){const v={body:ic.body,w:ic.width||d.width||24,h:ic.height||d.height||24};if(validIconSvg(v))found[`${s}:${i}`]=v}
+     const names=(res.icons||[]).filter(n=>found[n]);
+     head.hidden=!names.length;
+     more.innerHTML=names.map(n=>opt("data-ext",n,n.split(":")[1].replace(/-/g," "),`<svg class="ico" viewBox="0 0 ${+found[n].w} ${+found[n].h}" aria-hidden="true">${extIconInner(found[n])}</svg>`,"x-"+n.replace(":","-")===cur)).join("");
+     note.textContent=names.length?"Iconos de Lucide, Tabler, Material Design y Simple Icons (marcas).":"No hay más iconos para esa búsqueda. Prueba en inglés.";
+    }catch{if(my===seq)note.textContent="No se pudo buscar: revisa la conexión."}
+   };
+   renderLocal("");
+   q.oninput=()=>{const t=normText(q.value.trim());renderLocal(t);clearTimeout(timer);timer=setTimeout(()=>searchMore(t),350)};
+   p.querySelector(".icon-scroll").onclick=e=>{
+    const b=e.target.closest("[data-ic],[data-ext]");if(!b)return;
+    picked=b.dataset.ic?{icon:b.dataset.ic}:{icon:b.dataset.ext,iconSvg:found[b.dataset.ext]};Swal.close();
+   };
+  },willClose:()=>{clearTimeout(timer);seq++}});
+ return r.isDenied?"auto":picked;
+}
 async function chooseCategoryIcon(id){
- const c=getCat(id);if(!c)return;const cur=categoryIcon(c),S=swalBase();if(!S)return;
- const grid=`<div class="icon-grid">${CAT_ICONS.map(([ic,label])=>`<button type="button" class="icon-opt${ic===cur?" active":""}" data-ic="${ic}" aria-label="${label}" title="${label}"><svg class="ico" aria-hidden="true"><use href="#${ic}"/></svg></button>`).join("")}</div>`;
- let picked=null;
- const r=await S.fire({title:`Icono de «${escapeHtml(c.name)}»`,html:grid,showConfirmButton:false,showCancelButton:true,cancelButtonText:"Cancelar",showDenyButton:!!c.icon,denyButtonText:"Automático",denyButtonColor:tok("--muted"),
-  didOpen:p=>p.querySelectorAll("[data-ic]").forEach(b=>b.onclick=()=>{picked=b.dataset.ic;Swal.close()})});
- if(r.isDenied)delete c.icon;else if(picked)c.icon=picked;else return;
- saveState();renderAll();
+ const c=getCat(id);if(!c)return;
+ const choice=await pickIcon(`Icono de «${escapeHtml(c.name)}»`,categoryIcon(c),!!c.icon);if(!choice)return;
+ applyIconChoice(c,choice);saveState();renderAll();
+}
+// Icono elegido para la categoría que se está creando (null = automático según el nombre).
+let newCatIcon=null;
+function renderNewCatIcon(){el("cIconBtn").innerHTML=catIconSvg({name:el("cName").value,type:el("cType").value,...(newCatIcon||{})},"ico")}
+async function chooseNewCatIcon(){
+ const draft={name:el("cName").value,type:el("cType").value,...(newCatIcon||{})};
+ const choice=await pickIcon("Icono de la nueva categoría",categoryIcon(draft),!!newCatIcon);if(!choice)return;
+ newCatIcon=choice==="auto"?null:choice;renderNewCatIcon();
 }
 function assetMarketConfig(a){
  const isin=String(a?.isin||"").trim().toUpperCase();if(isin)return{feedKey:isin,label:a.name||isin};
@@ -1478,7 +1543,7 @@ async function renameCategory(id){
 function addCategory(){
  const name=el("cName").value.trim(),type=el("cType").value;if(!name)return uiError("Escribe un nombre.");
  if(state.categories.some(c=>c.type===type&&c.name.toLowerCase()===name.toLowerCase()))return uiError("Esa categoría ya existe.");
- state.categories.push({id:uuid(),type,name});el("cName").value="";saveState();renderAll();
+ const c={id:uuid(),type,name};applyIconChoice(c,newCatIcon);state.categories.push(c);el("cName").value="";newCatIcon=null;renderNewCatIcon();saveState();renderAll();
 }
 async function deleteCategory(id){
  if(state.movements.some(m=>m.categoryId===id)||state.recurring.some(r=>r.categoryId===id))return uiError("No puedes borrar esta categoría porque se está usando en movimientos o recurrentes.");
@@ -2047,7 +2112,7 @@ function renderAll(){
 document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>showPage(b.dataset.page));
 el("mDate").value=todayISO();el("rStartDate").value=todayISO();setupPeriodSelectors();updatePeriodControls();
 el("mType").onchange=()=>{updateMovementCategories();updateInvestmentFields();updateAccountHint()};el("mAccount").onchange=updateAccountHint;["mAmount","mUnits"].forEach(id=>el(id).addEventListener("input",()=>updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint")));el("mAsset").onchange=()=>updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint");el("mCategory").onchange=()=>{updateInvestmentFields();autoSelectAssetForCategory()};el("rType").onchange=updateRecurringCategories;
-el("addCategory").onclick=addCategory;
+el("addCategory").onclick=addCategory;el("cIconBtn").onclick=chooseNewCatIcon;el("cName").addEventListener("input",renderNewCatIcon);el("cType").addEventListener("change",renderNewCatIcon);renderNewCatIcon();
 el("bpPrev").onclick=()=>shiftBudgetMonth(-1);el("bpNext").onclick=()=>shiftBudgetMonth(1);el("bpToday").onclick=()=>{const n=new Date();bp.y=n.getFullYear();bp.m=n.getMonth()+1;renderBudgets()};
 el("budgetFillAvg").onclick=async()=>{if(!(await uiConfirm("Se sustituirán los presupuestos actuales por la propuesta calculada con tu histórico. Las categorías sin propuesta se quedan como están.",{title:"¿Rellenar con la propuesta?",confirmText:"Rellenar"})))return;const n=fillBudgetsFromProposal();saveState();renderAll();toast(`${n} presupuestos rellenados`)};
 el("budgetClearAll").onclick=async()=>{if(!(await uiConfirm("Se quitarán todos los presupuestos. Los movimientos no cambian.",{title:"¿Quitar presupuestos?",danger:true,confirmText:"Quitar"})))return;state.budgets={};saveState();renderAll();toast("Presupuestos eliminados")};el("saveMovement").onclick=saveMovement;el("cancelEdit").onclick=cancelEdit;
