@@ -149,6 +149,8 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 .mtext{flex:1;min-width:0}
 .mitem b{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mitem small{display:block;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mitem .amt{font-weight:700;font-size:15px;white-space:nowrap}.mitem .amt.inv{color:var(--investment)}
+.cs-bar{display:block;height:4px;border-radius:999px;background:var(--btn2-bg);margin-top:6px;overflow:hidden}.cs-bar i{display:block;height:100%;border-radius:999px}
+.cs-head{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted);padding:4px 4px 8px;border-bottom:1px solid var(--border)}.cs-head b{color:var(--text);font-variant-numeric:tabular-nums}
 .mday{font-size:12px;font-weight:700;color:var(--muted);padding:14px 4px 6px;text-transform:uppercase;letter-spacing:.04em;position:sticky;top:0;background:var(--panel);z-index:1}
 .empty-state{text-align:center;padding:28px 12px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:10px}
 .empty-state .ico{width:36px;height:36px;color:var(--muted)}.empty-state p{margin:0}
@@ -232,6 +234,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .mobile-nav button.nav-add .ico{stroke-width:2.5;width:26px;height:26px}
  .panel,.card{border-radius:var(--radius)}
  .mobile-only:not([hidden]){display:block!important}.desktop-only{display:none!important}
+ .seg.mobile-only:not([hidden]){display:inline-flex!important}
  .period-compact.mobile-only:not([hidden]),.mlist.mobile-only:not([hidden]){display:flex!important}
  .summary-grid,.grid-3{grid-template-columns:1fr 1fr}
  .card{padding:14px}.metric-label{font-size:12px}.metric-value{font-size:22px}.metric-sub{font-size:11px}
@@ -477,8 +480,9 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
       </div>
 
       <div class="panel section-gap">
-        <div class="chart-head"><div><h2>Resumen por categoría</h2><p class="chart-sub" id="subSummary"></p></div></div>
-        <div class="table-wrap">
+        <div class="chart-head"><div><h2>Resumen por categoría</h2><p class="chart-sub" id="subSummary"></p></div><div class="seg mobile-only" id="sumTypeToggle"><button data-sumtype="Gasto" class="active">Gastos</button><button data-sumtype="Ingreso">Ingresos</button><button data-sumtype="Inversión">Inversiones</button></div></div>
+        <div id="categorySummaryList" class="mlist mobile-only"></div>
+        <div class="table-wrap desktop-only">
           <table><thead><tr><th>Categoría</th><th>Tipo</th><th style="text-align:right">Total</th><th style="text-align:right">% del tipo</th><th style="text-align:right">Movimientos</th></tr></thead><tbody id="categorySummary"></tbody></table>
         </div>
         <div class="chart-hint">Pulsa una fila para ver y editar sus movimientos.</div>
@@ -1974,6 +1978,18 @@ function renderBudgets(){
  hint.textContent=noBudget.length?`Sin presupuesto este mes: ${noBudget.join(" · ")}. Pulsa una barra para ver sus movimientos.`:"Pulsa una barra para ver sus movimientos.";
 }
 function shiftBudgetMonth(dir){let m=bp.m+dir,y=bp.y;if(m<1){m=12;y--}if(m>12){m=1;y++}bp.y=y;bp.m=m;renderBudgets()}
+// Móvil: lista por tipo (pestañas) con icono, peso dentro del tipo y nº de movimientos, en vez de la tabla de 5 columnas.
+let sumType="Gasto";
+const SUM_TYPE_UI={Gasto:{k:"g",cls:"negative",sign:"−",color:"var(--expense)",plural:"gastos"},Ingreso:{k:"i",cls:"positive",sign:"+",color:"var(--income)",plural:"ingresos"},"Inversión":{k:"v",cls:"inv",sign:"",color:"var(--investment)",plural:"inversiones"}};
+function renderCategorySummaryList(rows,typeTotals){
+ const t=SUM_TYPE_UI[sumType],list=rows.filter(r=>r.type===sumType),n=list.reduce((s,r)=>s+r.count,0);
+ el("sumTypeToggle").querySelectorAll("button").forEach(b=>b.classList.toggle("active",b.dataset.sumtype===sumType));
+ el("categorySummaryList").innerHTML=list.length?`<div class="cs-head"><span>${list.length} categoría${list.length===1?"":"s"} · ${intFmt.format(n)} movimiento${n===1?"":"s"}</span><b>${t.sign}${euro.format(typeTotals[sumType])}</b></div>`+list.map(r=>{
+   const pct=r.pct.toFixed(1).replace(".",",");
+   return`<button type="button" class="mitem" data-cat="${r.id}"><span class="mico ${t.k}">${catIconSvg(getCat(r.id))}</span><span class="mtext"><b>${escapeHtml(r.name)}</b><small>${pct} % · ${intFmt.format(r.count)} mov.</small><span class="cs-bar"><i style="width:${Math.max(1,r.pct).toFixed(1)}%;background:${t.color}"></i></span></span><span class="amt ${t.cls}">${t.sign}${euro.format(r.total)}</span></button>`;
+ }).join(""):`<div class="empty-state"><svg class="ico" aria-hidden="true"><use href="#i-pie"/></svg><p>Sin ${t.plural} en este periodo.</p></div>`;
+ el("categorySummaryList").querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{const r=periodRange();goToMovements({type:sumType,categoryId:b.dataset.cat,from:r.from,to:r.to,label:periodLabel()})});
+}
 function renderCategorySummary(){
  const movs=periodMovements(),totals=new Map(),counts=new Map(),typeTotals={Ingreso:0,Gasto:0,"Inversión":0};
  movs.forEach(m=>{totals.set(m.categoryId,(totals.get(m.categoryId)||0)+Number(m.amount));counts.set(m.categoryId,(counts.get(m.categoryId)||0)+1);typeTotals[m.type]+=Number(m.amount)});
@@ -1981,6 +1997,7 @@ function renderCategorySummary(){
  el("subSummary").textContent=periodLabel();
  el("categorySummary").innerHTML=rows.length?rows.map(r=>`<tr class="clickable" data-cat="${r.id}" data-type="${r.type}" title="Ver movimientos"><td>${catLabel(getCat(r.id))}</td><td><span class="pill ${r.type}">${r.type}</span></td><td class="amount">${euro.format(r.total)}</td><td class="amount">${r.pct.toFixed(1).replace(".",",")} %</td><td class="amount">${intFmt.format(r.count)}</td></tr>`).join(""):`<tr><td colspan="5" class="empty">No hay datos en este periodo.</td></tr>`;
  el("categorySummary").querySelectorAll("tr[data-cat]").forEach(tr=>tr.onclick=()=>{const r=periodRange();goToMovements({type:tr.dataset.type,categoryId:tr.dataset.cat,from:r.from,to:r.to,label:periodLabel()})});
+ renderCategorySummaryList(rows,typeTotals);
 }
 
 // ---------- Gráficos (Chart.js) ----------
@@ -2319,6 +2336,7 @@ el("periodMode").onchange=()=>{updatePeriodControls();renderAll()};el("monthFilt
 el("goCurrent").onclick=()=>{const n=new Date();el("periodMode").value="month";el("monthFilter").value=n.getMonth()+1;updateYearOptions();el("yearFilter").value=n.getFullYear();updatePeriodControls();renderAll()};
 ["searchText","searchType","searchCategory","searchFrom","searchTo"].forEach(id=>el(id).addEventListener(id==="searchText"?"input":"change",()=>{el("filterNotice").hidden=true;renderMovements()}));
 el("exportData").onclick=exportData;el("importData").onchange=e=>importData(e.target.files[0]);el("clearAll").onclick=clearAll;
+el("sumTypeToggle").querySelectorAll("[data-sumtype]").forEach(b=>b.onclick=()=>{sumType=b.dataset.sumtype;renderCategorySummary()});
 el("catTypeToggle").querySelectorAll("[data-cattype]").forEach(b=>b.onclick=()=>{catChartType=b.dataset.cattype;el("catTypeToggle").querySelectorAll("button").forEach(x=>x.classList.toggle("active",x===b));drawCategoryChart()});
 el("clearFilters").onclick=clearMovementFilters;
 el("bulkToggle").onclick=()=>toggleBulkPanel(el("bulkPanel").hidden);el("bulkCancel").onclick=()=>toggleBulkPanel(false);el("bulkType").onchange=updateBulkCategories;el("bulkApply").onclick=bulkRecategorize;
