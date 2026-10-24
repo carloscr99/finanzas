@@ -150,6 +150,7 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 .mitem b{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mitem small{display:block;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mitem .amt{font-weight:700;font-size:15px;white-space:nowrap}.mitem .amt.inv{color:var(--investment)}
 .cs-bar{display:block;height:4px;border-radius:999px;background:var(--btn2-bg);margin-top:6px;overflow:hidden}.cs-bar i{display:block;height:100%;border-radius:999px}
+.cs-table th,.cs-table td.amount{white-space:nowrap}.cs-table td:nth-child(2){width:40%;min-width:60px}.cs-table .cs-bar{margin-top:0;height:6px}.cs-table tr.cs-total td{font-weight:700;border-top:1px solid var(--border-strong)}.cs-table td.inv{color:var(--investment)}.cs-table td.amount{font-weight:600}
 .cs-head{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted);padding:4px 4px 8px;border-bottom:1px solid var(--border)}.cs-head b{color:var(--text);font-variant-numeric:tabular-nums}
 .mday{font-size:12px;font-weight:700;color:var(--muted);padding:14px 4px 6px;text-transform:uppercase;letter-spacing:.04em;position:sticky;top:0;background:var(--panel);z-index:1}
 .empty-state{text-align:center;padding:28px 12px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:10px}
@@ -213,6 +214,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 @media(max-width:1100px){
  .app{grid-template-columns:190px 1fr}.grid-4,.summary-grid,.asset-grid{grid-template-columns:repeat(2,1fr)}
  .form-grid{grid-template-columns:repeat(2,1fr)}.searchbar{grid-template-columns:repeat(2,1fr)}
+ .grid-2.stack-narrow{grid-template-columns:1fr} /* gráficos de barras horizontales: a media anchura no caben las etiquetas */
 }
 @media(max-width:760px){
  body{padding-bottom:calc(var(--nav-h) + 16px + env(safe-area-inset-bottom))}.app{display:block}.sidebar{display:none}
@@ -458,34 +460,25 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         </div>
       </div>
 
-      <div class="grid-2 section-gap">
-        <div class="panel">
-          <div class="chart-head">
-            <div><h2>Por categoría</h2><p class="chart-sub" id="subCategory"></p></div>
-            <div class="seg" id="catTypeToggle"><button data-cattype="Gasto" class="active">Gastos</button><button data-cattype="Inversión">Inversiones</button><button data-cattype="Ingreso">Ingresos</button></div>
-          </div>
-          <div class="chart-box"><canvas id="categoryChart"></canvas></div>
-          <div class="chart-hint">Pulsa una barra para ver y editar sus movimientos.</div>
+      <div class="panel section-gap">
+        <div class="chart-head"><div><h2>Resumen por categoría</h2><p class="chart-sub" id="subSummary"></p></div><div class="seg" id="sumTypeToggle"><button data-sumtype="Gasto" class="active">Gastos</button><button data-sumtype="Ingreso">Ingresos</button><button data-sumtype="Inversión">Inversiones</button></div></div>
+        <div id="categorySummaryList" class="mlist mobile-only"></div>
+        <div class="table-wrap desktop-only">
+          <table class="cs-table"><thead><tr><th>Categoría</th><th>Peso</th><th style="text-align:right">% del total</th><th style="text-align:right">Movimientos</th><th style="text-align:right">Importe</th></tr></thead><tbody id="categorySummary"></tbody></table>
         </div>
+        <div class="chart-hint">Pulsa una fila para ver y editar sus movimientos.</div>
+      </div>
+
+      <div class="grid-2 stack-narrow section-gap">
         <div class="panel">
           <div class="chart-head"><div><h2>Distribución del patrimonio</h2><p class="chart-sub" id="subPatrimony"></p></div></div>
           <div class="chart-box"><canvas id="patrimonyChart"></canvas></div>
         </div>
-      </div>
-
-      <div class="panel section-gap">
+        <div class="panel">
           <div class="chart-head"><div><h2>Rentabilidad anualizada por activo</h2><p class="chart-sub" id="subReturn"></p></div></div>
           <div class="chart-box"><canvas id="compoundReturnChart"></canvas></div>
           <div class="inline-note">Calculada mediante XIRR: tiene en cuenta el importe y la fecha de cada aportación y el valor actual del activo. Se actualiza al añadir, editar o borrar movimientos de inversión y al cambiar el precio actual.</div>
-      </div>
-
-      <div class="panel section-gap">
-        <div class="chart-head"><div><h2>Resumen por categoría</h2><p class="chart-sub" id="subSummary"></p></div><div class="seg mobile-only" id="sumTypeToggle"><button data-sumtype="Gasto" class="active">Gastos</button><button data-sumtype="Ingreso">Ingresos</button><button data-sumtype="Inversión">Inversiones</button></div></div>
-        <div id="categorySummaryList" class="mlist mobile-only"></div>
-        <div class="table-wrap desktop-only">
-          <table><thead><tr><th>Categoría</th><th>Tipo</th><th style="text-align:right">Total</th><th style="text-align:right">% del tipo</th><th style="text-align:right">Movimientos</th></tr></thead><tbody id="categorySummary"></tbody></table>
         </div>
-        <div class="chart-hint">Pulsa una fila para ver y editar sus movimientos.</div>
       </div>
     </section>
 
@@ -1897,7 +1890,7 @@ function monthRange(y,m){return{from:`${y}-${String(m).padStart(2,"0")}-01`,to:l
 function goToMovements(filter){
  el("searchText").value="";el("searchType").value=filter.type||"";el("searchCategory").value=filter.categoryId||"";
  el("searchFrom").value=filter.from||"";el("searchTo").value=filter.to||"";
- const parts=[filter.type?filter.type+"s":"Todos los tipos",filter.categoryId?(getCat(filter.categoryId)?.name||""):"todas las categorías",filter.label||""].filter(Boolean);
+ const parts=[filter.type?{Gasto:"Gastos",Ingreso:"Ingresos","Inversión":"Inversiones"}[filter.type]:"Todos los tipos",filter.categoryId?(getCat(filter.categoryId)?.name||""):"todas las categorías",filter.label||""].filter(Boolean);
  el("filterNoticeText").textContent="Filtro aplicado desde el Dashboard: "+parts.join(" · ");
  el("filterNotice").hidden=false;
  showPage("movements");renderMovements();
@@ -1978,32 +1971,28 @@ function renderBudgets(){
  hint.textContent=noBudget.length?`Sin presupuesto este mes: ${noBudget.join(" · ")}. Pulsa una barra para ver sus movimientos.`:"Pulsa una barra para ver sus movimientos.";
 }
 function shiftBudgetMonth(dir){let m=bp.m+dir,y=bp.y;if(m<1){m=12;y--}if(m>12){m=1;y++}bp.y=y;bp.m=m;renderBudgets()}
-// Móvil: lista por tipo (pestañas) con icono, peso dentro del tipo y nº de movimientos, en vez de la tabla de 5 columnas.
+// Resumen por tipo (pestañas Gastos / Ingresos / Inversiones): en móvil lista con icono y barra; en PC tabla con barra de peso.
 let sumType="Gasto";
 const SUM_TYPE_UI={Gasto:{k:"g",cls:"negative",sign:"−",color:"var(--expense)",plural:"gastos"},Ingreso:{k:"i",cls:"positive",sign:"+",color:"var(--income)",plural:"ingresos"},"Inversión":{k:"v",cls:"inv",sign:"",color:"var(--investment)",plural:"inversiones"}};
-function renderCategorySummaryList(rows,typeTotals){
- const t=SUM_TYPE_UI[sumType],list=rows.filter(r=>r.type===sumType),n=list.reduce((s,r)=>s+r.count,0);
- el("sumTypeToggle").querySelectorAll("button").forEach(b=>b.classList.toggle("active",b.dataset.sumtype===sumType));
- el("categorySummaryList").innerHTML=list.length?`<div class="cs-head"><span>${list.length} categoría${list.length===1?"":"s"} · ${intFmt.format(n)} movimiento${n===1?"":"s"}</span><b>${t.sign}${euro.format(typeTotals[sumType])}</b></div>`+list.map(r=>{
-   const pct=r.pct.toFixed(1).replace(".",",");
-   return`<button type="button" class="mitem" data-cat="${r.id}"><span class="mico ${t.k}">${catIconSvg(getCat(r.id))}</span><span class="mtext"><b>${escapeHtml(r.name)}</b><small>${pct} % · ${intFmt.format(r.count)} mov.</small><span class="cs-bar"><i style="width:${Math.max(1,r.pct).toFixed(1)}%;background:${t.color}"></i></span></span><span class="amt ${t.cls}">${t.sign}${euro.format(r.total)}</span></button>`;
- }).join(""):`<div class="empty-state"><svg class="ico" aria-hidden="true"><use href="#i-pie"/></svg><p>Sin ${t.plural} en este periodo.</p></div>`;
- el("categorySummaryList").querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{const r=periodRange();goToMovements({type:sumType,categoryId:b.dataset.cat,from:r.from,to:r.to,label:periodLabel()})});
-}
 function renderCategorySummary(){
  const movs=periodMovements(),totals=new Map(),counts=new Map(),typeTotals={Ingreso:0,Gasto:0,"Inversión":0};
  movs.forEach(m=>{totals.set(m.categoryId,(totals.get(m.categoryId)||0)+Number(m.amount));counts.set(m.categoryId,(counts.get(m.categoryId)||0)+1);typeTotals[m.type]+=Number(m.amount)});
  const rows=[...totals.entries()].map(([id,total])=>{const c=getCat(id),type=c?.type||"Gasto",pct=typeTotals[type]?total/typeTotals[type]*100:0;return{id,name:c?.name||"Sin categoría",type,total,pct,count:counts.get(id)||0}}).sort((a,b)=>b.total-a.total);
- el("subSummary").textContent=periodLabel();
- el("categorySummary").innerHTML=rows.length?rows.map(r=>`<tr class="clickable" data-cat="${r.id}" data-type="${r.type}" title="Ver movimientos"><td>${catLabel(getCat(r.id))}</td><td><span class="pill ${r.type}">${r.type}</span></td><td class="amount">${euro.format(r.total)}</td><td class="amount">${r.pct.toFixed(1).replace(".",",")} %</td><td class="amount">${intFmt.format(r.count)}</td></tr>`).join(""):`<tr><td colspan="5" class="empty">No hay datos en este periodo.</td></tr>`;
- el("categorySummary").querySelectorAll("tr[data-cat]").forEach(tr=>tr.onclick=()=>{const r=periodRange();goToMovements({type:tr.dataset.type,categoryId:tr.dataset.cat,from:r.from,to:r.to,label:periodLabel()})});
- renderCategorySummaryList(rows,typeTotals);
+ const t=SUM_TYPE_UI[sumType],list=rows.filter(r=>r.type===sumType),n=list.reduce((s,r)=>s+r.count,0),pctTxt=r=>r.pct.toFixed(1).replace(".",","),bar=r=>`<span class="cs-bar"><i style="width:${Math.max(1,r.pct).toFixed(1)}%;background:${t.color}"></i></span>`;
+ el("subSummary").textContent=`${periodLabel()} · ${list.length} categoría${list.length===1?"":"s"} · ${intFmt.format(n)} movimiento${n===1?"":"s"}`;
+ el("sumTypeToggle").querySelectorAll("button").forEach(b=>b.classList.toggle("active",b.dataset.sumtype===sumType));
+ const empty=`<div class="empty-state"><svg class="ico" aria-hidden="true"><use href="#i-pie"/></svg><p>Sin ${t.plural} en este periodo.</p></div>`;
+ el("categorySummary").innerHTML=list.length?list.map(r=>`<tr class="clickable" data-cat="${r.id}" title="Ver movimientos"><td>${catLabel(getCat(r.id))}</td><td>${bar(r)}</td><td class="amount">${pctTxt(r)} %</td><td class="amount">${intFmt.format(r.count)}</td><td class="amount ${t.cls}">${t.sign}${euro.format(r.total)}</td></tr>`).join("")
+  +`<tr class="cs-total"><td colspan="3">Total ${t.plural}</td><td class="amount">${intFmt.format(n)}</td><td class="amount ${t.cls}">${t.sign}${euro.format(typeTotals[sumType])}</td></tr>`:`<tr><td colspan="5">${empty}</td></tr>`;
+ el("categorySummaryList").innerHTML=list.length?`<div class="cs-head"><span>Total ${t.plural}</span><b>${t.sign}${euro.format(typeTotals[sumType])}</b></div>`+list.map(r=>
+   `<button type="button" class="mitem" data-cat="${r.id}"><span class="mico ${t.k}">${catIconSvg(getCat(r.id))}</span><span class="mtext"><b>${escapeHtml(r.name)}</b><small>${pctTxt(r)} % · ${intFmt.format(r.count)} mov.</small>${bar(r)}</span><span class="amt ${t.cls}">${t.sign}${euro.format(r.total)}</span></button>`).join(""):empty;
+ const go=id=>{const r=periodRange();goToMovements({type:sumType,categoryId:id,from:r.from,to:r.to,label:periodLabel()})};
+ document.querySelectorAll("#categorySummary [data-cat],#categorySummaryList [data-cat]").forEach(n=>n.onclick=()=>go(n.dataset.cat));
 }
 
 // ---------- Gráficos (Chart.js) ----------
 const charts={};
 const FONT="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif";
-let catChartType="Gasto";
 function mountChart(id,config){if(charts[id])charts[id].destroy();charts[id]=new Chart(el(id),config);return charts[id]}
 function withAlpha(hex,a){return hex+Math.round(a*255).toString(16).padStart(2,"0")}
 // Etiquetas largas del eje Y: se parten en dos líneas (en gráficos estrechos, líneas más cortas).
@@ -2106,24 +2095,6 @@ function drawSavingsChart(){
     chartTap("savingsChart",`${lbl} · acumulado ${euro.format(x.cum)} (${x.net>=0?"+":""}${euro.format(x.net)} este mes)`,()=>goToMovements({from:r.from,to:r.to,label:lbl}),()=>highlight(chart,null))},
    onHover:pointerCursor}});
 }
-function drawCategoryChart(){
- const type=catChartType,tot=new Map();
- periodMovements().filter(m=>m.type===type).forEach(m=>tot.set(m.categoryId,(tot.get(m.categoryId)||0)+Number(m.amount)));
- const all=[...tot.entries()].map(([id,total])=>({id,name:getCat(id)?.name||"Sin categoría",total})).sort((a,b)=>b.total-a.total);
- const total=all.reduce((s,x)=>s+x.total,0),rows=all.slice(0,10);
- if(all.length>10)rows.push({id:"",name:`Otras (${all.length-10})`,total:all.slice(10).reduce((s,x)=>s+x.total,0)});
- const typeLabel={Gasto:"Gastos",Ingreso:"Ingresos","Inversión":"Inversiones"}[type],color={Gasto:colors.Gasto,Ingreso:colors.Ingreso,"Inversión":colors["Inversión"]}[type];
- el("subCategory").textContent=`${typeLabel} · ${periodLabel()} · ${rows.length?"total "+euro.format(total):"sin movimientos"}`;
- if(isMobile()){renderBarList("categoryChart",rows.map(r=>({label:r.name,icon:r.id?catIconSvg(getCat(r.id)):"",value:r.total,color:r.id?color:withAlpha(color,0.45),text:`${euro.format(r.total)} · ${total?pct1(r.total/total*100):"0"} %`,onClick:r.id?()=>{const pr=periodRange();goToMovements({type,categoryId:r.id,from:pr.from,to:pr.to,label:periodLabel()})}:null})),{empty:"Sin movimientos en este periodo"});return}
- showChartCanvas("categoryChart");
- mountChart("categoryChart",{type:"bar",data:{labels:rows.map(r=>r.name),datasets:[{label:typeLabel,data:rows.map(r=>r.total),backgroundColor:rows.map(r=>r.id?color:withAlpha(color,0.45)),borderRadius:3}]},
-  options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,interaction:{mode:"nearest",axis:"y",intersect:false},animation:{duration:250},layout:{padding:{right:120,left:24}},
-   plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${euro.format(c.parsed.x)} · ${total?pct1(c.parsed.x/total*100):"0"} %`}},barValueLabels:{format:v=>`${euro.format(v)} · ${total?pct1(v/total*100):"0"} %`},axisIcons:{icons:rows.map(r=>r.id?categoryIcon(getCat(r.id)):"")}},
-   scales:{x:{beginAtZero:true,ticks:{callback:axisMoney},grid:{display:false}},y:{ticks:{autoSkip:false,callback:truncTick}}},
-   onClick:(e,els)=>{if(!els.length)return;const r=rows[els[0].index],pr=periodRange();goToMovements({type,categoryId:r.id||"",from:pr.from,to:pr.to,label:periodLabel()})},
-   onHover:pointerCursor},
-  plugins:[barValueLabels,axisIcons]});
-}
 function drawPatrimonyChart(){
  const assets=portfolioDistributionData(),ref=latestPortfolioReference();
  el("subPatrimony").textContent=assets.length?`Valor actual, total ${euro.format(assets[0].total)} · actualizado ${formatDateTime(ref)}`:"Añade activos en Patrimonio para ver su distribución";
@@ -2175,7 +2146,7 @@ function renderCharts(){
  // Colores de los gráficos según el tema activo (claro u oscuro)
  colors.Ingreso=tok("--income");colors.Gasto=tok("--expense");colors["Inversión"]=tok("--investment");
  Chart.defaults.color=tok("--muted");Chart.defaults.borderColor=tok("--border");Chart.defaults.font.family=FONT;
- drawMonthlyChart();drawSavingsChart();drawCategoryChart();drawPatrimonyChart();drawCompoundReturnChart();
+ drawMonthlyChart();drawSavingsChart();drawPatrimonyChart();drawCompoundReturnChart();
 }
 
 // ---------- Móvil: utilidades, hoja rápida de alta, selector compacto, listas de barras ----------
@@ -2364,7 +2335,6 @@ el("goCurrent").onclick=()=>{const n=new Date();el("periodMode").value="month";e
 ["searchText","searchType","searchCategory","searchFrom","searchTo"].forEach(id=>el(id).addEventListener(id==="searchText"?"input":"change",()=>{el("filterNotice").hidden=true;renderMovements()}));
 el("exportData").onclick=exportData;el("importData").onchange=e=>importData(e.target.files[0]);el("clearAll").onclick=clearAll;
 el("sumTypeToggle").querySelectorAll("[data-sumtype]").forEach(b=>b.onclick=()=>{sumType=b.dataset.sumtype;renderCategorySummary()});
-el("catTypeToggle").querySelectorAll("[data-cattype]").forEach(b=>b.onclick=()=>{catChartType=b.dataset.cattype;el("catTypeToggle").querySelectorAll("button").forEach(x=>x.classList.toggle("active",x===b));drawCategoryChart()});
 el("clearFilters").onclick=clearMovementFilters;
 el("bulkToggle").onclick=()=>toggleBulkPanel(el("bulkPanel").hidden);el("bulkCancel").onclick=()=>toggleBulkPanel(false);el("bulkType").onchange=updateBulkCategories;el("bulkApply").onclick=bulkRecategorize;
 // Hoja rápida de alta, barra inferior con "+", selector compacto, filtros plegables y cambios de tamaño
