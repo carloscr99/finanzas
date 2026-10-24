@@ -134,7 +134,7 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 .chip .chip-ico{color:var(--text);background:var(--panel);border:1px solid var(--border)}.chip .chip-ico .ico{width:18px;height:18px}
 .cat-cell{display:inline-flex;align-items:center;gap:8px}.cat-cell .ico{width:18px;height:18px;color:var(--muted)}
 .icon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:8px;margin-top:4px}
-.icon-pick-html{max-height:min(62vh,500px);overflow-y:auto!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-top:0!important}.icon-pick-html #icoQ{position:sticky;top:0;z-index:1;box-shadow:0 0 0 6px var(--panel)}.icon-scroll{margin-top:12px;padding:2px}.icon-sec{font-size:12px;font-weight:600;color:var(--muted);text-align:left;margin:10px 0 6px;text-transform:uppercase;letter-spacing:.04em}.icon-sec:first-child{margin-top:0}.icon-note{font-size:12px;color:var(--muted);text-align:left;margin:10px 0 0}
+.icon-pick-html{max-height:min(62vh,500px);overflow-y:auto!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-top:0!important}.icon-pick-html #icoQ{font-size:16px;position:sticky;top:0;z-index:1;box-shadow:0 0 0 6px var(--panel)}.icon-scroll{margin-top:12px;padding:2px}.icon-sec{font-size:12px;font-weight:600;color:var(--muted);text-align:left;margin:10px 0 6px;text-transform:uppercase;letter-spacing:.04em}.icon-sec:first-child{margin-top:0}.icon-note{font-size:12px;color:var(--muted);text-align:left;margin:10px 0 0}
 .name-ico{display:flex;gap:8px;align-items:stretch}.name-ico .icon-opt{width:48px;height:auto;min-height:44px;flex:none}.name-ico input{flex:1;min-width:0}
 .icon-opt{display:flex;align-items:center;justify-content:center;height:48px;border-radius:12px;border:1px solid var(--border);background:var(--soft);color:var(--text);cursor:pointer}.icon-opt.active{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
 .chip-btn.active{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
@@ -1192,7 +1192,9 @@ async function pickIcon(title,cur,canAuto){
   <div class="icon-sec" id="icoMoreHead" hidden>Más iconos</div><div class="icon-grid" id="icoMore"></div><p class="icon-note" id="icoNote">Escribe para buscar entre miles de iconos (mejor en inglés: dog, music, baby…).</p></div>`;
  let picked=null,found={},timer=null,seq=0;
  const opt=(attr,val,label,inner,active)=>`<button type="button" class="icon-opt${active?" active":""}" ${attr}="${escapeHtml(val)}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">${inner}</button>`;
- const r=await S.fire({title,html,customClass:{htmlContainer:"icon-pick-html"},showConfirmButton:false,showCancelButton:true,cancelButtonText:"Cancelar",showDenyButton:canAuto,denyButtonText:"Automático",denyButtonColor:tok("--muted"),
+ // En táctil no se enfoca el buscador al abrir: sacaría el teclado y, con iOS, un zoom que se queda al cerrar (scroll lateral).
+ // returnFocus:false: el botón que abrió el selector se vuelve a pintar al guardar y devolverle el foco movía la página.
+ const r=await S.fire({title,html,customClass:{htmlContainer:"icon-pick-html"},focusCancel:isTouch(),returnFocus:false,showConfirmButton:false,showCancelButton:true,cancelButtonText:"Cancelar",showDenyButton:canAuto,denyButtonText:"Automático",denyButtonColor:tok("--muted"),
   didOpen:p=>{
    const q=p.querySelector("#icoQ"),local=p.querySelector("#icoLocal"),more=p.querySelector("#icoMore"),head=p.querySelector("#icoMoreHead"),note=p.querySelector("#icoNote");
    const renderLocal=t=>{
