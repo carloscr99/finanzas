@@ -235,7 +235,8 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .mobile-only:not([hidden]){display:block!important}.desktop-only{display:none!important}
  .seg.mobile-only:not([hidden]){display:inline-flex!important}
  .period-compact.mobile-only:not([hidden]),.mlist.mobile-only:not([hidden]){display:flex!important}
- #periodCompact{flex-direction:column;justify-content:center;gap:10px} /* móvil: Mes/Año/Todo y el selector de periodo, centrados uno encima del otro */
+ #periodCompact{flex-direction:column;align-items:stretch;gap:10px} /* móvil: Mes/Año/Todo y el selector de periodo, uno encima del otro y a todo el ancho */
+ #periodCompact .seg{display:flex!important}#periodCompact .seg button{flex:1;padding:9px 6px}#periodCompact .period-nav b{flex:1}
  .summary-grid,.grid-3{grid-template-columns:1fr 1fr}
  .card{padding:14px}.metric-label{font-size:12px}.metric-value{font-size:22px}.metric-sub{font-size:11px}
  .panel{padding:16px}
