@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-24T10:28:52.661Z",
+  "updatedAt": "2026-10-24T19:59:08.907Z",
   "currency": "EUR",
   "assets": {
     "LU0996182563": {
@@ -31,11 +31,11 @@
     },
     "BTC": {
       "name": "Bitcoin",
-      "price": 71849,
+      "price": 71794,
       "priceDate": "2026-10-24",
       "source": "CoinGecko",
       "history": {
-        "2026-10-24": 71849
+        "2026-10-24": 71794
       }
     },
     "IE00BYX5NX33": {
