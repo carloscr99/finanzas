@@ -2051,7 +2051,7 @@ function drawMonthlyChart(){
  const highlight=(chart,hit)=>{chart.data.datasets.forEach((d,dsi)=>{d.backgroundColor=rows.map((_,i)=>shade(d._color,i,dsi,hit))});chart.update("none")};
  const DS_COLORS=[colors.Ingreso,colors.Gasto,colors["Inversión"]];
  mountChart("monthlyChart",{type:"bar",data:{labels,datasets:[ds("Ingresos","income",colors.Ingreso,"Ingreso"),ds("Gastos","expense",colors.Gasto,"Gasto"),ds("Inversiones","investment",colors["Inversión"],"Inversión")]},
-  options:{responsive:true,maintainAspectRatio:false,animation:{duration:250},
+  options:{responsive:true,maintainAspectRatio:false,animation:{duration:250},interaction:{mode:"nearest",axis:"x",intersect:false}, // se acierta aunque la barra sea baja
    // La leyenda y el tooltip toman por defecto el color de la primera barra de cada serie, que puede estar atenuada o resaltada: se usa el color pleno.
    plugins:{legend:{labels:{usePointStyle:true,boxWidth:8,font:{family:FONT},generateLabels:chart=>Chart.defaults.plugins.legend.labels.generateLabels(chart).map(l=>{const c=chart.data.datasets[l.datasetIndex]._color;return{...l,fillStyle:c,strokeStyle:c}})}},
     tooltip:{callbacks:{label:c=>` ${c.dataset.label}: ${euro.format(c.parsed.y)}`,labelColor:c=>({borderColor:c.dataset._color,backgroundColor:c.dataset._color})}}},
@@ -2075,11 +2075,18 @@ function drawSavingsChart(){
  el("subSavings").textContent=!all.length?"Sin movimientos todavía":p.mode==="all"?`Acumulado desde ${monthAbbr(all[0].y,all[0].m)} hasta hoy`:`Acumulado desde ${monthAbbr(all[0].y,all[0].m)}, mostrando ${p.year}`;
  const labels=series.map(x=>p.mode==="all"?`${months[x.m-1].slice(0,3)} ${String(x.y).slice(2)}`:months[x.m-1].slice(0,3));
  const sel=p.mode==="month"?series.findIndex(x=>x.m===p.month):-1;
- mountChart("savingsChart",{type:"line",data:{labels,datasets:[{label:"Ahorro acumulado",data:series.map(x=>x.cum),borderColor:tok("--chart-neutral"),backgroundColor:withAlpha(tok("--chart-neutral"),0.08),fill:true,tension:0.25,pointRadius:series.map((_,i)=>i===sel?5:2),pointBackgroundColor:series.map((_,i)=>i===sel?colors["Inversión"]:tok("--chart-neutral"))}]},
-  options:{responsive:true,maintainAspectRatio:false,animation:{duration:250},
+ // Punto resaltado: el mes del periodo; al pulsar uno, ese (hasta cerrar su aviso o pulsar fuera de la línea).
+ const radius=hit=>series.map((_,i)=>i===(hit??sel)?6:series.length>40?0:3),pointColor=hit=>series.map((_,i)=>i===(hit??sel)?colors["Inversión"]:tok("--chart-neutral"));
+ const highlight=(chart,hit)=>{const d=chart.data.datasets[0];d.pointRadius=radius(hit);d.pointBackgroundColor=pointColor(hit);chart.update("none")};
+ mountChart("savingsChart",{type:"line",data:{labels,datasets:[{label:"Ahorro acumulado",data:series.map(x=>x.cum),borderColor:tok("--chart-neutral"),backgroundColor:withAlpha(tok("--chart-neutral"),0.08),fill:true,tension:0.25,pointRadius:radius(null),pointHoverRadius:6,pointBackgroundColor:pointColor(null)}]},
+  options:{responsive:true,maintainAspectRatio:false,animation:{duration:250},interaction:{mode:"index",intersect:false},
    plugins:{legend:{display:false},tooltip:{callbacks:{title:items=>{const x=series[items[0].dataIndex];return `${months[x.m-1]} ${x.y}`},label:c=>{const x=series[c.dataIndex];return[` Acumulado: ${euro.format(x.cum)}`,` Este mes: ${x.net>=0?"+":""}${euro.format(x.net)}`]}}}},
    scales:{x:{grid:{display:false}},y:{ticks:{callback:axisMoney}}},
-   onClick:(e,els)=>{if(!els.length)return;const x=series[els[0].index],r=monthRange(x.y,x.m),lbl=`${months[x.m-1]} ${x.y}`;chartTap("savingsChart",`${lbl} · acumulado ${euro.format(x.cum)} (${x.net>=0?"+":""}${euro.format(x.net)} este mes)`,()=>goToMovements({from:r.from,to:r.to,label:lbl}))},
+   onClick:(e,els,chart)=>{
+    if(!els.length){highlight(chart,null);el("savingsChart").closest(".panel").querySelector(".chart-pop")?.remove();return}
+    const i=els[0].index,x=series[i],r=monthRange(x.y,x.m),lbl=`${months[x.m-1]} ${x.y}`;
+    if(isTouch())highlight(chart,i);
+    chartTap("savingsChart",`${lbl} · acumulado ${euro.format(x.cum)} (${x.net>=0?"+":""}${euro.format(x.net)} este mes)`,()=>goToMovements({from:r.from,to:r.to,label:lbl}),()=>highlight(chart,null))},
    onHover:pointerCursor}});
 }
 function drawCategoryChart(){
@@ -2093,7 +2100,7 @@ function drawCategoryChart(){
  if(isMobile()){renderBarList("categoryChart",rows.map(r=>({label:r.name,icon:r.id?catIconSvg(getCat(r.id)):"",value:r.total,color:r.id?color:withAlpha(color,0.45),text:`${euro.format(r.total)} · ${total?pct1(r.total/total*100):"0"} %`,onClick:r.id?()=>{const pr=periodRange();goToMovements({type,categoryId:r.id,from:pr.from,to:pr.to,label:periodLabel()})}:null})),{empty:"Sin movimientos en este periodo"});return}
  showChartCanvas("categoryChart");
  mountChart("categoryChart",{type:"bar",data:{labels:rows.map(r=>r.name),datasets:[{label:typeLabel,data:rows.map(r=>r.total),backgroundColor:rows.map(r=>r.id?color:withAlpha(color,0.45)),borderRadius:3}]},
-  options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,animation:{duration:250},layout:{padding:{right:120,left:24}},
+  options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,interaction:{mode:"nearest",axis:"y",intersect:false},animation:{duration:250},layout:{padding:{right:120,left:24}},
    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${euro.format(c.parsed.x)} · ${total?pct1(c.parsed.x/total*100):"0"} %`}},barValueLabels:{format:v=>`${euro.format(v)} · ${total?pct1(v/total*100):"0"} %`},axisIcons:{icons:rows.map(r=>r.id?categoryIcon(getCat(r.id)):"")}},
    scales:{x:{beginAtZero:true,ticks:{callback:axisMoney},grid:{display:false}},y:{ticks:{autoSkip:false,callback:truncTick}}},
    onClick:(e,els)=>{if(!els.length)return;const r=rows[els[0].index],pr=periodRange();goToMovements({type,categoryId:r.id||"",from:pr.from,to:pr.to,label:periodLabel()})},
@@ -2106,7 +2113,7 @@ function drawPatrimonyChart(){
  if(isMobile()){renderBarList("patrimonyChart",assets.map(a=>({label:a.name,icon:assetIconSvg(state.assets.find(x=>x.id===a.id)),value:a.value,color:tok("--chart-neutral"),text:`${euro.format(a.value)} · ${pct1(a.pct)} %`})),{empty:"Sin activos"});return}
  showChartCanvas("patrimonyChart");
  mountChart("patrimonyChart",{type:"bar",data:{labels:assets.map(a=>a.name),datasets:[{label:"Valor",data:assets.map(a=>a.value),backgroundColor:tok("--chart-neutral"),borderRadius:3}]},
-  options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,animation:{duration:250},layout:{padding:{right:130,left:24}},
+  options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,interaction:{mode:"nearest",axis:"y",intersect:false},animation:{duration:250},layout:{padding:{right:130,left:24}},
    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${euro.format(c.parsed.x)} · ${pct1(assets[c.dataIndex].pct)} %`}},barValueLabels:{format:(v,i)=>`${euro.format(v)} · ${pct1(assets[i].pct)} %`},axisIcons:{icons:assets.map(a=>assetIconId(state.assets.find(x=>x.id===a.id)))}},
    scales:{x:{beginAtZero:true,ticks:{callback:axisMoney},grid:{display:false}},y:{ticks:{autoSkip:false,callback:truncTick}}}},
   plugins:[barValueLabels,axisIcons]});
@@ -2128,8 +2135,8 @@ function drawNetWorthChart(){
  el("subNetWorth").textContent=`${formatDate(first.date)} – ${formatDate(last.date)} · ${delta>=0?"+":""}${euro.format(delta)} desde el primer punto`;
  const labels=series.map(x=>series.length>180?`${months[Number(x.date.slice(5,7))-1].slice(0,3)} ${x.date.slice(2,4)}`:`${x.date.slice(8,10)}/${x.date.slice(5,7)}`);
  mountChart("netWorthChart",{type:"line",data:{labels,datasets:[
-   {label:"Patrimonio total",data:series.map(x=>x.value),borderColor:tok("--chart-neutral"),backgroundColor:withAlpha(tok("--chart-neutral"),0.08),fill:true,tension:0.25,pointRadius:series.length>60?0:2},
-   {label:"Fondos (valor)",data:series.map(x=>x.funds),borderColor:colors["Inversión"],backgroundColor:"transparent",tension:0.25,pointRadius:series.length>60?0:2},
+   {label:"Patrimonio total",data:series.map(x=>x.value),borderColor:tok("--chart-neutral"),backgroundColor:withAlpha(tok("--chart-neutral"),0.08),fill:true,tension:0.25,pointRadius:series.length>60?0:2,pointHoverRadius:6},
+   {label:"Fondos (valor)",data:series.map(x=>x.funds),borderColor:colors["Inversión"],backgroundColor:"transparent",tension:0.25,pointRadius:series.length>60?0:2,pointHoverRadius:6},
    {label:"Fondos (aportado)",data:series.map(x=>x.invested),borderColor:colors["Inversión"],borderDash:[5,4],backgroundColor:"transparent",tension:0.25,pointRadius:0}]},
   options:{responsive:true,maintainAspectRatio:false,animation:{duration:250},interaction:{mode:"index",intersect:false},
    plugins:{legend:{labels:{usePointStyle:true,boxWidth:8,font:{family:FONT}}},tooltip:{callbacks:{title:items=>formatDate(series[items[0].dataIndex].date),label:c=>` ${c.dataset.label}: ${euro.format(c.parsed.y)}`}}},
@@ -2141,7 +2148,7 @@ function drawCompoundReturnChart(){
  if(isMobile()){renderBarList("compoundReturnChart",data.map(d=>({label:d.name,icon:assetIconSvg(d.asset),value:d.rate*100,color:d.rate>=0?colors.Ingreso:colors.Gasto,text:`${(d.rate*100).toFixed(2).replace(".",",")} % · ${euro.format(d.value)}`})),{empty:"Sin datos de rentabilidad"});return}
  showChartCanvas("compoundReturnChart");
  mountChart("compoundReturnChart",{type:"bar",data:{labels:data.map(d=>d.name),datasets:[{label:"Rentabilidad anualizada",data:data.map(d=>Math.round(d.rate*10000)/100),backgroundColor:data.map(d=>d.rate>=0?colors.Ingreso:colors.Gasto),borderRadius:3}]},
-  options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,animation:{duration:250},layout:{padding:{right:80,left:34}},
+  options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,interaction:{mode:"nearest",axis:"y",intersect:false},animation:{duration:250},layout:{padding:{right:80,left:34}},
    plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>{const d=data[c.dataIndex];return[` ${c.parsed.x.toFixed(2).replace(".",",")} % anual`,` Aportado ${euro.format(d.invested)} · valor ${euro.format(d.value)}`,d.since?` Desde ${formatDate(d.since)} hasta ${formatDate(d.asOf)}`:""].filter(Boolean)}}},barValueLabels:{format:v=>`${v.toFixed(2).replace(".",",")} %`},axisIcons:{icons:data.map(d=>assetIconId(d.asset))}},
    scales:{x:{ticks:{callback:v=>v+" %"},grid:{color:tok("--border")}},y:{ticks:{autoSkip:false,callback:truncTick}}}},
   plugins:[barValueLabels,axisIcons]});
