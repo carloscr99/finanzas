@@ -186,6 +186,9 @@ details.panel summary::-webkit-details-marker{display:none}details.panel summary
 .asset-card h3{margin-bottom:6px}.asset-head{display:flex;align-items:center;gap:6px}.badge.badge-ico{display:inline-flex;align-items:center;justify-content:center;padding:0;width:25px;height:25px}button.badge-ico{cursor:pointer;border:1px solid transparent}button.badge-ico:hover{border-color:var(--border-strong)}.badge-ico .ico{width:15px;height:15px}.asset-card .big{font-size:22px;font-weight:800}
 .asset-card .sub{font-size:12px;color:var(--muted);margin-top:4px}
 .badge{font-size:11px;font-weight:700;border-radius:999px;background:var(--btn2-bg);color:var(--btn2-fg);padding:4px 8px;display:inline-block}
+button.badge[data-typeasset]{border:0;cursor:pointer;font-family:inherit}
+.swal2-popup select.swal2-select{width:calc(100% - 72px);background:var(--input-bg);color:var(--text);border:1px solid var(--border-strong)}
+.swal2-popup select.swal2-select option{background:var(--input-bg);color:var(--text)}
 .inline-note{padding:12px 14px;border-radius:12px;background:var(--soft);border:1px solid var(--border);font-size:13px;color:var(--muted)}
 .footer-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .file-label{cursor:pointer;margin:0}
@@ -436,13 +439,14 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         <div class="card income"><div class="metric-label">Ingresos</div><div class="metric-value" id="sumIncome">0 €</div><div class="metric-sub" id="cmpIncome">—</div></div>
         <div class="card expense"><div class="metric-label">Gastos</div><div class="metric-value" id="sumExpense">0 €</div><div class="metric-sub" id="cmpExpense">—</div></div>
         <div class="card investment"><div class="metric-label">Inversiones</div><div class="metric-value" id="sumInvestment">0 €</div><div class="metric-sub" id="cmpInvestment">—</div></div>
-        <div class="card"><div class="metric-label">Liquidez restante</div><div class="metric-value" id="sumBalance">0 €</div><div class="metric-sub" id="cmpBalance">—</div></div>
+        <div class="card"><div class="metric-label">Liquidez restante</div><div class="metric-value" id="sumBalance">0 €</div><div class="metric-sub" id="savingsRate">—</div></div>
       </div>
 
-      <div class="grid-3">
+      <div class="summary-grid">
         <div class="card"><div class="metric-label">Rentabilidad de los fondos</div><div class="metric-value" id="portfolioReturn">0 €</div><div class="metric-sub" id="portfolioReturnPct">0,0 % sobre lo aportado</div><div class="metric-sub">Solo fondos con ISIN y cripto</div></div>
         <div class="card"><div class="metric-label">Patrimonio neto</div><div class="metric-value" id="netWorth">0 €</div><div class="metric-sub" id="assetCount">0 activos</div><div class="metric-sub" id="currentAccountNote" hidden></div><div class="metric-sub" id="portfolioUpdateDashboard">Sin actualizar</div></div>
         <div class="card"><div class="metric-label">Ahorro acumulado</div><div class="metric-value" id="cumulativeSavings">0 €</div><div class="metric-sub">Ingresos − gastos de todo el histórico. Las inversiones no se restan: no son gasto, es dinero que sigue siendo tuyo en fondos y cuentas de ahorro.</div></div>
+        <div class="card"><div class="metric-label">Colchón de liquidez</div><div class="metric-value" id="cushionMonths">—</div><div class="metric-sub" id="cushionCash">—</div><div class="metric-sub" id="cushionSpend">—</div></div>
       </div>
       <div class="inline-note section-gap" id="dataFreshness">Últimas actualizaciones: sin datos todavía.</div>
 
@@ -602,7 +606,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         <summary>Añadir activo</summary>
         <div class="form-grid section-gap">
           <div><label for="aName">Nombre</label><div class="name-ico"><button type="button" class="icon-opt" id="aIconBtn" aria-label="Elegir icono" title="Elegir icono"></button><input id="aName" placeholder="Ej. Amundi Index MSCI World"></div></div>
-          <div><label>Tipo</label><select id="aType"><option>Cuenta</option><option>Cuenta corriente</option><option>Fondo</option><option>Cripto</option><option>Oro</option><option>Efectivo</option><option>Otro</option><option>Deuda</option></select></div>
+          <div><label>Tipo</label><select id="aType"><option>Cuenta</option><option>Cuenta corriente</option><option>Depósito</option><option>SIALP</option><option>Fondo</option><option>Cripto</option><option>Oro</option><option>Efectivo</option><option>Otro</option><option>Deuda</option></select></div>
           <div><label>Valor actual (€)</label><input id="aValue" type="number" min="0" step="0.01" placeholder="Manual / inicial"></div>
           <div id="aDebtNote" class="inline-note" hidden style="grid-column:1/-1">Deuda: escribe en «Valor actual» lo que queda por pagar (por ejemplo, cuotas pendientes más el pago final). Restará del patrimonio neto y no cuenta como inversión.</div>
           <div id="aCurrentNote" class="inline-note" hidden style="grid-column:1/-1">Cuenta corriente: el valor que pongas es el <b>saldo real de hoy</b>. A partir de ahora la app lo moverá sola con cada ingreso, gasto e inversión que registres en esta cuenta. Cuando mires el banco, usa «Actualizar manualmente» para fijar el saldo real como nueva referencia. Puedes tener varias (por ejemplo, Santander y Revolut) y elegir cuál es la cuenta por defecto de los movimientos.</div>
@@ -809,6 +813,11 @@ async function uiConfirm(msg,opts={}){
 async function uiPrompt(msg,def,opts={}){
  const S=swalBase();if(!S)return prompt(msg,def);
  const r=await S.fire({title:opts.title||"",text:msg,input:"text",inputValue:def==null?"":String(def),inputAttributes:{inputmode:opts.inputmode||"decimal",autocomplete:"off"},showCancelButton:true,confirmButtonText:opts.confirmText||"Guardar",cancelButtonText:"Cancelar"});
+ return r.isConfirmed?r.value:null;
+}
+async function uiSelect(msg,options,def,opts={}){
+ const S=swalBase();if(!S){const v=prompt(`${msg} (${options.join(", ")})`,def);return options.includes(v)?v:null}
+ const r=await S.fire({title:opts.title||"",text:msg,input:"select",inputOptions:Object.fromEntries(options.map(o=>[o,o])),inputValue:def,showCancelButton:true,confirmButtonText:opts.confirmText||"Guardar",cancelButtonText:"Cancelar"});
  return r.isConfirmed?r.value:null;
 }
 // ---------- Persistencia en Firestore ----------
@@ -1165,7 +1174,7 @@ function catLabel(c){return `<span class="cat-cell">${catIconSvg(c)}${escapeHtml
 // Icono de un activo: el elegido a mano; si no, el de la categoría de sus aportaciones (la más usada en los movimientos
 // enlazados a él); si no tiene, el de la categoría de inversión que mejor encaja con su nombre; luego el que deduce su
 // propio nombre y, en último caso, el de su tipo.
-const ASSET_TYPE_ICONS={Cuenta:"c-piggy","Cuenta corriente":"c-wallet",Fondo:"c-invest",Cripto:"c-bitcoin",Oro:"c-gem",Efectivo:"c-coins",Otro:"c-wallet",Deuda:"c-card"};
+const ASSET_TYPE_ICONS={Cuenta:"c-piggy","Cuenta corriente":"c-wallet","Depósito":"c-landmark",SIALP:"c-shield",Fondo:"c-invest",Cripto:"c-bitcoin",Oro:"c-gem",Efectivo:"c-coins",Otro:"c-wallet",Deuda:"c-card"};
 function assetIconId(a){
  const own=chosenIcon(a);if(own)return own;
  const uses=new Map();if(a?.id)state.movements.forEach(m=>{if(m.assetId===a.id&&m.type==="Inversión")uses.set(m.categoryId,(uses.get(m.categoryId)||0)+1)});
@@ -1586,6 +1595,9 @@ function renderSummary(){
  el("sumIncome").textContent=euro.format(s.income);el("sumExpense").textContent=euro.format(s.expense);
  el("sumInvestment").textContent=euro.format(s.investment);el("sumBalance").textContent=euro.format(s.balance);
  el("sumBalance").classList.toggle("negative",s.balance<0);el("sumBalance").classList.toggle("positive",s.balance>=0);
+ // Tasa de ahorro: lo que no se gasta de lo que entra. Las inversiones cuentan como ahorro, no como gasto.
+ const rate=s.income?(s.income-s.expense)/s.income*100:null;
+ el("savingsRate").textContent=rate===null?"Tasa de ahorro: sin ingresos":`Tasa de ahorro: ${rate.toFixed(1).replace(".",",")} % (lo invertido + lo que no has gastado)`;
 
  const p=selectedPeriod();
  if(p.mode==="month"){
@@ -1593,9 +1605,8 @@ function renderSummary(){
    el("cmpIncome").textContent=pctChange(s.income,prev.income);
    el("cmpExpense").textContent=pctChange(s.expense,prev.expense);
    el("cmpInvestment").textContent=pctChange(s.investment,prev.investment);
-   el("cmpBalance").textContent=pctChange(s.balance,prev.balance);
  }else{
-   ["cmpIncome","cmpExpense","cmpInvestment","cmpBalance"].forEach(id=>el(id).textContent="Comparación disponible en vista mensual");
+   ["cmpIncome","cmpExpense","cmpInvestment"].forEach(id=>el(id).textContent="Comparación disponible en vista mensual");
  }
  const {nw,invested,gain:portfolioGain}=portfolioTotals(),portfolioPct=invested?portfolioGain/invested*100:0;
  el("portfolioReturn").textContent=`${portfolioGain>=0?"+":""}${euro.format(portfolioGain)}`;
@@ -1607,6 +1618,19 @@ function renderSummary(){
  const portfolioRef=latestPortfolioReference();
  el("portfolioUpdateDashboard").textContent=portfolioRef?`Actualizado ${formatDateTime(portfolioRef)}`:(state.assets.length?"Pendiente de registrar actualización":"Sin patrimonio");
  const all=calcSummary(state.movements);el("cumulativeSavings").textContent=euro.format(all.income-all.expense);
+ renderCushion();
+}
+// Colchón de liquidez: cuántos meses de gasto medio cubre el dinero disponible (cuentas y efectivo, sin fondos ni deudas).
+// El gasto medio sale de los últimos 12 meses completos, o de los que haya desde el primer movimiento.
+function renderCushion(){
+ const cash=state.assets.filter(a=>["Cuenta","Cuenta corriente","Efectivo"].includes(String(a.type||""))).reduce((t,a)=>t+Number(a.value||0),0);
+ const first=state.movements.reduce((min,m)=>!min||m.date<min?m.date:min,"").slice(0,7);
+ const now=new Date();let y=now.getFullYear(),m=now.getMonth()+1,spent=0,months=0;
+ for(let i=0;i<12;i++){({y,m}=prevMonth(y,m));const key=`${y}-${String(m).padStart(2,"0")}`;if(!first||key<first)break;spent+=calcSummary(monthMovements(y,m)).expense;months++}
+ const avg=months?spent/months:0;
+ el("cushionCash").textContent=`${euro.format(cash)} en cuentas y efectivo (sin depósitos ni SIALP)`;
+ el("cushionSpend").textContent=avg?`Gasto medio: ${euro.format(avg)}/mes (${months} mes${months===1?"":"es"})`:"Sin meses completos de gasto";
+ el("cushionMonths").textContent=avg?`${(cash/avg).toFixed(1).replace(".",",")} meses`:"—";
 }
 
 // Tamaño de los documentos de Firestore (límite 1 MiB cada uno): el principal y el año con más movimientos.
@@ -1849,10 +1873,16 @@ function renderAssets(){
  el("assetTotal").classList.toggle("negative",total<0);
  el("assetTotal").textContent=euro.format(total);el("assetInvested").textContent=euro.format(invested);el("assetGain").textContent=euro.format(gain);el("assetGain").classList.toggle("negative",gain<0);el("assetGain").classList.toggle("positive",gain>=0);el("assetTotalCount").textContent=state.assets.length;
  el("assetLastUpdate").textContent=portfolioRef?`Actualizado ${formatDateTime(portfolioRef)}`:(state.assets.length?"Pendiente de registrar actualización":"Sin patrimonio");
- el("assetGrid").innerHTML=state.assets.length?state.assets.map(a=>{const g=Number(a.value)-Number(a.invested||0),units=Number(a.units||0),price=Number(a.unitPrice||0),meta=units>0?`<div class="sub">${assetDisplayUnits(units,assetUnitLabel(a)==="BTC"?8:6)} ${assetUnitLabel(a,true)}${price>0?` · ${euro.format(price)} / ud.`:""}</div>`:"",irr=assetAnnualizedReturn(a),irrHtml=irr===null?`<div class="sub">Rentabilidad anualizada: —${assetInvestmentMovements(a).length&&!(Number(a.units)>0)?" (las aportaciones registradas no cuadran con el capital aportado)":""}</div>`:`<div class="sub ${irr<0?"negative":"positive"}">Rentabilidad anualizada: ${(irr*100).toFixed(2).replace(".",",")} %</div>`,priceInfo=isDebt(a)?`<div class="sub">Pendiente de pagar. Resta del patrimonio neto; actualízalo cuando cambie o usa un traspaso hacia la deuda para registrar un pago.</div>`:isCurrentAccount(a)?`<div class="sub">Saldo calculado: referencia ${euro.format(a.refBalance||0)} el ${formatDate(a.refDate)} más los movimientos posteriores</div>`:a.updatedAt?`<div class="sub">Cotización: ${formatDate(a.updatedAt)}${a.priceSource?` · ${escapeHtml(a.priceSource)}`:""}</div>`:"";return`<div class="asset-card"><div class="asset-head"><button type="button" class="badge badge-ico" data-iconasset="${a.id}" aria-label="Cambiar icono de ${escapeHtml(a.name)}" title="Cambiar icono">${assetIconSvg(a)}</button><span class="badge">${escapeHtml(a.type)}</span></div><h3>${escapeHtml(a.name)}</h3><div class="big${isDebt(a)?" negative":""}">${isDebt(a)?"−":""}${euro.format(a.value)}</div>${isCurrentAccount(a)||isDebt(a)?"":`<div class="sub">Aportado: ${euro.format(a.invested||0)}</div>${meta}<div class="sub ${g<0?"negative":"positive"}">Diferencia: ${euro.format(g)}</div>${irrHtml}`}${priceInfo}${movementAccounts().includes(a)?(a.id===defaultAccount()?.id?`<div class="sub"><b>Cuenta por defecto</b> de los nuevos movimientos</div>`:""):""}<div class="form-actions">${iconBtn("secondary",`data-editasset="${a.id}"`,"i-pencil","Actualizar manualmente")}${Number(a.units)>0&&assetMarketConfig(a)?`<button class="secondary small" data-adjunits="${a.id}">Ajustar ${assetUnitLabel(a,true)}</button>`:""}${movementAccounts().includes(a)&&a.id!==defaultAccount()?.id?`<button class="secondary small" data-defacc="${a.id}">Usar por defecto</button>`:""}${iconBtn("danger",`data-delasset="${a.id}"`,"i-trash","Borrar")}</div></div>`}).join(""):`<div class="empty" style="grid-column:1/-1">No has añadido activos.</div>`;
+ el("assetGrid").innerHTML=state.assets.length?state.assets.map(a=>{const g=Number(a.value)-Number(a.invested||0),units=Number(a.units||0),price=Number(a.unitPrice||0),meta=units>0?`<div class="sub">${assetDisplayUnits(units,assetUnitLabel(a)==="BTC"?8:6)} ${assetUnitLabel(a,true)}${price>0?` · ${euro.format(price)} / ud.`:""}</div>`:"",irr=assetAnnualizedReturn(a),irrHtml=irr===null?`<div class="sub">Rentabilidad anualizada: —${assetInvestmentMovements(a).length&&!(Number(a.units)>0)?" (las aportaciones registradas no cuadran con el capital aportado)":""}</div>`:`<div class="sub ${irr<0?"negative":"positive"}">Rentabilidad anualizada: ${(irr*100).toFixed(2).replace(".",",")} %</div>`,priceInfo=isDebt(a)?`<div class="sub">Pendiente de pagar. Resta del patrimonio neto; actualízalo cuando cambie o usa un traspaso hacia la deuda para registrar un pago.</div>`:isCurrentAccount(a)?`<div class="sub">Saldo calculado: referencia ${euro.format(a.refBalance||0)} el ${formatDate(a.refDate)} más los movimientos posteriores</div>`:a.updatedAt?`<div class="sub">Cotización: ${formatDate(a.updatedAt)}${a.priceSource?` · ${escapeHtml(a.priceSource)}`:""}</div>`:"";return`<div class="asset-card"><div class="asset-head"><button type="button" class="badge badge-ico" data-iconasset="${a.id}" aria-label="Cambiar icono de ${escapeHtml(a.name)}" title="Cambiar icono">${assetIconSvg(a)}</button><button type="button" class="badge" data-typeasset="${a.id}" title="Cambiar tipo">${escapeHtml(a.type)}</button></div><h3>${escapeHtml(a.name)}</h3><div class="big${isDebt(a)?" negative":""}">${isDebt(a)?"−":""}${euro.format(a.value)}</div>${isCurrentAccount(a)||isDebt(a)?"":`<div class="sub">Aportado: ${euro.format(a.invested||0)}</div>${meta}<div class="sub ${g<0?"negative":"positive"}">Diferencia: ${euro.format(g)}</div>${irrHtml}`}${priceInfo}${movementAccounts().includes(a)?(a.id===defaultAccount()?.id?`<div class="sub"><b>Cuenta por defecto</b> de los nuevos movimientos</div>`:""):""}<div class="form-actions">${iconBtn("secondary",`data-editasset="${a.id}"`,"i-pencil","Actualizar manualmente")}${Number(a.units)>0&&assetMarketConfig(a)?`<button class="secondary small" data-adjunits="${a.id}">Ajustar ${assetUnitLabel(a,true)}</button>`:""}${movementAccounts().includes(a)&&a.id!==defaultAccount()?.id?`<button class="secondary small" data-defacc="${a.id}">Usar por defecto</button>`:""}${iconBtn("danger",`data-delasset="${a.id}"`,"i-trash","Borrar")}</div></div>`}).join(""):`<div class="empty" style="grid-column:1/-1">No has añadido activos.</div>`;
  el("assetGrid").querySelectorAll("[data-defacc]").forEach(b=>b.onclick=()=>{const a=state.assets.find(x=>x.id===b.dataset.defacc);if(!a)return;state.meta.defaultAccountId=a.id;saveState();renderAll();resetAccountSelect("mAccount");resetAccountSelect("rAccount");updateAccountHint();toast(`${a.name} es ahora la cuenta por defecto`)});
  el("assetGrid").querySelectorAll("[data-delasset]").forEach(b=>b.onclick=async()=>{if(await uiConfirm("Desaparecerá del patrimonio; los movimientos no se tocan.",{title:"¿Eliminar este activo?",danger:true,confirmText:"Eliminar"})){state.assets=state.assets.filter(x=>x.id!==b.dataset.delasset);markDataUpdate("portfolio");saveState();renderAll()}});
  el("assetGrid").querySelectorAll("[data-iconasset]").forEach(b=>b.onclick=()=>chooseAssetIcon(b.dataset.iconasset));
+ // Cambiar el tipo de un activo. La cuenta corriente queda fuera porque su saldo se calcula a partir de los movimientos.
+ el("assetGrid").querySelectorAll("[data-typeasset]").forEach(b=>b.onclick=async()=>{const a=state.assets.find(x=>x.id===b.dataset.typeasset);if(!a)return;
+   if(isCurrentAccount(a))return uiAlert("El tipo de la cuenta corriente no se puede cambiar: su saldo se calcula con los movimientos.");
+   const types=[...el("aType").options].map(o=>o.value).filter(t=>t!=="Cuenta corriente");
+   const t=await uiSelect(`Tipo de ${a.name}:`,types,a.type,{title:"Cambiar tipo"});if(!t||t===a.type)return;
+   a.type=t;markDataUpdate("portfolio");saveState();renderAll()});
  el("assetGrid").querySelectorAll("[data-adjunits]").forEach(b=>b.onclick=()=>adjustAssetUnits(b.dataset.adjunits));
  el("assetGrid").querySelectorAll("[data-editasset]").forEach(b=>b.onclick=async()=>{const a=state.assets.find(x=>x.id===b.dataset.editasset);if(isCurrentAccount(a)){const calc=currentAccountValue(a);const nv=await uiPrompt(`Saldo real de ${a.name} hoy (la app calcula ${euro.format(calc)}):`,calc.toFixed(2));if(nv===null)return;const n=Number(String(nv).replace(",","."));if(!Number.isFinite(n))return uiError("Valor no válido.");const diff=n-calc;setAccountReference(a,n,todayISO());markDataUpdate("portfolio");saveState();renderAll();toast(Math.abs(diff)<0.005?"Saldo confirmado: cuadra con lo registrado":`Nueva referencia. Diferencia con lo registrado: ${diff>0?"+":""}${euro.format(diff)}`);return}if(Number(a.units)>0){const nv=await uiPrompt(`Nuevo precio por participación/título de ${a.name}:`,a.unitPrice||"");if(nv===null)return;const n=Number(String(nv).replace(",","."));if(!Number.isFinite(n)||n<0)return uiError("Valor no válido.");a.unitPrice=n;a.value=Number(a.units)*n;a.updatedAt=todayISO();a.priceSource="Manual"}else{const nv=await uiPrompt(`Nuevo valor actual de ${a.name}:`,a.value);if(nv===null)return;const n=Number(String(nv).replace(",","."));if(!Number.isFinite(n)||n<0)return uiError("Valor no válido.");a.value=n;a.updatedAt=todayISO();a.priceSource="Manual"}markDataUpdate("portfolio");saveState();renderAll()});
 }
