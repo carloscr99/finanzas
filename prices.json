@@ -1,23 +1,25 @@
 {
-  "updatedAt": "2026-10-26T12:26:17.763Z",
+  "updatedAt": "2026-10-26T22:06:37.495Z",
   "currency": "EUR",
   "assets": {
     "LU0996182563": {
       "name": "Amundi Index MSCI World AE-C",
-      "price": 440.9,
-      "priceDate": "2026-10-21",
+      "price": 434.44,
+      "priceDate": "2026-10-23",
       "source": "Financial Times (markets.ft.com)",
       "history": {
-        "2026-10-21": 440.9
+        "2026-10-21": 440.9,
+        "2026-10-23": 434.44
       }
     },
     "LU0996177134": {
       "name": "Amundi Index MSCI Emerging Markets AE-C",
-      "price": 247.05,
-      "priceDate": "2026-10-21",
+      "price": 241.77,
+      "priceDate": "2026-10-23",
       "source": "Financial Times (markets.ft.com)",
       "history": {
-        "2026-10-21": 247.05
+        "2026-10-21": 247.05,
+        "2026-10-23": 241.77
       }
     },
     "IE00BFZMJT78": {
@@ -31,13 +33,13 @@
     },
     "BTC": {
       "name": "Bitcoin",
-      "price": 71682,
+      "price": 71546,
       "priceDate": "2026-10-26",
       "source": "CoinGecko",
       "history": {
         "2026-10-24": 71794,
         "2026-10-25": 71695,
-        "2026-10-26": 71682
+        "2026-10-26": 71546
       }
     },
     "IE00BYX5NX33": {
@@ -61,12 +63,12 @@
     "IE00B4ND3602": {
       "name": "iShares Physical Gold ETC",
       "symbol": "PPFB:GER:EUR",
-      "price": 69.61,
+      "price": 69.69,
       "priceDate": "2026-10-26",
       "source": "Financial Times (markets.ft.com)",
       "history": {
         "2026-10-23": 69.23,
-        "2026-10-26": 69.61
+        "2026-10-26": 69.69
       }
     },
     "IE00BH65QP47": {
