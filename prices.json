@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-28T12:18:34.683Z",
+  "updatedAt": "2026-10-28T22:00:29.033Z",
   "currency": "EUR",
   "assets": {
     "LU0996182563": {
@@ -39,7 +39,7 @@
     },
     "BTC": {
       "name": "Bitcoin",
-      "price": 72665,
+      "price": 72866,
       "priceDate": "2026-10-28",
       "source": "CoinGecko",
       "history": {
@@ -47,7 +47,7 @@
         "2026-10-25": 71695,
         "2026-10-26": 71546,
         "2026-10-27": 72869,
-        "2026-10-28": 72665
+        "2026-10-28": 72866
       }
     },
     "IE00BYX5NX33": {
@@ -74,14 +74,14 @@
     "IE00B4ND3602": {
       "name": "iShares Physical Gold ETC",
       "symbol": "PPFB:GER:EUR",
-      "price": 70.47,
+      "price": 70.29,
       "priceDate": "2026-10-28",
       "source": "Financial Times (markets.ft.com)",
       "history": {
         "2026-10-23": 69.23,
         "2026-10-26": 69.69,
         "2026-10-27": 70.66,
-        "2026-10-28": 70.47
+        "2026-10-28": 70.29
       }
     },
     "IE00BH65QP47": {
