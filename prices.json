@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-10-30T21:48:10.080Z",
+  "updatedAt": "2026-10-31T11:50:12.036Z",
   "currency": "EUR",
   "assets": {
     "LU0996182563": {
@@ -32,21 +32,22 @@
     },
     "IE00BFZMJT78": {
       "name": "Neuberger Berman Short Duration Euro Bond Fund EUR I Acc",
-      "price": 117.88,
-      "priceDate": "2026-10-29",
+      "price": 117.87,
+      "priceDate": "2026-10-30",
       "source": "Financial Times (markets.ft.com)",
       "history": {
         "2026-10-23": 117.45,
         "2026-10-26": 117.36,
         "2026-10-27": 117.53,
         "2026-10-28": 117.68,
-        "2026-10-29": 117.88
+        "2026-10-29": 117.88,
+        "2026-10-30": 117.87
       }
     },
     "BTC": {
       "name": "Bitcoin",
-      "price": 68588,
-      "priceDate": "2026-10-30",
+      "price": 69150,
+      "priceDate": "2026-10-31",
       "source": "CoinGecko",
       "history": {
         "2026-10-24": 71794,
@@ -55,32 +56,35 @@
         "2026-10-27": 72869,
         "2026-10-28": 72866,
         "2026-10-29": 70301,
-        "2026-10-30": 68588
+        "2026-10-30": 68588,
+        "2026-10-31": 69150
       }
     },
     "IE00BYX5NX33": {
       "name": "Fidelity MSCI World Index Fund EUR P Acc",
-      "price": 14.67,
-      "priceDate": "2026-10-29",
+      "price": 14.46,
+      "priceDate": "2026-10-30",
       "source": "Financial Times (markets.ft.com)",
       "history": {
         "2026-10-23": 14.44,
         "2026-10-26": 14.55,
         "2026-10-27": 14.67,
         "2026-10-28": 14.71,
-        "2026-10-29": 14.67
+        "2026-10-29": 14.67,
+        "2026-10-30": 14.46
       }
     },
     "IE0031786696": {
       "name": "Vanguard Emerging Markets Stock Index Fund EUR Acc",
-      "price": 301.47,
-      "priceDate": "2026-10-29",
+      "price": 296.48,
+      "priceDate": "2026-10-30",
       "source": "Financial Times (markets.ft.com)",
       "history": {
         "2026-10-23": 297.31,
         "2026-10-27": 299.26,
         "2026-10-28": 304.87,
-        "2026-10-29": 301.47
+        "2026-10-29": 301.47,
+        "2026-10-30": 296.48
       }
     },
     "IE00B4ND3602": {
@@ -100,14 +104,15 @@
     },
     "IE00BH65QP47": {
       "name": "Vanguard Global Short-Term Bond Index Fund EUR Hedged Acc",
-      "price": 105.02,
-      "priceDate": "2026-10-29",
+      "price": 105.16,
+      "priceDate": "2026-10-30",
       "source": "Financial Times (markets.ft.com)",
       "history": {
         "2026-10-23": 104.88,
         "2026-10-27": 104.89,
         "2026-10-28": 104.85,
-        "2026-10-29": 105.02
+        "2026-10-29": 105.02,
+        "2026-10-30": 105.16
       }
     }
   }
