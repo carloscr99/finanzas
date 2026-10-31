@@ -147,10 +147,11 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 .mico{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none}
 .mico.g{background:var(--expense-soft);color:var(--expense)}.mico.i{background:var(--income-soft);color:var(--income)}.mico.v{background:var(--investment-soft);color:var(--investment)}
 .mtext{flex:1;min-width:0}
-.mitem b{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mitem small{display:block;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mitem b{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mitem small{display:block;color:var(--muted);font-size:13px;line-height:1.3;overflow-wrap:anywhere}
 .mitem .amt{font-weight:700;font-size:15px;white-space:nowrap}.mitem .amt.inv{color:var(--investment)}
+.mitem .mamt{display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex:none}.mitem .munits{font-size:11px;line-height:1.2;font-weight:600;color:var(--muted)}
 .cs-bar{display:block;height:4px;border-radius:999px;background:var(--btn2-bg);margin-top:6px;overflow:hidden}.cs-bar i{display:block;height:100%;border-radius:999px}
-.cs-table th,.cs-table td.amount{white-space:nowrap}.cs-table th.cs-center{text-align:center}.cs-table td.cs-pct-cell{width:40%;min-width:90px}.cs-pct{display:flex;align-items:center;gap:10px}.cs-pct .cs-bar{flex:1;margin-top:0;height:6px}.cs-pct span:last-child{flex:0 0 auto;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600}.cs-table tr.cs-total td{font-weight:700;border-top:1px solid var(--border-strong)}.cs-table td.inv{color:var(--investment)}.cs-table td.amount{font-weight:600}.cs-table td.muted{color:var(--muted);font-weight:400}
+.cs-table th,.cs-table td.amount{white-space:nowrap}.cs-table th.cs-center{text-align:center}.cs-table td.cs-pct-cell{width:40%;min-width:90px}.cs-pct{display:flex;align-items:center;gap:10px}.cs-pct .cs-bar{flex:1;margin-top:0;height:6px}.cs-pct span:last-child{flex:0 0 auto;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600}.cs-table tr.cs-total td{font-weight:700;border-top:1px solid var(--border-strong)}.cs-table td.inv{color:var(--investment)}.cs-table td.amount{font-weight:600}.cs-table td.muted{color:var(--muted);font-weight:400}.cs-table td.mv-account{max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mitem.static{cursor:default}.mitem.static:active{background:transparent}.mitem .amt.warn,.cs-table td.warn{color:var(--warning)}
 .cs-head{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted);padding:4px 4px 8px;border-bottom:1px solid var(--border)}.cs-head b{color:var(--text);font-variant-numeric:tabular-nums}
 .mday{font-size:12px;font-weight:700;color:var(--muted);padding:14px 4px 6px;text-transform:uppercase;letter-spacing:.04em;position:sticky;top:0;background:var(--panel);z-index:1}
@@ -539,7 +540,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         </div>
         <div id="movementList" class="mlist mobile-only section-gap"></div>
         <div class="table-wrap desktop-only section-gap">
-          <table><thead><tr><th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Concepto</th><th style="text-align:right">Importe</th><th></th></tr></thead><tbody id="movementTable"></tbody></table>
+          <table><thead><tr><th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Concepto</th><th>Cuenta</th><th style="text-align:right">Importe</th><th></th></tr></thead><tbody id="movementTable"></tbody></table>
         </div>
       </div>
     </section>
@@ -1795,11 +1796,13 @@ async function bulkRecategorize(){
 }
 // Botón de acción solo con icono (editar, borrar, pausar…); el texto va en aria-label y en el tooltip.
 function iconBtn(cls,attrs,icon,label){return `<button type="button" class="${cls} small icon-btn" ${attrs} aria-label="${label}" title="${label}"><svg class="ico" aria-hidden="true"><use href="#${icon}"/></svg></button>`}
-// Etiqueta de cuenta en los listados: solo cuando el movimiento no va a la cuenta por defecto (el caso normal no se etiqueta).
+// Etiqueta de cuenta en los listados: en recurrentes solo cuando no es la cuenta por defecto (el caso normal no se etiqueta).
 function movementAccountTag(m){if(!m.accountId)return "";const def=defaultAccount()?.id||"";return m.accountId===def?"":accountLabel(m)}
+// En Movimientos la cuenta sale siempre, también en apuntes antiguos sin cuenta guardada (pertenecen a la cuenta corriente original).
+function movementAccountLabel(m){return accountLabel(m)}
 function renderMovements(){
  const movs=movementSearchResults();el("visibleCount").textContent=intFmt.format(movs.length);
- el("movementTable").innerHTML=movs.length?movs.map(m=>{const u=movementUnitsInfo(m);return `<tr><td>${formatDate(m.date)}</td><td><span class="pill ${m.type}">${m.type}</span></td><td><span class="cat-cell">${catIconSvg(getCat(m.categoryId))}${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")}</span></td><td>${escapeHtml(m.description)}${movementAccountTag(m)?`<br><small class="muted">${escapeHtml(movementAccountTag(m))}</small>`:""}</td><td class="amount">${euro.format(m.amount)}${u?` <span class="badge"${u.estimated?` title="Aproximadas: importe ÷ última cotización de prices.json"`:""}>${u.text}</span>`:""}</td><td class="actions">${iconBtn("secondary",`data-edit="${m.id}"`,"i-pencil","Editar")}${iconBtn("danger",`data-del="${m.id}"`,"i-trash","Borrar")}</td></tr>`}).join(""):`<tr><td colspan="6" class="empty">No hay movimientos.</td></tr>`;
+ el("movementTable").innerHTML=movs.length?movs.map(m=>{const u=movementUnitsInfo(m);return `<tr><td>${formatDate(m.date)}</td><td><span class="pill ${m.type}">${m.type}</span></td><td><span class="cat-cell">${catIconSvg(getCat(m.categoryId))}${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")}</span></td><td>${escapeHtml(m.description)}</td><td class="muted mv-account">${escapeHtml(movementAccountLabel(m)||"—")}</td><td class="amount">${euro.format(m.amount)}${u?` <span class="badge"${u.estimated?` title="Aproximadas: importe ÷ última cotización de prices.json"`:""}>${u.text}</span>`:""}</td><td class="actions">${iconBtn("secondary",`data-edit="${m.id}"`,"i-pencil","Editar")}${iconBtn("danger",`data-del="${m.id}"`,"i-trash","Borrar")}</td></tr>`}).join(""):`<tr><td colspan="7" class="empty">No hay movimientos.</td></tr>`;
  el("movementTable").querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editMovement(b.dataset.edit));
  el("movementTable").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>deleteMovement(b.dataset.del));
  // Lista táctil para móvil (agrupada por día; tocar abre la hoja de edición). El círculo lleva el icono de la categoría con el color del tipo; signo + texto: el tipo nunca se indica solo por color.
@@ -1808,7 +1811,7 @@ function renderMovements(){
  shown.forEach(m=>{
    if(m.date!==lastDate){lastDate=m.date;html+=`<div class="mday">${formatDate(m.date)}</div>`}
    const t=TYPE_UI[m.type]||TYPE_UI.Gasto,u=movementUnitsInfo(m);
-   html+=`<button type="button" class="mitem" data-id="${m.id}"><span class="mico ${t.k}">${catIconSvg(getCat(m.categoryId))}</span><span class="mtext"><b>${escapeHtml(m.description)}</b><small>${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")} · ${m.type}${movementAccountTag(m)?" · "+escapeHtml(movementAccountTag(m)):""}${u?" · "+u.text+(u.estimated?" (estimadas)":""):""}</small></span><span class="amt ${t.cls}">${t.sign}${euro.format(m.amount)}</span></button>`;
+   html+=`<button type="button" class="mitem" data-id="${m.id}"><span class="mico ${t.k}">${catIconSvg(getCat(m.categoryId))}</span><span class="mtext"><b>${escapeHtml(m.description)}</b><small>${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")} · ${m.type}${movementAccountLabel(m)?" · "+escapeHtml(movementAccountLabel(m)):""}</small></span><span class="mamt"><span class="amt ${t.cls}">${t.sign}${euro.format(m.amount)}</span>${u?`<small class="munits"${u.estimated?' title="Aproximadas: importe ÷ última cotización de prices.json"':""}>${u.text}</small>`:""}</span></button>`;
  });
  if(!html)html=`<div class="empty-state"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg><p>${state.movements.length?"Ningún movimiento coincide con los filtros.":"Todavía no hay movimientos."}</p><button type="button" class="primary" data-empty-add>Añadir movimiento</button></div>`;
  if(movs.length>LIMIT)html+=`<div class="empty">Mostrando ${intFmt.format(LIMIT)} de ${intFmt.format(movs.length)}. Usa los filtros para acotar.</div>`;
