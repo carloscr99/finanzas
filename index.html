@@ -150,7 +150,7 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 .mitem b{display:block;font-size:15px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mitem small{display:block;color:var(--muted);font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mitem .amt{font-weight:700;font-size:15px;white-space:nowrap}.mitem .amt.inv{color:var(--investment)}
 .cs-bar{display:block;height:4px;border-radius:999px;background:var(--btn2-bg);margin-top:6px;overflow:hidden}.cs-bar i{display:block;height:100%;border-radius:999px}
-.cs-table th,.cs-table td.amount{white-space:nowrap}.cs-table th.cs-center{text-align:center}.cs-table td.cs-pct-cell{width:40%;min-width:90px}.cs-pct{display:flex;align-items:center;gap:10px}.cs-pct .cs-bar{flex:1;margin-top:0;height:6px}.cs-pct span:last-child{flex:0 0 84px;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600}.cs-table tr.cs-total td{font-weight:700;border-top:1px solid var(--border-strong)}.cs-table td.inv{color:var(--investment)}.cs-table td.amount{font-weight:600}.cs-table td.muted{color:var(--muted);font-weight:400}
+.cs-table th,.cs-table td.amount{white-space:nowrap}.cs-table th.cs-center{text-align:center}.cs-table td.cs-pct-cell{width:40%;min-width:90px}.cs-pct{display:flex;align-items:center;gap:10px}.cs-pct .cs-bar{flex:1;margin-top:0;height:6px}.cs-pct span:last-child{flex:0 0 auto;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600}.cs-table tr.cs-total td{font-weight:700;border-top:1px solid var(--border-strong)}.cs-table td.inv{color:var(--investment)}.cs-table td.amount{font-weight:600}.cs-table td.muted{color:var(--muted);font-weight:400}
 .mitem.static{cursor:default}.mitem.static:active{background:transparent}.mitem .amt.warn,.cs-table td.warn{color:var(--warning)}
 .cs-head{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted);padding:4px 4px 8px;border-bottom:1px solid var(--border)}.cs-head b{color:var(--text);font-variant-numeric:tabular-nums}
 .mday{font-size:12px;font-weight:700;color:var(--muted);padding:14px 4px 6px;text-transform:uppercase;letter-spacing:.04em;position:sticky;top:0;background:var(--panel);z-index:1}
@@ -211,10 +211,18 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 .gis-button{display:flex;justify-content:center;min-height:44px}
 .auth-card button.auth-alt{width:auto;margin-top:16px;background:none;border:0;box-shadow:none;color:var(--muted);font-size:13px;text-decoration:underline;padding:4px 8px;cursor:pointer}
 
+@media(min-width:1101px){
+ :is(#summaryRank,#patrimonyRank,#returnRank) .cs-table{table-layout:fixed}
+ :is(#summaryRank,#patrimonyRank,#returnRank) .cs-table th:first-child,:is(#summaryRank,#patrimonyRank,#returnRank) .cs-table td:first-child{width:30%}
+ :is(#summaryRank,#patrimonyRank,#returnRank) .cs-table th.cs-center,:is(#summaryRank,#patrimonyRank,#returnRank) .cs-table td.cs-pct-cell{width:36%}
+ :is(#summaryRank,#patrimonyRank,#returnRank) .cs-pct span:last-child{flex:0 0 84px}
+}
+@media(max-width:1200px){
+ #returnRank .cs-table th:nth-child(5),#returnRank .cs-table td:nth-child(5){display:none} /* sin sitio para la columna «Desde» */
+}
 @media(max-width:1100px){
  .app{grid-template-columns:190px 1fr}.grid-4,.summary-grid,.asset-grid{grid-template-columns:repeat(2,1fr)}
  .form-grid{grid-template-columns:repeat(2,1fr)}.searchbar{grid-template-columns:repeat(2,1fr)}
- #returnRank .cs-table th:nth-child(5),#returnRank .cs-table td:nth-child(5){display:none} /* sin sitio para la columna «Desde» */
 }
 @media(max-width:760px){
  body{padding-bottom:calc(var(--nav-h) + 16px + env(safe-area-inset-bottom))}.app{display:block}.sidebar{display:none}
