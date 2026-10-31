@@ -111,6 +111,8 @@ Cuando un recurrente de Inversión apunta a un fondo con ISIN (por ejemplo "Comp
 
 Lo mismo vale para las compras que se escriben a mano (formulario de escritorio y hoja rápida del móvil): basta con el importe en euros. Si la casilla "Participaciones / títulos comprados" se deja vacía, se estiman igual y bajo la casilla se ve la estimación en vivo (≈ N part., importe ÷ precio). Si se escribe una cifra, esa es la que se guarda, como definitiva. Si el activo aún no tiene cotización, hay que indicar las participaciones.
 
+En el listado de **Movimientos** las aportaciones a fondos muestran las participaciones junto al importe. Si el apunte no las guardó (histórico importado o una categoría que no quedó enlazada al activo), la app deduce el fondo por la categoría o el concepto y muestra las aproximadas con «≈» usando el importe ÷ la última cotización de `prices.json`.
+
 ## Presupuesto mensual por categoría (sección propia)
 
 La sección **Presupuesto** (sidebar en escritorio; página "Más" en móvil) tiene su propio navegador de meses y muestra: presupuestado, gastado (más lo gastado en categorías sin presupuesto), disponible o excedido, y el **ritmo** (euros al día gastados y cuánto se puede gastar al día en lo que queda de mes). Debajo, una barra por categoría (verde, naranja a partir del 80 %, rojo si se pasa) que lleva a sus movimientos, y la lista de categorías sin presupuesto con gasto ese mes.

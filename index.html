@@ -1281,11 +1281,24 @@ function portfolioTotals(){
 function assetDisplayUnits(v,digits=6){return Number(v||0).toLocaleString("es-ES",{maximumFractionDigits:digits})}
 // Unidad en que se compra cada activo con cotización: participaciones en los fondos, BTC en Bitcoin y títulos en el resto (oro, ETF…).
 function assetUnitLabel(a,long=false){if(assetMarketConfig(a)?.feedKey==="BTC")return "BTC";return String(a?.type||"")==="Fondo"?(long?"participaciones":"part."):"títulos"}
+// Último precio conocido de un activo con cotización: el sincronizado desde prices.json o, si aún no hay,
+// el último valor de su histórico. Sirve para estimar las participaciones de una aportación (importe ÷ precio).
+function latestAssetPrice(a){
+ const p=Number(a?.unitPrice);if(p>0)return p;
+ const h=priceHistories[a?.id]||{},dates=Object.keys(h).sort(),last=dates[dates.length-1],v=last?Number(h[last]):0;
+ return v>0?v:null;
+}
 // Unidades compradas en un movimiento de inversión, p. ej. "0,4512 part.", "3 títulos" o "≈ 0,002784 BTC" si aún son estimadas.
-function movementUnitsText(m){
- if(m.type!=="Inversión"||!(Number(m.units)>0)||!m.assetId)return "";
- const a=state.assets.find(x=>x.id===m.assetId);if(!a||!assetMarketConfig(a))return "";
- const btc=assetUnitLabel(a)==="BTC";return `${m.unitsEstimated?"≈ ":""}${assetDisplayUnits(m.units,btc?8:6)} ${assetUnitLabel(a)}`;
+// Si el movimiento no guardó participaciones (apuntes antiguos o aportaciones sin activo enlazado) se muestran las aproximadas:
+// importe ÷ última cotización de prices.json. estimated=true indica que llevan "≈".
+function movementUnitsInfo(m){
+ if(m?.type!=="Inversión")return null;
+ let a=null,units=0,estimated=false;
+ if(m.assetId){a=state.assets.find(x=>x.id===m.assetId)||null;units=Number(m.units)||0;estimated=!!m.unitsEstimated}
+ else{a=movementAsset(m);estimated=true} // sin activo enlazado: se deduce por la categoría o el concepto
+ if(!a||!assetMarketConfig(a))return null;
+ if(!(units>0)){const est=estimateUnits(Number(m.amount),a);if(est==null)return null;units=est;estimated=true}
+ return{text:`${estimated?"≈ ":""}${assetDisplayUnits(units,assetUnitLabel(a)==="BTC"?8:6)} ${assetUnitLabel(a)}`,estimated};
 }
 function dateToMs(iso){const t=Date.parse(String(iso||"")+"T00:00:00");return Number.isFinite(t)?t:NaN}
 function movementAsset(m){
@@ -1491,10 +1504,10 @@ async function doTransfer(){
 }
 async function updateMarketPrices(showAlert=false){
  if(priceUpdateInProgress)return;
- const targets=state.assets.filter(a=>Number(a.units)>0&&assetMarketConfig(a));
+ const targets=state.assets.filter(a=>assetMarketConfig(a));
  const status=el("priceStatus");
  if(!targets.length){
-   if(status)status.textContent="Cotizaciones: no hay activos compatibles con participaciones/títulos.";
+   if(status)status.textContent="Cotizaciones: no hay activos con cotización (fondos con ISIN o Bitcoin).";
    return;
  }
  priceUpdateInProgress=true;
@@ -1510,7 +1523,7 @@ async function updateMarketPrices(showAlert=false){
      const price=Number(row?.price);
      if(!row||!Number.isFinite(price)||price<=0)continue;
      a.unitPrice=price;
-     a.value=Number(a.units)*price;
+     if(Number(a.units)>0)a.value=Number(a.units)*price;
      a.updatedAt=row.priceDate||todayISO();
      a.priceSource=row.source||"GitHub";
      if(row.history)priceHistories[a.id]=row.history;
@@ -1690,7 +1703,7 @@ async function deleteCategory(id){
 // Guardado único de movimientos (formulario de escritorio y hoja rápida). Devuelve un mensaje de error o null.
 // Participaciones a partir del importe y la última cotización del activo (6 decimales). null si el activo no tiene cotización.
 function estimateUnits(amount,asset){
- const price=Number(asset?.unitPrice);
+ const price=latestAssetPrice(asset);
  return price>0&&Number.isFinite(amount)&&amount>0?Math.round(amount/price*1e6)/1e6:null;
 }
 function persistMovement(d,id){
@@ -1778,7 +1791,7 @@ function iconBtn(cls,attrs,icon,label){return `<button type="button" class="${cl
 function movementAccountTag(m){if(!m.accountId)return "";const def=defaultAccount()?.id||"";return m.accountId===def?"":accountLabel(m)}
 function renderMovements(){
  const movs=movementSearchResults();el("visibleCount").textContent=intFmt.format(movs.length);
- el("movementTable").innerHTML=movs.length?movs.map(m=>`<tr><td>${formatDate(m.date)}</td><td><span class="pill ${m.type}">${m.type}</span></td><td><span class="cat-cell">${catIconSvg(getCat(m.categoryId))}${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")}</span></td><td>${escapeHtml(m.description)}${movementAccountTag(m)?`<br><small class="muted">${escapeHtml(movementAccountTag(m))}</small>`:""}</td><td class="amount">${euro.format(m.amount)}${movementUnitsText(m)?` <span class="badge"${m.unitsEstimated?` title="Estimadas con la última cotización; se ajustan solas al llegar la cotización del día de compra"`:""}>${movementUnitsText(m)}</span>`:""}</td><td class="actions">${iconBtn("secondary",`data-edit="${m.id}"`,"i-pencil","Editar")}${iconBtn("danger",`data-del="${m.id}"`,"i-trash","Borrar")}</td></tr>`).join(""):`<tr><td colspan="6" class="empty">No hay movimientos.</td></tr>`;
+ el("movementTable").innerHTML=movs.length?movs.map(m=>{const u=movementUnitsInfo(m);return `<tr><td>${formatDate(m.date)}</td><td><span class="pill ${m.type}">${m.type}</span></td><td><span class="cat-cell">${catIconSvg(getCat(m.categoryId))}${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")}</span></td><td>${escapeHtml(m.description)}${movementAccountTag(m)?`<br><small class="muted">${escapeHtml(movementAccountTag(m))}</small>`:""}</td><td class="amount">${euro.format(m.amount)}${u?` <span class="badge"${u.estimated?` title="Aproximadas: importe ÷ última cotización de prices.json"`:""}>${u.text}</span>`:""}</td><td class="actions">${iconBtn("secondary",`data-edit="${m.id}"`,"i-pencil","Editar")}${iconBtn("danger",`data-del="${m.id}"`,"i-trash","Borrar")}</td></tr>`}).join(""):`<tr><td colspan="6" class="empty">No hay movimientos.</td></tr>`;
  el("movementTable").querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editMovement(b.dataset.edit));
  el("movementTable").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>deleteMovement(b.dataset.del));
  // Lista táctil para móvil (agrupada por día; tocar abre la hoja de edición). El círculo lleva el icono de la categoría con el color del tipo; signo + texto: el tipo nunca se indica solo por color.
@@ -1786,8 +1799,8 @@ function renderMovements(){
  const TYPE_UI={Gasto:{cls:"negative",k:"g",sign:"−"},Ingreso:{cls:"positive",k:"i",sign:"+"},"Inversión":{cls:"inv",k:"v",sign:""}};
  shown.forEach(m=>{
    if(m.date!==lastDate){lastDate=m.date;html+=`<div class="mday">${formatDate(m.date)}</div>`}
-   const t=TYPE_UI[m.type]||TYPE_UI.Gasto;
-   html+=`<button type="button" class="mitem" data-id="${m.id}"><span class="mico ${t.k}">${catIconSvg(getCat(m.categoryId))}</span><span class="mtext"><b>${escapeHtml(m.description)}</b><small>${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")} · ${m.type}${movementAccountTag(m)?" · "+escapeHtml(movementAccountTag(m)):""}${movementUnitsText(m)?" · "+movementUnitsText(m)+(m.unitsEstimated?" (estimadas)":""):""}</small></span><span class="amt ${t.cls}">${t.sign}${euro.format(m.amount)}</span></button>`;
+   const t=TYPE_UI[m.type]||TYPE_UI.Gasto,u=movementUnitsInfo(m);
+   html+=`<button type="button" class="mitem" data-id="${m.id}"><span class="mico ${t.k}">${catIconSvg(getCat(m.categoryId))}</span><span class="mtext"><b>${escapeHtml(m.description)}</b><small>${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")} · ${m.type}${movementAccountTag(m)?" · "+escapeHtml(movementAccountTag(m)):""}${u?" · "+u.text+(u.estimated?" (estimadas)":""):""}</small></span><span class="amt ${t.cls}">${t.sign}${euro.format(m.amount)}</span></button>`;
  });
  if(!html)html=`<div class="empty-state"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg><p>${state.movements.length?"Ningún movimiento coincide con los filtros.":"Todavía no hay movimientos."}</p><button type="button" class="primary" data-empty-add>Añadir movimiento</button></div>`;
  if(movs.length>LIMIT)html+=`<div class="empty">Mostrando ${intFmt.format(LIMIT)} de ${intFmt.format(movs.length)}. Usa los filtros para acotar.</div>`;
