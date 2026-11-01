@@ -113,6 +113,10 @@ Lo mismo vale para las compras que se escriben a mano (formulario de escritorio 
 
 En el listado de **Movimientos** las aportaciones a fondos muestran las participaciones junto al importe, también en la versión móvil (debajo del importe, para que no se pierdan al recortar el texto de la fila). Si el apunte no las guardó (histórico importado o una categoría que no quedó enlazada al activo), la app deduce el fondo por la categoría o el concepto y muestra las aproximadas con «≈» usando el importe ÷ la última cotización de `prices.json`.
 
+## Movimientos recurrentes
+
+Los recurrentes activos generan sus movimientos pendientes al abrir la app. En el móvil, si la app instalada se queda abierta en segundo plano (acceso directo), al volver a ella se comprueban solos; y si sigue abierta, se revisan cada minuto, así que no hace falta refrescar para ver los del día 1. También se pueden forzar con «Generar pendientes» en la página Recurrentes.
+
 ## Presupuesto mensual por categoría (sección propia)
 
 La sección **Presupuesto** (sidebar en escritorio; página "Más" en móvil) tiene su propio navegador de meses y muestra: presupuestado, gastado (más lo gastado en categorías sin presupuesto), disponible o excedido, y el **ritmo** (euros al día gastados y cuánto se puede gastar al día en lo que queda de mes). Debajo, una barra por categoría (verde, naranja a partir del 80 %, rojo si se pasa) que lleva a sus movimientos, y la lista de categorías sin presupuesto con gasto ese mes.

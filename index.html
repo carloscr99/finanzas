@@ -835,7 +835,7 @@ async function uiSelect(msg,options,def,opts={}){
 // por documento. Al abrir se cargan todos y se juntan en memoria: la app trabaja siempre con la lista completa.
 // Al guardar se escriben, en un solo lote atómico, solo los documentos cuyo contenido ha cambiado.
 // Las cuentas con el formato antiguo (movimientos dentro del principal) se migran la primera vez que se guardan.
-let currentUser=null,userDocRef=null,yearsColRef=null,unsubscribeMain=null,unsubscribeYears=null,remoteSaveTimer=null;
+let currentUser=null,userDocRef=null,yearsColRef=null,unsubscribeMain=null,unsubscribeYears=null,remoteSaveTimer=null,appReady=false;
 let lastMainSnap=null,lastYearsSnap=null; // últimas instantáneas recibidas, para reconstruir el estado al cambiar cualquiera
 let written={main:null,years:new Map()}; // JSON de lo último escrito o leído por documento: solo se reescribe lo que cambia
 let legacyWrites=false; // true si las reglas de Firestore aún no permiten los documentos de año: se guarda todo en el principal, como antes
@@ -981,8 +981,10 @@ async function startApp(user){
  setAuthStatus("");
  showAuthScreen(false);
  updateYearOptions();ensureInitialPortfolioUpdateReference();generateRecurring(false);renderAll();updateMarketPrices(false);
+ appReady=true;
 }
 function stopApp(){
+ appReady=false;
  if(remoteSaveTimer)flushRemoteSave();
  if(unsubscribeMain){unsubscribeMain();unsubscribeMain=null}
  if(unsubscribeYears){unsubscribeYears();unsubscribeYears=null}
@@ -1860,6 +1862,12 @@ function generateRecurring(showAlert=false){
  if(created){markDataUpdate("movement+portfolio");saveState();updateYearOptions();renderAll()}
  if(showAlert)uiAlert(created?`Se han generado ${created} movimiento${created===1?"":"s"} pendiente${created===1?"":"s"}.`:"No había movimientos pendientes.");
 }
+// En el móvil la app instalada puede quedar días en segundo plano sin recargarse, así que los recurrentes del día no se
+// generaban hasta refrescar. Al volver a primer plano (o al día siguiente, si queda abierta) se comprueban solos.
+function checkPendingRecurring(){
+ if(!appReady||!currentUser||document.visibilityState!=="visible")return;
+ generateRecurring(false);
+}
 function renderRecurring(){
  const rows=[...state.recurring].sort((a,b)=>(a.nextDate||"").localeCompare(b.nextDate||""));
  el("recurringTable").innerHTML=rows.length?rows.map(r=>`<tr><td>${escapeHtml(r.description)}${movementAccountTag(r)?`<br><small class="muted">${escapeHtml(movementAccountTag(r))}</small>`:""}</td><td><span class="pill ${r.type}">${r.type}</span></td><td>${catLabel(getCat(r.categoryId))}</td><td>${euro.format(r.amount)}</td><td>${freqLabel(r.frequency)}</td><td>${formatDate(r.nextDate)}</td><td class="actions">${iconBtn("secondary",`data-editrec="${r.id}"`,"i-pencil","Editar")}${r.active===false?iconBtn("secondary",`data-toggle="${r.id}"`,"i-play","Activar"):iconBtn("secondary",`data-toggle="${r.id}"`,"i-pause","Pausar")}${iconBtn("danger",`data-delrec="${r.id}"`,"i-trash","Borrar")}</td></tr>`).join(""):`<tr><td colspan="7" class="empty">No hay recurrentes.</td></tr>`;
@@ -2330,7 +2338,7 @@ window.addEventListener("popstate",()=>{
  else if(currentPage!=="dashboard")showPage(SUBPAGES.includes(currentPage)&&isMobile()?"more":"dashboard");
 });
 // Si el navegador restaura la página desde su caché al volver (bfcache), los lienzos de los gráficos pueden quedar vacíos.
-window.addEventListener("pageshow",e=>{if(!e.persisted)return;if(el("page-dashboard").classList.contains("active"))renderCharts();if(el("page-assets").classList.contains("active"))drawNetWorthChart()});
+window.addEventListener("pageshow",e=>{if(!e.persisted)return;if(el("page-dashboard").classList.contains("active"))renderCharts();if(el("page-assets").classList.contains("active"))drawNetWorthChart();checkPendingRecurring()});
 function exportData(){
  const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"}),url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download=`mis-finanzas-${todayISO()}.json`;a.click();URL.revokeObjectURL(url);
 }
@@ -2384,7 +2392,8 @@ window.addEventListener("resize",()=>{clearTimeout(resizeTimer);resizeTimer=setT
 el("loginGoogle").onclick=login;el("loginFallback").onclick=login;el("logoutSidebar").onclick=logout;el("logoutSettings").onclick=logout;el("logoutMore").onclick=logout;
 el("authRetry").onclick=()=>{if(pendingUser)enterApp(pendingUser)};
 enableSheetSwipe();
-document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flushRemoteSave()});
+document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flushRemoteSave();else checkPendingRecurring()});
+setInterval(checkPendingRecurring,60000); // por si la app se queda abierta y cambia el día sin salir de ella
 window.addEventListener("pagehide",flushRemoteSave);
 // Service worker: cachea la app (HTML, iconos y librerías de CDN) para abrir al instante y sin conexión cuando está instalada.
 if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))navigator.serviceWorker.register("./sw.js").catch(err=>console.warn("Service worker no registrado",err));
