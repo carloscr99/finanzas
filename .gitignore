@@ -3,3 +3,8 @@
 
 # Datos personales: ficheros de importación/exportación de la app. NUNCA subir al repositorio público.
 mis-finanzas-*.json
+
+# Secretos locales: nunca se publican
+.vapid-private-key
+.firebase-service-account.json
+node_modules/

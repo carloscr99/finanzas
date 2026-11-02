@@ -192,6 +192,10 @@ button.badge[data-typeasset]{border:0;cursor:pointer;font-family:inherit}
 .swal2-popup select.swal2-select option{background:var(--input-bg);color:var(--text)}
 .inline-note{padding:12px 14px;border-radius:12px;background:var(--soft);border:1px solid var(--border);font-size:13px;color:var(--muted)}
 .footer-tools{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.pref-row{display:flex;align-items:flex-start;gap:10px;margin-top:12px;font-size:14px;color:var(--text);cursor:pointer}
+.pref-row input{width:16px;height:16px;margin-top:3px;flex:none;accent-color:var(--ring)}
+.pref-row span{flex:1;min-width:0}
+.pref-row small{display:block;margin-top:2px;color:var(--muted);font-size:12px;line-height:1.35}
 .file-label{cursor:pointer;margin:0}
 .file-label input{display:none}
 input:focus,select:focus{outline:2px solid var(--ring);outline-offset:1px;border-color:var(--border-strong)}
@@ -643,6 +647,19 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
           <button class="danger" id="clearAll">Borrar todos los datos</button>
         </div>
         <hr>
+        <h2>Avisos push</h2>
+        <p class="muted">Avisos gratuitos de <b>Mis Finanzas</b> en este dispositivo. Se envían desde una tarea diaria de GitHub y solo si hay algo que hacer: nunca por cada movimiento ni por las cotizaciones.</p>
+        <div class="inline-note" id="pushStatus" style="margin-bottom:12px">Comprobando los avisos de este dispositivo…</div>
+        <div class="footer-tools">
+          <button class="primary" id="pushEnable">Activar avisos en este dispositivo</button>
+          <button class="secondary" id="pushDisable" hidden>Desactivar avisos</button>
+          <button class="secondary" id="pushTest" hidden>Probar aviso</button>
+        </div>
+        <div id="pushPrefs" hidden>
+          <label class="pref-row"><input type="checkbox" id="pushExpenses" checked><span>Gastos que vencen mañana<small>Un aviso el día anterior con los pagos recurrentes de tipo Gasto (alquiler, teléfono, suscripciones…).</small></span></label>
+          <label class="pref-row"><input type="checkbox" id="pushInvestments" checked><span>Inversiones del día<small>El mismo día de una aportación recurrente a un fondo con ISIN o Bitcoin, para que revises las participaciones en la app.</small></span></label>
+        </div>
+        <hr>
         <h2>Cotizaciones del patrimonio</h2>
         <div class="inline-note">La web obtiene automáticamente las cotizaciones desde el archivo público <b>prices.json</b> de GitHub cada vez que la abres o pulsas “Sincronizar cotizaciones”. La fecha de cotización de cada activo se conserva por separado de la fecha/hora en la que se sincronizó y recalculó el patrimonio.</div>
       </div>
@@ -727,8 +744,9 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 import { getAuth, GoogleAuthProvider, signInWithPopup, signInWithCredential, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, collection, getDoc, getDocFromServer, getDocs, getDocsFromServer, setDoc, writeBatch, onSnapshot } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+import { initializeFirestore, persistentLocalCache, persistentMultipleTabManager, doc, collection, getDoc, getDocFromServer, getDocs, getDocsFromServer, setDoc, deleteDoc, writeBatch, onSnapshot } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { firebaseConfig } from "./firebase-config.js";
+import { VAPID_PUBLIC_KEY } from "./push-config.js";
 
 const firebaseApp=initializeApp(firebaseConfig);
 const auth=getAuth(firebaseApp);
@@ -981,7 +999,10 @@ async function startApp(user){
  setAuthStatus("");
  showAuthScreen(false);
  updateYearOptions();ensureInitialPortfolioUpdateReference();generateRecurring(false);renderAll();updateMarketPrices(false);
+ const deepPage=new URLSearchParams(location.search).get("page");
+ if(deepPage&&document.getElementById("page-"+deepPage)){showPage(deepPage);history.replaceState(null,"",location.pathname)}
  appReady=true;
+ refreshPushUI();
 }
 function stopApp(){
  appReady=false;
@@ -1868,6 +1889,146 @@ function checkPendingRecurring(){
  if(!appReady||!currentUser||document.visibilityState!=="visible")return;
  generateRecurring(false);
 }
+
+// ---------- Avisos push (Web Push estándar + VAPID) ----------
+// Cada dispositivo guarda su suscripción en users/{uid}/push/{dispositivo}. La tarea diaria de GitHub lee esos
+// documentos, decide qué avisos tocan y los envía. Aquí solo se activa/desactiva y se guardan las preferencias.
+const PUSH_DEVICE_KEY="finanzasPushDevice";
+function pushSupported(){return "serviceWorker" in navigator&&"PushManager" in window&&"Notification" in window&&!!VAPID_PUBLIC_KEY}
+function pushDeviceId(){
+ let id=null;try{id=localStorage.getItem(PUSH_DEVICE_KEY)}catch{}
+ if(!id){id=uuid();try{localStorage.setItem(PUSH_DEVICE_KEY,id)}catch{}}
+ return id;
+}
+function pushDocRef(){return doc(db,"users",currentUser.uid,"push",pushDeviceId())}
+function urlBase64ToUint8Array(base64String){
+ const padding="=".repeat((4-base64String.length%4)%4);
+ const base64=(base64String+padding).replace(/-/g,"+").replace(/_/g,"/");
+ const raw=atob(base64);
+ const output=new Uint8Array(raw.length);
+ for(let i=0;i<raw.length;i++)output[i]=raw.charCodeAt(i);
+ return output;
+}
+function isIOSDevice(){return /iphone|ipad|ipod/i.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1)}
+function isStandaloneApp(){return window.matchMedia?.("(display-mode: standalone)")?.matches||navigator.standalone===true}
+function pushPrefsFromUI(){return{expenses:el("pushExpenses").checked,investments:el("pushInvestments").checked}}
+function renderPushUI({subscribed=false,permission="default",busy=false,error="",prefs={}}={}){
+ const supported=pushSupported();
+ const status=el("pushStatus");
+ el("pushEnable").hidden=busy||subscribed||!supported||permission==="denied";
+ el("pushDisable").hidden=busy||!subscribed;
+ el("pushTest").hidden=busy||!subscribed;
+ el("pushPrefs").hidden=!subscribed;
+ el("pushExpenses").checked=prefs.expenses!==false;el("pushInvestments").checked=prefs.investments!==false;
+ if(busy)status.textContent="Activando avisos…";
+ else if(error)status.textContent=error;
+ else if(!supported){
+   if(!VAPID_PUBLIC_KEY)status.textContent="Faltan las claves VAPID en push-config.js: los avisos aún no están configurados.";
+   else if(isIOSDevice()&&!isStandaloneApp())status.textContent="En iPhone/iPad, añade esta web a la pantalla de inicio (iOS 16.4 o superior) para poder activar los avisos.";
+   else status.textContent="Este navegador no admite notificaciones push.";
+ }else if(permission==="denied")status.textContent="Los avisos están bloqueados para esta web. Actívalos en los ajustes del navegador o del sistema.";
+ else if(subscribed)status.textContent="Avisos activos en este dispositivo. Gastos: el día antes del vencimiento. Inversiones: el mismo día de la aportación.";
+ else status.textContent="Avisos desactivados en este dispositivo.";
+}
+async function savePushSubscription(subscription,prefs){
+ const json=subscription.toJSON();
+ await setDoc(pushDocRef(),{
+   endpoint:json.endpoint,
+   keys:json.keys,
+   prefs,
+   userAgent:navigator.userAgent.slice(0,200),
+   updatedAt:nowISO()
+ },{merge:true});
+}
+async function refreshPushUI(){
+ const permission=("Notification" in window)?Notification.permission:"default";
+ if(!pushSupported()||permission!=="granted"){renderPushUI({permission});return}
+ try{
+   const registration=await navigator.serviceWorker.ready;
+   const subscription=await registration.pushManager.getSubscription();
+   if(!subscription){renderPushUI({permission});return}
+   let prefs={expenses:true,investments:true};
+   if(currentUser){
+     const snap=await getDoc(pushDocRef());
+     if(snap.exists())prefs={...prefs,...(snap.data().prefs||{})};
+     // Si el navegador ya tenía la suscripción pero el documento se perdió (otra versión, reglas nuevas…), se vuelve a guardar.
+     if(!snap.exists())await savePushSubscription(subscription,prefs);
+   }
+   renderPushUI({subscribed:true,permission,prefs});
+ }catch(err){
+   console.warn("No se pudo comprobar la suscripción push",err);
+   renderPushUI({permission,error:"No se pudieron comprobar los avisos guardados en tu cuenta. Revisa la conexión y vuelve a intentarlo."});
+ }
+}
+async function enablePush(){
+ const permission=("Notification" in window)?Notification.permission:"default";
+ if(!pushSupported()){renderPushUI({permission});return}
+ renderPushUI({permission,busy:true,prefs:pushPrefsFromUI()});
+ try{
+   const granted=Notification.permission==="granted"?"granted":await Notification.requestPermission();
+   if(granted!=="granted"){
+     renderPushUI({permission:granted,prefs:pushPrefsFromUI()});
+     if(granted==="denied")uiError("Has bloqueado los avisos para esta web. Actívalos en los ajustes del navegador o del sistema y vuelve a intentarlo.","Avisos");
+     return;
+   }
+   const registration=await navigator.serviceWorker.ready;
+   let subscription=await registration.pushManager.getSubscription();
+   if(!subscription)subscription=await registration.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:urlBase64ToUint8Array(VAPID_PUBLIC_KEY)});
+   const prefs=pushPrefsFromUI();
+   await savePushSubscription(subscription,prefs);
+   renderPushUI({subscribed:true,permission:granted,prefs});
+   toast("Avisos activados en este dispositivo");
+ }catch(err){
+   console.error("No se pudieron activar los avisos",err);
+   renderPushUI({permission,prefs:pushPrefsFromUI(),error:"No se pudieron activar los avisos: "+(err.code||err.message)});
+ }
+}
+async function disablePush(){
+ if(!(await uiConfirm("Este dispositivo dejará de recibir los avisos. Podrás volver a activarlos cuando quieras.",{title:"¿Desactivar los avisos?",confirmText:"Desactivar"})))return;
+ renderPushUI({busy:true,prefs:pushPrefsFromUI()});
+ let error="";
+ try{
+   const registration=await navigator.serviceWorker.ready;
+   const subscription=await registration.pushManager.getSubscription();
+   if(subscription)await subscription.unsubscribe();
+   if(currentUser)await deleteDoc(pushDocRef());
+ }catch(err){
+   console.error("No se pudieron desactivar los avisos",err);
+   error="Se desactivaron en el navegador, pero no se pudieron borrar de tu cuenta. Se limpiarán solos en el próximo envío.";
+ }
+ await refreshPushUI();
+ if(error)el("pushStatus").textContent=error;
+ else toast("Avisos desactivados en este dispositivo");
+}
+async function updatePushPrefs(){
+ if(!currentUser)return;
+ try{
+   const registration=await navigator.serviceWorker.ready;
+   const subscription=await registration.pushManager.getSubscription();
+   if(!subscription)return;
+   await savePushSubscription(subscription,pushPrefsFromUI());
+   el("pushStatus").textContent="Preferencia de avisos guardada.";
+ }catch(err){
+   console.error("No se pudo guardar la preferencia de avisos",err);
+   uiError("No se pudo guardar la preferencia de avisos: "+(err.code||err.message),"Avisos");
+ }
+}
+async function sendTestPush(){
+ try{
+   const registration=await navigator.serviceWorker.ready;
+   await registration.showNotification("Mis Finanzas",{
+     body:"Así se verán los avisos: un pago que vence mañana o una aportación para revisar participaciones.",
+     icon:"./icon-192.png",
+     badge:"./icon-192.png",
+     tag:"finanzas-prueba",
+     data:{url:"./?page=settings"}
+   });
+   toast("Aviso de prueba enviado");
+ }catch(err){
+   console.error("No se pudo mostrar el aviso de prueba",err);
+   uiError("No se pudo mostrar el aviso de prueba: "+(err.code||err.message),"Avisos");
+ }
+}
 function renderRecurring(){
  const rows=[...state.recurring].sort((a,b)=>(a.nextDate||"").localeCompare(b.nextDate||""));
  el("recurringTable").innerHTML=rows.length?rows.map(r=>`<tr><td>${escapeHtml(r.description)}${movementAccountTag(r)?`<br><small class="muted">${escapeHtml(movementAccountTag(r))}</small>`:""}</td><td><span class="pill ${r.type}">${r.type}</span></td><td>${catLabel(getCat(r.categoryId))}</td><td>${euro.format(r.amount)}</td><td>${freqLabel(r.frequency)}</td><td>${formatDate(r.nextDate)}</td><td class="actions">${iconBtn("secondary",`data-editrec="${r.id}"`,"i-pencil","Editar")}${r.active===false?iconBtn("secondary",`data-toggle="${r.id}"`,"i-play","Activar"):iconBtn("secondary",`data-toggle="${r.id}"`,"i-pause","Pausar")}${iconBtn("danger",`data-delrec="${r.id}"`,"i-trash","Borrar")}</td></tr>`).join(""):`<tr><td colspan="7" class="empty">No hay recurrentes.</td></tr>`;
@@ -2314,6 +2475,7 @@ function showPage(name){
  window.scrollTo({top:0,behavior:"smooth"});
  if(name==="dashboard")setTimeout(renderCharts,20);
  if(name==="assets")setTimeout(drawNetWorthChart,20);
+ if(name==="settings")refreshPushUI();
  syncBackTrap();
 }
 // ---------- Botón "atrás" (Android y navegador) ----------
@@ -2366,6 +2528,7 @@ el("periodMode").onchange=()=>{updatePeriodControls();renderAll()};el("monthFilt
 el("goCurrent").onclick=()=>{const n=new Date();el("periodMode").value="month";el("monthFilter").value=n.getMonth()+1;updateYearOptions();el("yearFilter").value=n.getFullYear();updatePeriodControls();renderAll()};
 ["searchText","searchType","searchCategory","searchFrom","searchTo"].forEach(id=>el(id).addEventListener(id==="searchText"?"input":"change",()=>{el("filterNotice").hidden=true;renderMovements()}));
 el("exportData").onclick=exportData;el("importData").onchange=e=>importData(e.target.files[0]);el("clearAll").onclick=clearAll;
+el("pushEnable").onclick=enablePush;el("pushDisable").onclick=disablePush;el("pushTest").onclick=sendTestPush;el("pushExpenses").onchange=updatePushPrefs;el("pushInvestments").onchange=updatePushPrefs;
 el("sumTypeToggle").querySelectorAll("[data-sumtype]").forEach(b=>b.onclick=()=>{sumType=b.dataset.sumtype;renderCategorySummary()});
 el("clearFilters").onclick=clearMovementFilters;
 el("bulkToggle").onclick=()=>toggleBulkPanel(el("bulkPanel").hidden);el("bulkCancel").onclick=()=>toggleBulkPanel(false);el("bulkType").onchange=updateBulkCategories;el("bulkApply").onclick=bulkRecategorize;

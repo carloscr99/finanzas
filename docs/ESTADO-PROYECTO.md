@@ -38,11 +38,18 @@ Requisitos fijados al principio y que se mantienen:
 | Fichero | Para qué |
 |---|---|
 | `index.html` | Toda la aplicación (HTML, CSS, JS). ~1.650 líneas. |
-| `sw.js` | Service worker: cachea la app, iconos y librerías de CDN (app-shell). Red primero para `index.html`, caché primero para CDN. Constante `CACHE` (hoy `finanzas-v2`): subirla al cambiar librerías. |
+| `sw.js` | Service worker: cachea la app, iconos y librerías de CDN (app-shell). Red primero para `index.html`, caché primero para CDN. Constante `CACHE` (hoy `finanzas-v3`): subirla al cambiar librerías o la lista `PRECACHE`. También muestra las notificaciones push y lleva a la página indicada al tocarlas. |
 | `firebase-config.js` | Identificadores del proyecto Firebase (no son secretos). |
+| `push-config.js` | Clave pública VAPID de las notificaciones push (no es secreta). |
 | `firestore.rules` | Reglas de seguridad (copia versionada; las vigentes están en la consola). |
 | `prices.json` | Cotizaciones por ISIN (y `BTC`): `price`, `priceDate`, `source`, `updatedAt`. Lo reescribe el robot. |
 | `scripts/update-prices.mjs` | Script Node que lee el NAV de cada fondo en el Financial Times y BTC en CoinGecko. |
+| `scripts/notify-lib.mjs` | Lógica pura de los avisos: gastos que vencen mañana e inversiones del día con participaciones estimadas. |
+| `scripts/send-notifications.mjs` | Emisor push: lee Firestore con una cuenta de servicio, envía con Web Push/VAPID y borra suscripciones caducadas. |
+| `scripts/fixtures/notifications.json` | Datos de prueba para `npm run notify:dry`. |
+| `scripts/test-notifications.mjs`, `scripts/test-service-worker.mjs` | Pruebas locales (`npm test`) sin enviar nada. |
+| `.github/workflows/notify.yml` | GitHub Action diaria (08:00, 09:00 y 10:00 UTC; envía a partir de las 10:00 de Madrid). |
+| `package.json`, `package-lock.json` | Dependencias (`firebase-admin`, `web-push`) y scripts `notify` / `test`. |
 | `.github/workflows/update-prices.yml` | GitHub Action, dos pasadas al día (06:00 y 18:00 UTC) y a mano; tras un commit de precios llama al workflow de publicación. |
 | `.github/workflows/deploy-pages.yml` | Publica la web en Pages (modo "GitHub Actions") en cada push a `main`, a mano o desde el workflow de cotizaciones. |
 | `manifest.webmanifest`, `icon-192.png`, `icon-512.png` | Instalación como app (id, standalone, portrait, categoría finance). |
@@ -191,7 +198,7 @@ Antes de tocar la interfaz, consultar la skill (`search.py … --domain ux|icons
 7. Opcional: el recurrente de Revolut (50 €) sigue como Inversión; si se prefiere como provisión del seguro, cambiarlo a Gasto › Seguros.
 8. Seguir vigilando que el cron del robot dispare las dos pasadas (ver Actions).
 9. Limpieza de categorías (criterio: la categoría dice el motivo, no el canal de pago): renombrar "Bizum recibido" a "Reembolsos", repartir y borrar "Bizums" (gasto) y, opcionalmente, "Compras online". Revisar los presupuestos propuestos (sección Presupuesto → Ajustar presupuestos).
-10. Ideas pendientes del análisis de competencia (14/10): objetivos de ahorro ligados a cuentas, importación del extracto del banco en CSV con reglas de categoría, comparativa año contra año y "mes típico", tasa de ahorro, recordatorio de copia de seguridad, atajos del manifest ("Añadir gasto"), etiquetas en movimientos. Descartado: conexión bancaria, multiusuario, fotos de tickets, notificaciones.
+10. Ideas pendientes del análisis de competencia (14/10): objetivos de ahorro ligados a cuentas, importación del extracto del banco en CSV con reglas de categoría, comparativa año contra año y "mes típico", tasa de ahorro, recordatorio de copia de seguridad, atajos del manifest ("Añadir gasto"), etiquetas en movimientos. Descartado: conexión bancaria, multiusuario, fotos de tickets. (Las notificaciones push se implementaron el 03/11/2026 con Web Push + VAPID.)
 
 ### Limitaciones conocidas
 - Sin servidor propio: los recurrentes se generan al abrir la web (con la fecha correcta aunque se abra días después).

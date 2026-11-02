@@ -1,0 +1,304 @@
+{
+  "today": "2026-11-03",
+  "users": [
+    {
+      "uid": "usuario-prueba",
+      "main": {
+        "categories": [
+          {
+            "id": "cat-rent",
+            "name": "Alquiler",
+            "type": "Gasto"
+          },
+          {
+            "id": "cat-phone",
+            "name": "Teléfono",
+            "type": "Gasto"
+          },
+          {
+            "id": "cat-food",
+            "name": "Supermercado",
+            "type": "Gasto"
+          },
+          {
+            "id": "cat-funds",
+            "name": "Fondos",
+            "type": "Inversión"
+          },
+          {
+            "id": "cat-crypto",
+            "name": "Cripto",
+            "type": "Inversión"
+          },
+          {
+            "id": "cat-savings",
+            "name": "RenaultBank",
+            "type": "Inversión"
+          }
+        ],
+        "assets": [
+          {
+            "id": "asset-world",
+            "name": "Amundi Index MSCI World AE-C",
+            "type": "Fondo",
+            "isin": "LU0996182563"
+          },
+          {
+            "id": "asset-btc",
+            "name": "Bitcoin",
+            "type": "Cripto"
+          },
+          {
+            "id": "asset-savings",
+            "name": "RenaultBank",
+            "type": "Cuenta"
+          }
+        ],
+        "recurring": [
+          {
+            "id": "r-rent",
+            "type": "Gasto",
+            "categoryId": "cat-rent",
+            "description": "Alquiler",
+            "amount": 900,
+            "frequency": "monthly",
+            "nextDate": "2026-11-04",
+            "active": true
+          },
+          {
+            "id": "r-phone",
+            "type": "Gasto",
+            "categoryId": "cat-phone",
+            "description": "Teléfono",
+            "amount": 25.5,
+            "frequency": "monthly",
+            "nextDate": "2026-11-04",
+            "active": true
+          },
+          {
+            "id": "r-food",
+            "type": "Gasto",
+            "categoryId": "cat-food",
+            "description": "Compra semanal",
+            "amount": 60,
+            "frequency": "weekly",
+            "nextDate": "2026-11-03",
+            "active": true
+          },
+          {
+            "id": "r-paused",
+            "type": "Gasto",
+            "categoryId": "cat-phone",
+            "description": "Seguro pausado",
+            "amount": 30,
+            "frequency": "monthly",
+            "nextDate": "2026-11-04",
+            "active": false
+          },
+          {
+            "id": "r-fund",
+            "type": "Inversión",
+            "categoryId": "cat-funds",
+            "description": "Compra Amundi MSCI World",
+            "amount": 300,
+            "frequency": "monthly",
+            "nextDate": "2026-11-03",
+            "active": true
+          },
+          {
+            "id": "r-btc",
+            "type": "Inversión",
+            "categoryId": "cat-crypto",
+            "description": "Compra Bitcoin",
+            "amount": 100,
+            "frequency": "monthly",
+            "nextDate": "2026-11-03",
+            "active": true
+          },
+          {
+            "id": "r-savings",
+            "type": "Inversión",
+            "categoryId": "cat-savings",
+            "description": "Aportación RenaultBank",
+            "amount": 200,
+            "frequency": "monthly",
+            "nextDate": "2026-11-03",
+            "active": true
+          },
+          {
+            "id": "r-fund-tomorrow",
+            "type": "Inversión",
+            "categoryId": "cat-funds",
+            "description": "Compra Amundi MSCI World",
+            "amount": 300,
+            "frequency": "monthly",
+            "nextDate": "2026-11-04",
+            "active": true
+          },
+          {
+            "id": "r-zero",
+            "type": "Gasto",
+            "categoryId": "cat-phone",
+            "description": "Importe cero",
+            "amount": 0,
+            "frequency": "monthly",
+            "nextDate": "2026-11-04",
+            "active": true
+          }
+        ]
+      },
+      "subscriptions": [
+        {
+          "id": "dispositivo-completo",
+          "data": {
+            "endpoint": "https://push.example.com/dispositivo-completo",
+            "keys": {
+              "p256dh": "demo",
+              "auth": "demo"
+            },
+            "prefs": {
+              "expenses": true,
+              "investments": true
+            },
+            "lastSent": {}
+          }
+        },
+        {
+          "id": "dispositivo-solo-gastos",
+          "data": {
+            "endpoint": "https://push.example.com/dispositivo-solo-gastos",
+            "keys": {
+              "p256dh": "demo",
+              "auth": "demo"
+            },
+            "prefs": {
+              "expenses": true,
+              "investments": false
+            },
+            "lastSent": {}
+          }
+        }
+      ],
+      "movements": []
+    },
+    {
+      "uid": "usuario-ya-avisado",
+      "main": {
+        "categories": [
+          {
+            "id": "cat-rent",
+            "name": "Alquiler",
+            "type": "Gasto"
+          }
+        ],
+        "assets": [],
+        "recurring": [
+          {
+            "id": "r-rent",
+            "type": "Gasto",
+            "categoryId": "cat-rent",
+            "description": "Alquiler",
+            "amount": 900,
+            "frequency": "monthly",
+            "nextDate": "2026-11-04",
+            "active": true
+          }
+        ]
+      },
+      "subscriptions": [
+        {
+          "id": "dispositivo-ya-avisado",
+          "data": {
+            "endpoint": "https://push.example.com/dispositivo-ya-avisado",
+            "keys": {
+              "p256dh": "demo",
+              "auth": "demo"
+            },
+            "prefs": {
+              "expenses": true,
+              "investments": true
+            },
+            "lastSent": {
+              "expenses": "2026-11-03",
+              "investments": "2026-11-03"
+            }
+          }
+        }
+      ],
+      "movements": []
+    },
+    {
+      "uid": "usuario-inversion-generada",
+      "main": {
+        "categories": [
+          {
+            "id": "cat-funds",
+            "name": "Fondos",
+            "type": "Inversión"
+          }
+        ],
+        "assets": [
+          {
+            "id": "asset-world",
+            "name": "Amundi Index MSCI World AE-C",
+            "type": "Fondo",
+            "isin": "LU0996182563"
+          }
+        ],
+        "recurring": [
+          {
+            "id": "r-fund",
+            "type": "Inversión",
+            "categoryId": "cat-funds",
+            "description": "Compra Amundi MSCI World",
+            "amount": 300,
+            "frequency": "monthly",
+            "nextDate": "2026-12-03",
+            "active": true
+          }
+        ]
+      },
+      "movements": [
+        {
+          "id": "m-fund",
+          "date": "2026-11-03",
+          "type": "Inversión",
+          "categoryId": "cat-funds",
+          "description": "Compra Amundi MSCI World",
+          "amount": 300,
+          "assetId": "asset-world",
+          "unitsEstimated": true,
+          "recurringId": "r-fund",
+          "recurrenceDate": "2026-11-03"
+        },
+        {
+          "id": "m-old",
+          "date": "2026-10-03",
+          "type": "Inversión",
+          "categoryId": "cat-funds",
+          "description": "Compra Amundi MSCI World",
+          "amount": 300,
+          "assetId": "asset-world",
+          "unitsEstimated": true
+        }
+      ],
+      "subscriptions": [
+        {
+          "id": "dispositivo-inversion",
+          "data": {
+            "endpoint": "https://push.example.com/dispositivo-inversion",
+            "keys": {
+              "p256dh": "demo",
+              "auth": "demo"
+            },
+            "prefs": {
+              "expenses": true,
+              "investments": true
+            },
+            "lastSent": {}
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "name": "mis-finanzas",
+  "version": "1.0.0",
+  "private": true,
+  "description": "App de finanzas personales en GitHub Pages con Firebase y avisos push.",
+  "type": "module",
+  "main": "firebase-config.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "node scripts/test-notifications.mjs && node scripts/test-service-worker.mjs",
+    "test:notifications": "node scripts/test-notifications.mjs",
+    "notify": "node scripts/send-notifications.mjs",
+    "notify:dry": "node scripts/send-notifications.mjs --dry-run --fixture scripts/fixtures/notifications.json"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/carloscr99/finanzas.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/carloscr99/finanzas/issues"
+  },
+  "homepage": "https://github.com/carloscr99/finanzas#readme",
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.4.0",
+    "web-push": "^3.6.7"
+  }
+}

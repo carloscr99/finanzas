@@ -19,6 +19,12 @@ service cloud.firestore {
       match /years/{year} {
         allow read, write: if allowed() && request.auth.uid == uid;
       }
+
+      // Suscripciones de notificaciones push de cada dispositivo. El emisor diario usa una cuenta de servicio
+      // (Admin SDK), que no pasa por estas reglas; aquí solo se permite al propio usuario activar o desactivar.
+      match /push/{deviceId} {
+        allow read, write: if allowed() && request.auth.uid == uid;
+      }
     }
 
     // Cada usuario solo puede comprobar su propia entrada en la lista.

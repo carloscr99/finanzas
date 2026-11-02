@@ -1,0 +1,46 @@
+name: Avisos push
+
+# Tres pasadas al día (UTC) para caer sobre las 10:00 de Madrid tanto en invierno (UTC+1) como en verano (UTC+2):
+#   - 08:00 UTC = 10:00 en verano y 09:00 en invierno.
+#   - 09:00 UTC = 10:00 en invierno y 11:00 en verano.
+#   - 10:00 UTC = pasada de respaldo si GitHub retrasa o se salta alguna de las anteriores.
+# El script solo envía a partir de las 10:00 de Madrid y no repite avisos ya enviados ese día, así que las pasadas
+# que caen antes o después no duplican nada. Se puede lanzar a mano desde Actions → "Avisos push" → Run workflow.
+on:
+  schedule:
+    - cron: "0 8 * * *"
+    - cron: "0 9 * * *"
+    - cron: "0 10 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: avisos-push
+  cancel-in-progress: false
+
+jobs:
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el repositorio
+        uses: actions/checkout@v4
+
+      - name: Preparar Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Enviar los avisos que toquen
+        run: npm run notify
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          VAPID_PRIVATE_KEY: ${{ secrets.VAPID_PRIVATE_KEY }}
+          VAPID_SUBJECT: ${{ secrets.VAPID_SUBJECT }}
+          # Una ejecución manual desde Actions no espera a las 10:00 de Madrid (útil para probar).
+          FORCE_RUN: ${{ github.event_name == 'workflow_dispatch' && '1' || '0' }}

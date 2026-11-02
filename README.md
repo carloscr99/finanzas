@@ -8,8 +8,11 @@ Ficheros:
 |---|---|
 | `index.html` | La aplicación completa (HTML, CSS y JavaScript) |
 | `firebase-config.js` | Identificadores de tu proyecto de Firebase (se rellenan una vez) |
+| `push-config.js` | Clave pública VAPID de las notificaciones push (no es secreta) |
 | `firestore.rules` | Reglas de seguridad de Firestore (se pegan en la consola de Firebase) |
 | `prices.json` | Cotizaciones de BTC, fondos y oro (lo actualiza una tarea automática) |
+| `scripts/` | Tareas automáticas: cotizaciones (`update-prices.mjs`) y avisos push (`send-notifications.mjs`) |
+| `package.json` / `package-lock.json` | Dependencias que instalan las tareas de GitHub Actions |
 | `.nojekyll` | Le dice a GitHub Pages que publique los ficheros tal cual |
 
 ## 1. Crear el proyecto de Firebase
@@ -116,6 +119,36 @@ En el listado de **Movimientos** las aportaciones a fondos muestran las particip
 ## Movimientos recurrentes
 
 Los recurrentes activos generan sus movimientos pendientes al abrir la app. En el móvil, si la app instalada se queda abierta en segundo plano (acceso directo), al volver a ella se comprueban solos; y si sigue abierta, se revisan cada minuto, así que no hace falta refrescar para ver los del día 1. También se pueden forzar con «Generar pendientes» en la página Recurrentes.
+
+## Avisos push (gratis)
+
+Las notificaciones usan **Web Push estándar + VAPID**, sin cuotas por mensaje ni servicios de terceros. Cada dispositivo se suscribe por separado desde **Ajustes → Avisos push** y puede desactivarlas cuando quiera. La app guarda la suscripción en `users/{uid}/push/{dispositivo}` y una tarea diaria de GitHub (con una cuenta de servicio de Firebase) decide qué avisos toca enviar.
+
+**Qué avisa y cuándo**
+
+- **Gastos recurrentes**: un solo aviso el día anterior al vencimiento (alquiler, teléfono, suscripciones…), con concepto e importe. Nunca avisa de ingresos ni de inversiones en este apartado.
+- **Inversiones recurrentes**: el mismo día de la aportación, solo si está relacionada con un fondo con ISIN o Bitcoin, para recordar revisar las participaciones. También avisa si la app ya generó el movimiento con participaciones **estimadas** (`unitsEstimated`), que es justo cuando conviene ajustarlas.
+- Si no hay nada que avisar, no se envía nada. Cada dispositivo recuerda en su documento la última fecha enviada de cada tipo, así que las pasadas repetidas del workflow no duplican notificaciones.
+
+**Hora de envío**
+
+El objetivo son las **10:00 de Madrid**. GitHub Actions programa en UTC y Madrid cambia de hora, así que el workflow hace tres pasadas (08:00, 09:00 y 10:00 UTC) y el script solo envía a partir de las 10:00 de Madrid; las demás pasadas no hacen nada. En invierno envía la de las 09:00 UTC (10:00 Madrid) y en verano la de las 08:00 UTC (10:00 Madrid). La de las 10:00 UTC es un respaldo por si GitHub retrasa o se salta alguna. Una ejecución manual desde Actions no espera a esa hora (`FORCE_RUN=1`).
+
+**Configuración inicial (una vez)**
+
+1. **Publicar las reglas**: pega el `firestore.rules` actualizado en Firebase Console → Firestore → Reglas. Incluye la subcolección `push`, necesaria para que cada usuario guarde su suscripción.
+2. **Cuenta de servicio**: Firebase Console → Configuración del proyecto → **Cuentas de servicio** → **Generar nueva clave privada**. Guarda el JSON y pégalo completo como secreto `FIREBASE_SERVICE_ACCOUNT` en GitHub → Settings → Secrets and variables → Actions. No lo subas al repositorio.
+3. **Clave privada VAPID**: la clave privada generada está en `.vapid-private-key` (ignorada por git). Pégala como secreto `VAPID_PRIVATE_KEY`. La pública ya está en `push-config.js`; si algún día se regeneran las claves, actualiza las dos y vuelve a activar los avisos en cada dispositivo.
+4. Opcional: secreto `VAPID_SUBJECT` con un `mailto:` o una URL de contacto. Si no se indica, se usa la URL del proyecto.
+5. En GitHub → Actions → **Avisos push** → **Run workflow** para probar el envío. Para probar sin enviar nada: `npm test` y `npm run notify:dry`.
+
+**Límites y letra pequeña**
+
+- En **iPhone/iPad** los avisos web solo funcionan desde **iOS 16.4** y con la web **añadida a la pantalla de inicio** (no vale un marcador normal). Si se deniega el permiso, iOS no vuelve a preguntar: hay que activarlo en Ajustes.
+- En Android y escritorio funcionan en Chrome, Edge y Firefox, instalada o en una pestaña.
+- GitHub puede retrasar el cron varios minutos. El aviso sigue siendo válido el mismo día. Si el workflow estuviera inactivo 60 días, GitHub puede pausar los programados; el workflow de cotizaciones genera actividad a diario, así que no debería pasar.
+- El texto incluye concepto e importe, así que se verá en la pantalla de bloqueo si el sistema muestra el contenido. Se puede ocultar desde los ajustes de notificaciones del móvil.
+- No hay garantía de entrega: el sistema operativo puede agrupar o retrasar avisos con batería baja. Si un endpoint caduca (404/410), la tarea borra esa suscripción automáticamente.
 
 ## Presupuesto mensual por categoría (sección propia)
 
