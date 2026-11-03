@@ -103,7 +103,8 @@ async function loadFromFirestore() {
     // añaden los que falten, igual que hace la app.
     const yearSnap = await userDoc.ref.collection("years").doc(currentYear).get();
     const mainData = userDoc.data() || {};
-    const yearMovements = yearSnap.exists() && Array.isArray(yearSnap.data().movements) ? yearSnap.data().movements : [];
+    // En el SDK de administración `exists` es una propiedad booleana, no una función (a diferencia del SDK web modular).
+    const yearMovements = yearSnap.exists && Array.isArray(yearSnap.data().movements) ? yearSnap.data().movements : [];
     const movements = [...yearMovements];
     const seen = new Set(yearMovements.map(movement => movement?.id).filter(Boolean));
     for (const movement of Array.isArray(mainData.movements) ? mainData.movements : []) {
