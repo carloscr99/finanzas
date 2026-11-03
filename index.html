@@ -8,7 +8,7 @@
 <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0b1120">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png" type="image/png">
-<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mis Finanzas">
@@ -2016,10 +2016,11 @@ async function updatePushPrefs(){
 async function sendTestPush(){
  try{
    const registration=await navigator.serviceWorker.ready;
+   const base=location.href;
    await registration.showNotification("Mis Finanzas",{
      body:"Así se verán los avisos: un pago que vence mañana o una aportación para revisar participaciones.",
-     icon:"./icon-192.png",
-     badge:"./icon-192.png",
+     icon:new URL("icon-192.png",base).href,
+     badge:new URL("badge-96.png",base).href,
      tag:"finanzas-prueba",
      data:{url:"./?page=settings"}
    });

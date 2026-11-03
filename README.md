@@ -145,6 +145,7 @@ El objetivo son las **10:00 de Madrid**. GitHub Actions programa en UTC y Madrid
 **Límites y letra pequeña**
 
 - En **iPhone/iPad** los avisos web solo funcionan desde **iOS 16.4** y con la web **añadida a la pantalla de inicio** (no vale un marcador normal). Si se deniega el permiso, iOS no vuelve a preguntar: hay que activarlo en Ajustes.
+- El icono de la notificación es el favicon (`icon-192.png`). En Android la barra de estado usa `badge-96.png`, una silueta monocroma del mismo icono, porque el sistema la recorta en blanco. En Mac, Chrome/Safari muestran además su propio logo de aplicación a la izquierda: eso lo controla el sistema y no se puede cambiar desde la web. En Windows, Chrome puede mostrar su logo si la web no está instalada como app; instalándola desde el menú del navegador usa el icono del manifest. En iPhone/iPad el icono es el de la pantalla de inicio; si cambiaste el icono, hay que quitar y volver a añadir la web a la pantalla de inicio para que se actualice.
 - En Android y escritorio funcionan en Chrome, Edge y Firefox, instalada o en una pestaña.
 - GitHub puede retrasar el cron varios minutos. El aviso sigue siendo válido el mismo día. Si el workflow estuviera inactivo 60 días, GitHub puede pausar los programados; el workflow de cotizaciones genera actividad a diario, así que no debería pasar.
 - El texto incluye concepto e importe, así que se verá en la pantalla de bloqueo si el sistema muestra el contenido. Se puede ocultar desde los ajustes de notificaciones del móvil.

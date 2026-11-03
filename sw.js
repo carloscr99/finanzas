@@ -2,7 +2,7 @@
 // y también sin conexión. Los datos (Firestore), el login (Google) y las cotizaciones (prices.json) nunca pasan por aquí.
 //
 // Sube la versión de CACHE cada vez que cambie la lista PRECACHE (por ejemplo al actualizar Chart.js o Firebase).
-const CACHE = "finanzas-v3";
+const CACHE = "finanzas-v4";
 const PRECACHE = [
   "./",
   "./index.html",
@@ -11,6 +11,8 @@ const PRECACHE = [
   "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png",
+  "./badge-96.png",
+  "./apple-touch-icon.png",
   "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js",
   "https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.14.5/sweetalert2.all.min.js",
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js",
@@ -41,7 +43,7 @@ self.addEventListener("fetch", event => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
   const sameOrigin = url.origin === self.location.origin;
-  const isShellFile = sameOrigin && /\/(index\.html|firebase-config\.js|push-config\.js|manifest\.webmanifest|icon-192\.png|icon-512\.png)$/.test(url.pathname);
+  const isShellFile = sameOrigin && /\/(index\.html|firebase-config\.js|push-config\.js|manifest\.webmanifest|icon-192\.png|icon-512\.png|badge-96\.png|apple-touch-icon\.png)$/.test(url.pathname);
   const isNavigation = req.mode === "navigate";
   const isCdn = CACHE_FIRST_HOSTS.includes(url.hostname) && /firebasejs\/|chart\.umd|sweetalert2/.test(url.pathname);
 
@@ -74,14 +76,21 @@ self.addEventListener("push", event => {
     payload = { body: event.data ? event.data.text() : "" };
   }
   const title = payload.title || "Mis Finanzas";
+  // URLs absolutas: algunos navegadores no cargan bien los iconos relativos y acaban mostrando su propio logo.
+  // `icon` es el favicon de la app; `badge` es su silueta monocroma para la barra de estado de Android.
+  const scope = self.registration.scope || self.location.href;
   const options = {
     body: payload.body || "",
-    icon: "./icon-192.png",
-    badge: "./icon-192.png",
+    icon: new URL("icon-192.png", scope).href,
+    badge: new URL("badge-96.png", scope).href,
     tag: payload.tag || "finanzas",
     data: { url: payload.url || "./" }
   };
-  event.waitUntil(self.registration.showNotification(title, options));
+  event.waitUntil(
+    self.registration.showNotification(title, options).catch(error => {
+      console.error("No se pudo mostrar la notificación", error);
+    })
+  );
 });
 
 // Al tocar la notificación: reutiliza la pestaña/app abierta y la lleva a la página adecuada.

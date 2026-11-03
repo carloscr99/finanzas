@@ -83,7 +83,8 @@ await test("muestra la notificación con título, cuerpo, icono y destino", asyn
   assert.equal(notifications.length, 1);
   assert.equal(notifications[0].title, "Mañana vence un pago");
   assert.equal(notifications[0].options.body, "Alquiler · 900,00 €");
-  assert.equal(notifications[0].options.icon, "./icon-192.png");
+  assert.equal(notifications[0].options.icon, `${scope}icon-192.png`);
+  assert.equal(notifications[0].options.badge, `${scope}badge-96.png`);
   assert.equal(notifications[0].options.tag, "finanzas-gastos-2026-11-04");
   assert.equal(notifications[0].options.data.url, "./?page=recurring");
 });

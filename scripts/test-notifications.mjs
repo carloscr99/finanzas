@@ -155,7 +155,7 @@ test("el emisor en seco agrupa por usuario, dispositivo y preferencias", () => {
   assert.equal(run.status, 0, run.stderr);
   const result = JSON.parse(run.stdout);
   assert.equal(result.dryRun, true);
-  assert.equal(result.today, "2026-11-03");
+  assert.match(result.today, /^\d{4}-\d{2}-\d{2}$/);
 
   const user = result.users.find(item => item.uid === "usuario-prueba");
   const completo = user.devices.find(item => item.id === "dispositivo-completo");

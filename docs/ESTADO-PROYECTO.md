@@ -38,9 +38,10 @@ Requisitos fijados al principio y que se mantienen:
 | Fichero | Para qué |
 |---|---|
 | `index.html` | Toda la aplicación (HTML, CSS, JS). ~1.650 líneas. |
-| `sw.js` | Service worker: cachea la app, iconos y librerías de CDN (app-shell). Red primero para `index.html`, caché primero para CDN. Constante `CACHE` (hoy `finanzas-v3`): subirla al cambiar librerías o la lista `PRECACHE`. También muestra las notificaciones push y lleva a la página indicada al tocarlas. |
+| `sw.js` | Service worker: cachea la app, iconos y librerías de CDN (app-shell). Red primero para `index.html`, caché primero para CDN. Constante `CACHE` (hoy `finanzas-v4`): subirla al cambiar librerías o la lista `PRECACHE`. También muestra las notificaciones push y lleva a la página indicada al tocarlas. |
 | `firebase-config.js` | Identificadores del proyecto Firebase (no son secretos). |
 | `push-config.js` | Clave pública VAPID de las notificaciones push (no es secreta). |
+| `badge-96.png` | Silueta monocroma del icono para la barra de estado de Android. |
 | `firestore.rules` | Reglas de seguridad (copia versionada; las vigentes están en la consola). |
 | `prices.json` | Cotizaciones por ISIN (y `BTC`): `price`, `priceDate`, `source`, `updatedAt`. Lo reescribe el robot. |
 | `scripts/update-prices.mjs` | Script Node que lee el NAV de cada fondo en el Financial Times y BTC en CoinGecko. |
@@ -52,7 +53,7 @@ Requisitos fijados al principio y que se mantienen:
 | `package.json`, `package-lock.json` | Dependencias (`firebase-admin`, `web-push`) y scripts `notify` / `test`. |
 | `.github/workflows/update-prices.yml` | GitHub Action, dos pasadas al día (06:00 y 18:00 UTC) y a mano; tras un commit de precios llama al workflow de publicación. |
 | `.github/workflows/deploy-pages.yml` | Publica la web en Pages (modo "GitHub Actions") en cada push a `main`, a mano o desde el workflow de cotizaciones. |
-| `manifest.webmanifest`, `icon-192.png`, `icon-512.png` | Instalación como app (id, standalone, portrait, categoría finance). |
+| `manifest.webmanifest`, `icon-192.png`, `icon-512.png`, `apple-touch-icon.png` | Instalación como app (id, standalone, portrait, categoría finance). `icon-192.png` es también el favicon y el icono de las notificaciones. |
 | `README.md` | Guía completa: Firebase, Pages, cotizaciones, móvil, Patrimonio, cambio en bloque, Dashboard, recurrentes de fondos. |
 | `.nojekyll`, `.gitignore` | Pages sin Jekyll; ignora `.claude/` y `mis-finanzas-*.json`. |
 
