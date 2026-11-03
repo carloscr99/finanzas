@@ -147,6 +147,7 @@ async function main() {
   let skipped = 0;
   let failed = 0;
   let removed = 0;
+  let planned = 0;
 
   for (const user of users) {
     const devices = [];
@@ -161,6 +162,7 @@ async function main() {
         prefs
       });
       const messages = buildNotifications(plan);
+      planned += messages.length;
       const toSend = messages.filter(message => !alreadySent(subscription.data, message.kind, user.date || today));
       skipped += messages.length - toSend.length;
 
@@ -199,6 +201,8 @@ async function main() {
   if (dryRun) {
     console.log(JSON.stringify({ dryRun: true, today, users: result }, null, 2));
   } else {
+    const devices = users.reduce((total, user) => total + user.subscriptions.length, 0);
+    console.log(`Usuarios: ${users.length}, dispositivos: ${devices}, avisos previstos: ${planned}.`);
     console.log(`Avisos: ${sent} enviados, ${skipped} ya enviados, ${removed} suscripciones caducadas, ${failed} fallos.`);
   }
   if (failed) process.exitCode = 1;
