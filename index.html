@@ -246,6 +246,9 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .grid-2,.grid-3,.grid-4,.summary-grid,.asset-grid,.kpi-strip{grid-template-columns:minmax(0,1fr)}
  .grid-2,.grid-3,.grid-4,.summary-grid{gap:12px}
  .form-grid,.form-grid-4,.toolbar,.searchbar{grid-template-columns:minmax(0,1fr)}
+ /* Safari en iOS puede sumar el padding del control de fecha a su ancho del 100 %. */
+ input[type="date"]{padding:0}
+ input[type="date"]::-webkit-date-and-time-value{min-width:0;margin:0 10px;text-align:left}
  /* Barra inferior: 5 destinos, icono + etiqueta, píldora indicadora en el activo, safe area */
  .mobile-nav{position:fixed;z-index:50;left:0;right:0;bottom:0;height:calc(var(--nav-h) + env(safe-area-inset-bottom));padding:0 4px env(safe-area-inset-bottom);background:var(--nav-bg);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-top:1px solid var(--border);display:grid;grid-template-columns:repeat(5,1fr);align-items:stretch}
  .mobile-nav button{border:0;background:transparent;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:4px 0;min-height:48px;font-size:11px;font-weight:600;line-height:1.2;transition:color .12s}
@@ -542,8 +545,8 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
           <div><label>Buscar</label><input id="searchText" placeholder="Concepto o categoría"></div>
           <div><label>Tipo</label><select id="searchType"><option value="">Todos</option><option>Ingreso</option><option>Gasto</option><option>Inversión</option></select></div>
           <div><label>Categoría</label><select id="searchCategory"><option value="">Todas</option></select></div>
-          <div><label>Desde</label><input id="searchFrom" type="date"></div>
-          <div><label>Hasta</label><input id="searchTo" type="date"></div>
+          <div><label for="searchFrom">Desde</label><input id="searchFrom" type="date"></div>
+          <div><label for="searchTo">Hasta</label><input id="searchTo" type="date"></div>
         </div>
         <div class="kpi-strip">
           <div class="kpi-mini"><span class="muted">Movimientos visibles</span><b id="visibleCount">0</b></div>
