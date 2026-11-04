@@ -67,6 +67,7 @@ button{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:tran
 .panel{padding:18px}.card{padding:18px}
 .grid-2,.grid-3,.grid-4,.summary-grid{display:grid;gap:16px}
 .grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.category-fields{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
 .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .grid-4,.summary-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
 .summary-grid{margin-bottom:16px}
@@ -561,15 +562,15 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
     <section id="page-categories" class="page">
       <div class="page-head"><div><h1>Categorías</h1><p>Organiza tus ingresos, gastos e inversiones.</p></div></div>
       <div class="panel">
-        <div class="grid-2">
+        <div class="category-fields">
           <div><label for="categorySearch">Buscar categorías</label><input id="categorySearch" type="search" placeholder="Nombre de la categoría"></div>
           <div><label for="categoryFilterType">Filtrar por tipo</label><select id="categoryFilterType"><option value="">Todos los tipos</option><option>Gasto</option><option>Ingreso</option><option>Inversión</option></select></div>
         </div>
         <div class="footer-tools section-gap"><button type="button" class="secondary small" id="clearCategoryFilters">Restablecer filtros</button></div>
-        <div class="grid-3 section-gap">
-          <div><label>Tipo</label><select id="cType"><option>Gasto</option><option>Ingreso</option><option>Inversión</option></select></div>
+        <div class="category-fields section-gap">
+          <div><label for="cType">Tipo</label><select id="cType"><option>Gasto</option><option>Ingreso</option><option>Inversión</option></select></div>
           <div><label for="cName">Nombre</label><div class="name-ico"><button type="button" class="icon-opt" id="cIconBtn" aria-label="Elegir icono" title="Elegir icono"></button><input id="cName" placeholder="Ej. Restaurantes"></div></div>
-          <div style="display:flex;align-items:end"><button class="primary" id="addCategory">Añadir categoría</button></div>
+          <div><button type="button" class="primary" id="addCategory">Añadir categoría</button></div>
         </div>
         <div id="categoryList" class="chips section-gap"></div>
       </div>
