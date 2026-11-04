@@ -523,8 +523,14 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
       </div>
 
       <div class="panel section-gap">
-        <div class="chart-head"><h2>Buscar y filtrar</h2><button class="secondary small mobile-only" id="toggleFilters">Filtros</button></div>
-        <div class="inline-note" id="filterNotice" hidden style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:12px"><span id="filterNoticeText"></span><button class="secondary small" id="clearFilters">Quitar filtros</button></div>
+        <div class="chart-head">
+          <h2>Buscar y filtrar</h2>
+          <div class="footer-tools">
+            <button type="button" class="secondary small mobile-only" id="toggleFilters">Filtros</button>
+            <button type="button" class="secondary small" id="clearFilters">Restablecer filtros</button>
+          </div>
+        </div>
+        <div class="inline-note" id="filterNotice" hidden style="margin-bottom:12px"><span id="filterNoticeText"></span></div>
         <div class="searchbar collapsed" id="searchbar">
           <div><label>Buscar</label><input id="searchText" placeholder="Concepto o categoría"></div>
           <div><label>Tipo</label><select id="searchType"><option value="">Todos</option><option>Ingreso</option><option>Gasto</option><option>Inversión</option></select></div>
