@@ -1001,6 +1001,7 @@ async function startApp(user){
  updateYearOptions();ensureInitialPortfolioUpdateReference();generateRecurring(false);renderAll();updateMarketPrices(false);
  const deepPage=new URLSearchParams(location.search).get("page");
  if(deepPage&&document.getElementById("page-"+deepPage)){showPage(deepPage);history.replaceState(null,"",location.pathname)}
+ else showPage("dashboard");
  appReady=true;
  refreshPushUI();
 }
