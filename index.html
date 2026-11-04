@@ -68,8 +68,9 @@ button{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:tran
 .grid-2,.grid-3,.grid-4,.summary-grid{display:grid;gap:16px}
 .grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
 .category-fields{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
-.category-fields #cName,.category-fields #addCategory{min-height:44px}
+.category-fields #cType,.category-fields #cName,.category-fields #addCategory{min-height:44px}
 .category-fields #cIconBtn{width:44px;border-radius:10px}
+.category-fields .name-ico select{flex:1;min-width:0}
 .category-fields #addCategory{width:100%}
 .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .grid-4,.summary-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
@@ -571,14 +572,14 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         </div>
         <div class="footer-tools section-gap"><button type="button" class="secondary small" id="clearCategoryFilters">Restablecer filtros</button></div>
         <div class="category-fields section-gap">
-          <div><label for="cType">Tipo</label><select id="cType"><option>Gasto</option><option>Ingreso</option><option>Inversión</option></select></div>
           <div>
-            <label for="cName">Nombre</label>
+            <label for="cType">Tipo</label>
             <div class="name-ico">
-              <input id="cName" placeholder="Ej. Restaurantes">
               <button type="button" class="icon-opt" id="cIconBtn" aria-label="Elegir icono de la categoría" title="Elegir icono"></button>
+              <select id="cType"><option>Gasto</option><option>Ingreso</option><option>Inversión</option></select>
             </div>
           </div>
+          <div><label for="cName">Nombre</label><input id="cName" placeholder="Ej. Restaurantes"></div>
           <button type="button" class="primary" id="addCategory">Añadir categoría</button>
         </div>
         <div id="categoryList" class="chips section-gap"></div>
