@@ -1387,16 +1387,24 @@ function portfolioDistributionData(){
  const tenths=rows.map(a=>Math.round(a.value/total*1000));const diff=1000-tenths.reduce((s,x)=>s+x,0);if(tenths.length)tenths[0]+=diff;
  return rows.map((a,i)=>({...a,pct:tenths[i]/10,total}));
 }
-function investmentCategoryUsesUnits(type,cname){
- if(type===undefined)type=el("mType").value;
- if(cname===undefined)cname=getCat(el("mCategory").value)?.name||"";
- if(type!=="Inversión")return false;
- cname=String(cname).trim().toLowerCase();
- if(!cname)return false;
- // Pedimos participaciones/títulos cuando la categoría se corresponde con un activo cotizable del patrimonio
- // o cuando su nombre indica claramente fondo, ETF, cripto u oro. Cuentas de ahorro (Revolut, RenaultBank...) no.
- if(bestAssetForText(cname,state.assets.filter(a=>assetMarketConfig(a))))return true;
- return /fondo|etf|indexad|bitcoin|btc|\boro\b|gold|accion|msci|world|emerging|bond|bono/.test(normText(cname));
+function investmentAssetForCategory(categoryId,compatible){
+ const match=bestAssetForText(getCat(categoryId)?.name||"",compatible);
+ if(match)return match;
+ const linkedIds=new Set(state.movements.filter(m=>m.type==="Inversión"&&m.categoryId===categoryId&&m.assetId).map(m=>m.assetId));
+ const linked=compatible.filter(a=>linkedIds.has(a.id));
+ return linked.length===1?linked[0]:null;
+}
+function investmentCategoryUsesUnits(type=el("mType").value,categoryId=el("mCategory").value,compatible=state.assets.filter(isInvestmentAsset)){
+ if(type!=="Inversión"||!categoryId)return false;
+ if(investmentAssetForCategory(categoryId,compatible))return true;
+ // Las categorías de fondos, ETF, cripto y oro pueden requerir un activo aunque no haya una coincidencia clara.
+ return /fondo|etf|indexad|bitcoin|btc|\boro\b|gold|accion|msci|world|emerging|bond|bono/.test(normText(getCat(categoryId)?.name));
+}
+function renderInvestmentAssetSelect(id,categoryId,compatible,reset){
+ const select=el(id),previous=select.value;
+ const placeholder=compatible.length?"Selecciona un activo":"Añade primero un activo con cotización en Patrimonio";
+ select.innerHTML=`<option value="">${placeholder}</option>`+compatible.map(a=>`<option value="${a.id}">${escapeHtml(a.name)}</option>`).join("");
+ select.value=!reset&&compatible.some(a=>a.id===previous)?previous:(investmentAssetForCategory(categoryId,compatible)?.id||"");
 }
 // Pista bajo la casilla de participaciones: la estimación con la última cotización, o el aviso de que no hay cotización.
 function updateUnitsHint(amountEl,assetEl,unitsEl,hintEl){
@@ -1407,21 +1415,13 @@ function updateUnitsHint(amountEl,assetEl,unitsEl,hintEl){
  h.textContent=!a?"":est==null?(Number(a.unitPrice)>0?"Escribe el importe para ver la estimación.":"El activo aún no tiene cotización: indica las participaciones.")
   :`Vacío = se estiman ≈ ${assetDisplayUnits(est)} part. (${euro.format(amount)} ÷ ${euro.format(a.unitPrice)}); se ajustan solas al llegar la cotización del día.`;
 }
-function updateInvestmentFields(){
- const show=investmentCategoryUsesUnits();
+function updateInvestmentFields(reset=false){
+ const categoryId=el("mCategory").value,compatible=state.assets.filter(isInvestmentAsset);
+ const show=investmentCategoryUsesUnits(el("mType").value,categoryId,compatible);
  el("investmentFields").style.display=show?"block":"none";
- if(!show){el("mUnits").value="";return;}
- const compatible=state.assets.filter(a=>assetMarketConfig(a));
- const cur=el("mAsset").value;
- el("mAsset").innerHTML=compatible.length?compatible.map(a=>`<option value="${a.id}">${escapeHtml(a.name)}</option>`).join(""):`<option value="">Añade primero un activo con cotización compatible en Patrimonio</option>`;
- if(cur&&compatible.some(a=>a.id===cur))el("mAsset").value=cur;else autoSelectAssetForCategory();
+ if(!show){el("mUnits").value="";return}
+ renderInvestmentAssetSelect("mAsset",categoryId,compatible,reset);
  updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint");
-}
-function autoSelectAssetForCategory(){
- if(!investmentCategoryUsesUnits()||!el("mAsset"))return;
- const cname=getCat(el("mCategory").value)?.name||"";
- const match=bestAssetForText(cname,state.assets.filter(a=>assetMarketConfig(a)));
- if(match)el("mAsset").value=match.id;
 }
 function applyInvestmentMovementToAsset(m,sign){
  if(m?.type!=="Inversión"||!m.assetId)return;const a=state.assets.find(x=>x.id===m.assetId);if(!a)return;
@@ -1707,9 +1707,10 @@ function renderFreshness(){
  const node=el("dataFreshness");if(node)node.innerHTML=`<b>Últimas actualizaciones</b> · Movimientos: ${formatDateTime(mov)} · Patrimonio: ${formatDateTime(port)} · Cotizaciones: ${formatDateTime(prices)}`;
 }
 function updateMovementCategories(){
- const type=el("mType").value,cats=state.categories.filter(c=>c.type===type).sort((a,b)=>a.name.localeCompare(b.name,"es"));
+ const type=el("mType").value,previous=el("mCategory").value,cats=state.categories.filter(c=>c.type===type).sort((a,b)=>a.name.localeCompare(b.name,"es"));
  el("mCategory").innerHTML=cats.length?cats.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join(""):`<option value="">Sin categorías</option>`;
- updateInvestmentFields();
+ if(cats.some(c=>c.id===previous))el("mCategory").value=previous;
+ updateInvestmentFields(el("mCategory").value!==previous);
 }
 function updateRecurringCategories(){
  const type=el("rType").value,cats=state.categories.filter(c=>c.type===type).sort((a,b)=>a.name.localeCompare(b.name,"es")),cur=el("rCategory").value;
@@ -1794,7 +1795,8 @@ function editMovement(id){
  const m=state.movements.find(x=>x.id===id);if(!m)return;
  if(isMobile()){openQuickSheet(m);return}
  editingId=id;showPage("movements");
- el("mDate").value=m.date;el("mType").value=m.type;updateMovementCategories();el("mCategory").value=m.categoryId;updateInvestmentFields();if(m.assetId)el("mAsset").value=m.assetId;el("mUnits").value=m.units||"";el("mDescription").value=m.description;el("mAmount").value=m.amount;
+ el("mDate").value=m.date;el("mType").value=m.type;updateMovementCategories();el("mCategory").value=m.categoryId;updateInvestmentFields(true);if(m.assetId)el("mAsset").value=m.assetId;el("mUnits").value=m.units||"";el("mDescription").value=m.description;el("mAmount").value=m.amount;
+ updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint");
  renderAccountSelect("mAccount","mAccountWrap",movementAccountId(m)||NO_ACCOUNT);updateAccountHint();
  el("saveMovement").textContent="Guardar cambios";el("cancelEdit").style.display="inline-block";window.scrollTo({top:0,behavior:"smooth"});
 }
@@ -2428,25 +2430,25 @@ function parseAmount(s){let t=String(s||"").trim().replace(/[\s€]/g,"");if(t.i
 const qs={type:"Gasto",categoryId:"",editId:null,showAll:false,lastType:"Gasto",lastCategory:{}};
 function categoryUsage(type){const c=new Map();state.movements.forEach(m=>{if(m.type===type)c.set(m.categoryId,(c.get(m.categoryId)||0)+1)});return c}
 function qsCategories(){const usage=categoryUsage(qs.type);return state.categories.filter(c=>c.type===qs.type).sort((a,b)=>(usage.get(b.id)||0)-(usage.get(a.id)||0)||a.name.localeCompare(b.name,"es"))}
-function qsUsesUnits(){return qs.type==="Inversión"&&investmentCategoryUsesUnits(qs.type,getCat(qs.categoryId)?.name||"")}
-function renderQsCats(){
+function qsUsesUnits(){return investmentCategoryUsesUnits(qs.type,qs.categoryId)}
+function renderQsCats(reset=false){
  const cats=qsCategories(),MAX=6;
  if(!cats.some(c=>c.id===qs.categoryId))qs.categoryId=cats[0]?.id||"";
  const mustShow=cats.findIndex(c=>c.id===qs.categoryId)>=MAX;
  const shown=qs.showAll||mustShow?cats:cats.slice(0,MAX);
  el("qsCats").innerHTML=(shown.map(c=>`<button type="button" class="chip-btn${c.id===qs.categoryId?" active":""}" data-cat="${c.id}">${catIconSvg(c)}${escapeHtml(c.name)}</button>`).join("")||`<span class="muted">No hay categorías de este tipo. Créalas en Categorías.</span>`)+(shown.length<cats.length?`<button type="button" class="chip-btn" data-more="1">Más… (${cats.length-shown.length})</button>`:"");
- el("qsCats").querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{qs.categoryId=b.dataset.cat;renderQsCats()});
+ el("qsCats").querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{const changed=qs.categoryId!==b.dataset.cat;qs.categoryId=b.dataset.cat;renderQsCats(changed)});
  const more=el("qsCats").querySelector("[data-more]");if(more)more.onclick=()=>{qs.showAll=true;renderQsCats()};
- updateQsInvest();
+ updateQsInvest(reset);
 }
-function updateQsInvest(){
- const show=qsUsesUnits();el("qsInvest").hidden=!show;if(!show)return;
- const compatible=state.assets.filter(a=>assetMarketConfig(a)),cur=el("qsAsset").value;
- el("qsAsset").innerHTML=compatible.length?compatible.map(a=>`<option value="${a.id}">${escapeHtml(a.name)}</option>`).join(""):`<option value="">Añade primero un activo con ISIN en Patrimonio</option>`;
- if(cur&&compatible.some(a=>a.id===cur))el("qsAsset").value=cur;else{const m=bestAssetForText(getCat(qs.categoryId)?.name||"",compatible);if(m)el("qsAsset").value=m.id}
+function updateQsInvest(reset){
+ const compatible=state.assets.filter(isInvestmentAsset);
+ const show=investmentCategoryUsesUnits(qs.type,qs.categoryId,compatible);
+ el("qsInvest").hidden=!show;if(!show)return;
+ renderInvestmentAssetSelect("qsAsset",qs.categoryId,compatible,reset);
  updateUnitsHint("qsAmount","qsAsset","qsUnits","qsUnitsHint");
 }
-function setQsType(type){qs.type=type;qs.showAll=false;el("qsType").querySelectorAll("button").forEach(b=>b.classList.toggle("active",b.dataset.type===type));renderQsCats()}
+function setQsType(type){qs.type=type;qs.showAll=false;el("qsType").querySelectorAll("button").forEach(b=>b.classList.toggle("active",b.dataset.type===type));renderQsCats(true)}
 function updateDescSuggestions(){
  const seen=new Set(),out=[];
  [...state.movements].sort((a,b)=>b.date.localeCompare(a.date)).forEach(m=>{const d=(m.description||"").trim();if(d&&!seen.has(d.toLowerCase())){seen.add(d.toLowerCase());out.push(d)}});
@@ -2463,7 +2465,7 @@ function openQuickSheet(movement){
  const type=movement?movement.type:qs.lastType;
  qs.categoryId=movement?movement.categoryId:(qs.lastCategory[type]||"");
  setQsType(type);
- if(movement?.assetId)el("qsAsset").value=movement.assetId;
+ if(movement?.assetId){el("qsAsset").value=movement.assetId;updateUnitsHint("qsAmount","qsAsset","qsUnits","qsUnitsHint")}
  renderAccountSelect("qsAccount","qsAccountWrap",movement?(movementAccountId(movement)||NO_ACCOUNT):(defaultAccount()?.id||NO_ACCOUNT));
  updateDescSuggestions();
  const sheet=el("quickSheet"),backdrop=el("sheetBackdrop");
@@ -2578,7 +2580,7 @@ function importData(file){
 async function clearAll(){if(!(await uiConfirm("Se borrarán movimientos, categorías, recurrentes y patrimonio de tu cuenta. Exporta antes una copia.",{title:"¿Borrar todos los datos?",danger:true,confirmText:"Borrar todo"})))return;state=defaultState();saveState();setupPeriodSelectors();renderAll()}
 function renderAll(){
  refreshDerivedAssets();renderTransferForm();
- renderCategoryList();updateMovementCategories();updateRecurringCategories();renderSearchCategories();updateInvestmentFields();renderAccountSelect("mAccount","mAccountWrap");renderAccountSelect("rAccount","rAccountWrap");updateAccountHint();
+ renderCategoryList();updateMovementCategories();updateRecurringCategories();renderSearchCategories();renderAccountSelect("mAccount","mAccountWrap");renderAccountSelect("rAccount","rAccountWrap");updateAccountHint();
  renderSummary();renderMovements();renderRecurring();renderAssets();renderCategorySummary();renderPatrimonyRank();renderReturnRank();renderBudgets();renderBudgetTable();renderFreshness();renderDataSize();syncPeriodCompact();
  if(el("page-dashboard").classList.contains("active"))renderCharts();
  if(el("page-assets").classList.contains("active"))drawNetWorthChart();
@@ -2586,7 +2588,7 @@ function renderAll(){
 
 document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>showPage(b.dataset.page));
 el("mDate").value=todayISO();el("rStartDate").value=todayISO();setupPeriodSelectors();updatePeriodControls();
-el("mType").onchange=()=>{updateMovementCategories();updateInvestmentFields();updateAccountHint()};el("mAccount").onchange=updateAccountHint;["mAmount","mUnits"].forEach(id=>el(id).addEventListener("input",()=>updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint")));el("mAsset").onchange=()=>updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint");el("mCategory").onchange=()=>{updateInvestmentFields();autoSelectAssetForCategory()};el("rType").onchange=updateRecurringCategories;
+el("mType").onchange=()=>{updateMovementCategories();updateAccountHint()};el("mAccount").onchange=updateAccountHint;["mAmount","mUnits"].forEach(id=>el(id).addEventListener("input",()=>updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint")));el("mAsset").onchange=()=>updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint");el("mCategory").onchange=()=>updateInvestmentFields(true);el("rType").onchange=updateRecurringCategories;
 el("addCategory").onclick=addCategory;el("cIconBtn").onclick=chooseNewCatIcon;el("aIconBtn").onclick=chooseNewAssetIcon;el("aName").addEventListener("input",renderNewAssetIcon);renderNewAssetIcon();el("cName").addEventListener("input",renderNewCatIcon);el("cType").addEventListener("change",renderNewCatIcon);renderNewCatIcon();
 el("bpPrev").onclick=()=>shiftBudgetMonth(-1);el("bpNext").onclick=()=>shiftBudgetMonth(1);el("bpToday").onclick=()=>{const n=new Date();bp.y=n.getFullYear();bp.m=n.getMonth()+1;renderBudgets()};
 el("budgetFillAvg").onclick=async()=>{if(!(await uiConfirm("Se sustituirán los presupuestos actuales por la propuesta calculada con tu histórico. Las categorías sin propuesta se quedan como están.",{title:"¿Rellenar con la propuesta?",confirmText:"Rellenar"})))return;const n=fillBudgetsFromProposal();saveState();renderAll();toast(`${n} presupuestos rellenados`)};
