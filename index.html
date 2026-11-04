@@ -272,7 +272,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  #periodCompact .seg{display:flex!important}#periodCompact .seg button{flex:1;padding:9px 6px}#periodCompact .period-nav b{flex:1}
  .summary-grid,.grid-3{grid-template-columns:repeat(2,minmax(0,1fr))}
  .card{padding:14px}.metric-label{font-size:12px}.metric-value{font-size:22px}.metric-sub{font-size:11px}
- #page-dashboard .summary-grid .metric-value{font-size:25px;overflow-wrap:anywhere}
+ #page-dashboard .summary-grid .metric-value{font-size:25px;white-space:nowrap}
  .panel{padding:16px}
  .chart-box{height:230px}
  .fab{display:none}
@@ -1678,6 +1678,20 @@ function pctChange(cur,prev){
  const p=(cur-prev)/Math.abs(prev)*100;
  return `${p>=0?"+":""}${p.toFixed(1)}% vs mes anterior`;
 }
+function fitDashboardAmounts(){
+ const range=document.createRange(),mobile=isMobile();
+ document.querySelectorAll("#page-dashboard .summary-grid .metric-value").forEach(amount=>{
+   amount.style.fontSize="";
+   const available=amount.clientWidth;
+   if(!mobile||!available)return;
+   range.selectNodeContents(amount);
+   const width=range.getBoundingClientRect().width;
+   if(width>available){
+     const size=parseFloat(getComputedStyle(amount).fontSize);
+     amount.style.fontSize=`${Math.floor(size*available/width*10)/10}px`;
+   }
+ });
+}
 function renderSummary(){
  const s=calcSummary(periodMovements());
  el("sumIncome").textContent=euro.format(s.income);el("sumExpense").textContent=euro.format(s.expense);
@@ -1707,6 +1721,7 @@ function renderSummary(){
  el("portfolioUpdateDashboard").textContent=portfolioRef?`Actualizado ${formatDateTime(portfolioRef)}`:(state.assets.length?"Pendiente de registrar actualización":"Sin patrimonio");
  const all=calcSummary(state.movements);el("cumulativeSavings").textContent=euro.format(all.income-all.expense);
  renderCushion();
+ fitDashboardAmounts();
 }
 // Colchón de liquidez: cuántos meses de gasto medio cubre el dinero disponible (cuentas y efectivo, sin fondos ni deudas).
 // El gasto medio sale de los últimos 12 meses completos, o de los que haya desde el primer movimiento.
@@ -2582,7 +2597,7 @@ function showPage(name,scrollBehavior="smooth"){
    if(inNav){if(active)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")}
  });
  window.scrollTo({top:0,behavior:scrollBehavior});
- if(name==="dashboard")setTimeout(renderCharts,20);
+ if(name==="dashboard"){fitDashboardAmounts();setTimeout(renderCharts,20)}
  if(name==="assets")setTimeout(drawNetWorthChart,20);
  if(name==="settings")refreshPushUI();
  syncBackTrap();
@@ -2671,6 +2686,8 @@ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>
 el("assetFormDetails").open=!isMobile();el("transferDetails").open=false;
 el("aType").onchange=()=>{el("aCurrentNote").hidden=el("aType").value!=="Cuenta corriente";el("aDebtNote").hidden=el("aType").value!=="Deuda";renderNewAssetIcon()};
 let lastMobile=isMobile(),resizeTimer=null;
+window.addEventListener("resize",fitDashboardAmounts);
+document.fonts?.ready.then(fitDashboardAmounts);
 window.addEventListener("resize",()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(isMobile()!==lastMobile){lastMobile=isMobile();el("assetFormDetails").open=!lastMobile;if(el("page-dashboard").classList.contains("active"))renderCharts()}},200)});
 el("loginGoogle").onclick=login;el("loginFallback").onclick=login;el("logoutSidebar").onclick=logout;el("logoutSettings").onclick=logout;el("logoutMore").onclick=logout;
 el("authRetry").onclick=()=>{if(pendingUser)enterApp(pendingUser)};
