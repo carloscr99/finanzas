@@ -145,7 +145,7 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 .icon-pick-html{max-height:min(62vh,500px);overflow-y:auto!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-top:0!important}.icon-pick-html #icoQ{font-size:16px;position:sticky;top:0;z-index:1;box-shadow:0 0 0 6px var(--panel)}.icon-scroll{margin-top:12px;padding:2px}.icon-sec{font-size:12px;font-weight:600;color:var(--muted);text-align:left;margin:10px 0 6px;text-transform:uppercase;letter-spacing:.04em}.icon-sec:first-child{margin-top:0}.icon-note{font-size:12px;color:var(--muted);text-align:left;margin:10px 0 0}
 .name-ico{display:flex;gap:8px;align-items:stretch}.name-ico .icon-opt{width:48px;height:auto;min-height:44px;flex:none}.name-ico input{flex:1;min-width:0}
 .icon-opt{display:flex;align-items:center;justify-content:center;height:48px;border-radius:12px;border:1px solid var(--border);background:var(--soft);color:var(--text);cursor:pointer}.icon-opt.active{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
-.chip-btn.active{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+.chip-btn.active,.date-row button[aria-pressed="true"]{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
 .sheet label{margin-top:12px}.sheet .chips{gap:8px}
 .date-row{display:flex;gap:8px;align-items:center}.date-row input{flex:1}.date-row button.secondary{min-height:46px;min-width:56px;flex:none}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;background:var(--toast-bg);color:var(--toast-fg);padding:10px 16px;border-radius:999px;font-size:14px;z-index:80;box-shadow:var(--shadow);white-space:nowrap}
@@ -2478,6 +2478,12 @@ function updateDescSuggestions(){
  [...state.movements].sort((a,b)=>b.date.localeCompare(a.date)).forEach(m=>{const d=(m.description||"").trim();if(d&&!seen.has(d.toLowerCase())){seen.add(d.toLowerCase());out.push(d)}});
  el("qsDescList").innerHTML=out.slice(0,40).map(d=>`<option value="${escapeHtml(d)}">`).join("");
 }
+function syncQuickDateButtons(){
+ const date=el("qsDate").value,today=todayISO();
+ el("quickSheet").querySelectorAll("[data-day]").forEach(b=>{
+   b.setAttribute("aria-pressed",String(date===addDaysISO(today,Number(b.dataset.day))));
+ });
+}
 function openQuickSheet(movement){
  qs.editId=movement?movement.id:null;qs.showAll=false;
  el("qsTitle").textContent=movement?"Editar movimiento":"Nuevo movimiento";
@@ -2485,6 +2491,7 @@ function openQuickSheet(movement){
  el("qsAmount").value=movement?String(movement.amount).replace(".",","):"";
  el("qsDesc").value=movement?movement.description:"";
  el("qsDate").value=movement?movement.date:todayISO();
+ syncQuickDateButtons();
  el("qsUnits").value=movement?.units?String(movement.units).replace(".",","):"";
  const type=movement?movement.type:qs.lastType;
  qs.categoryId=movement?movement.categoryId:(qs.lastCategory[type]||"");
@@ -2638,7 +2645,11 @@ el("bulkToggle").onclick=()=>toggleBulkPanel(el("bulkPanel").hidden);el("bulkCan
 el("qsClose").onclick=closeQuickSheet;el("sheetBackdrop").onclick=closeQuickSheet;
 el("qsSave").onclick=()=>quickSave(false);el("qsSaveMore").onclick=()=>quickSave(true);el("qsDelete").onclick=quickDelete;
 el("qsType").querySelectorAll("[data-type]").forEach(b=>b.onclick=()=>setQsType(b.dataset.type));
-el("quickSheet").querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{el("qsDate").value=addDaysISO(todayISO(),Number(b.dataset.day))});
+el("qsDate").addEventListener("change",syncQuickDateButtons);
+el("quickSheet").querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{
+ el("qsDate").value=addDaysISO(todayISO(),Number(b.dataset.day));
+ syncQuickDateButtons();
+});
 el("qsDesc").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();quickSave(false)}});
 el("qsAmount").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();el("qsDesc").focus()}});
 ["qsAmount","qsUnits"].forEach(id=>el(id).addEventListener("input",()=>updateUnitsHint("qsAmount","qsAsset","qsUnits","qsUnitsHint")));el("qsAsset").addEventListener("change",()=>updateUnitsHint("qsAmount","qsAsset","qsUnits","qsUnitsHint"));
