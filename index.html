@@ -147,7 +147,7 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 .icon-opt{display:flex;align-items:center;justify-content:center;height:48px;border-radius:12px;border:1px solid var(--border);background:var(--soft);color:var(--text);cursor:pointer}.icon-opt.active{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
 .chip-btn.active{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
 .sheet label{margin-top:12px}.sheet .chips{gap:8px}
-.date-row{display:flex;gap:8px;align-items:center}.date-row input{flex:1}.date-row button{width:auto}
+.date-row{display:flex;gap:8px;align-items:center}.date-row input{flex:1}.date-row button.secondary{min-height:46px;min-width:56px;flex:none}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;background:var(--toast-bg);color:var(--toast-fg);padding:10px 16px;border-radius:999px;font-size:14px;z-index:80;box-shadow:var(--shadow);white-space:nowrap}
 .mlist{flex-direction:column}
 .mitem{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 4px;border:0;border-bottom:1px solid var(--border);width:100%;background:transparent;text-align:left;font:inherit;color:var(--text);transition:background-color .12s}
@@ -756,7 +756,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
     <div class="inline-note" id="qsUnitsHint" style="margin-top:6px"></div>
   </div>
   <label>Concepto</label><input id="qsDesc" list="qsDescList" placeholder="Ej. Supermercado" autocomplete="off"><datalist id="qsDescList"></datalist>
-  <label for="qsDate">Fecha</label><div class="date-row"><input id="qsDate" type="date"><button type="button" class="secondary small" data-day="0">Hoy</button><button type="button" class="secondary small" data-day="-1">Ayer</button></div>
+  <label for="qsDate">Fecha</label><div class="date-row"><input id="qsDate" type="date"><button type="button" class="secondary" data-day="0">Hoy</button><button type="button" class="secondary" data-day="-1">Ayer</button></div>
   <div class="form-actions" style="margin-top:16px"><button type="button" class="primary" id="qsSave">Guardar</button><button type="button" class="secondary" id="qsSaveMore">Guardar y añadir otro</button><button type="button" class="danger icon-btn" id="qsDelete" hidden aria-label="Borrar movimiento" title="Borrar"><svg class="ico" aria-hidden="true"><use href="#i-trash"/></svg></button></div>
 </section>
 <div class="toast" id="toast" hidden></div>
