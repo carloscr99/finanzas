@@ -247,7 +247,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .grid-2,.grid-3,.grid-4,.summary-grid{gap:12px}
  .form-grid,.form-grid-4,.toolbar,.searchbar{grid-template-columns:minmax(0,1fr)}
  /* Safari en iOS puede sumar el padding del control de fecha a su ancho del 100 %. */
- input[type="date"]{padding:0}
+ input[type="date"]{display:flex;align-items:center;padding:0}
  input[type="date"]::-webkit-date-and-time-value{min-width:0;margin:0 10px;text-align:left}
  .searchbar :is(input,select){height:46px}
  /* Barra inferior: 5 destinos, icono + etiqueta, píldora indicadora en el activo, safe area */
