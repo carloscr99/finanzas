@@ -99,7 +99,7 @@ button.icon-btn{display:inline-flex;align-items:center;justify-content:center;pa
 .form-actions button{width:auto}
 .toolbar{display:grid;grid-template-columns:1fr 170px 170px auto;gap:12px;align-items:end}
 .searchbar{display:grid;grid-template-columns:2fr repeat(4,1fr);gap:10px;margin-bottom:14px}
-.searchbar :is(input,select){height:46px}
+.searchbar :is(input,select),#newMovementPanel .form-grid :is(input,select),#qsDate{height:46px}
 .table-wrap{overflow:auto}
 table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{padding:11px 10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:middle}
@@ -513,7 +513,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
       <div class="panel desktop-only" id="newMovementPanel">
         <h2>Nuevo movimiento</h2>
         <div class="form-grid">
-          <div><label>Fecha</label><input id="mDate" type="date"></div>
+          <div><label for="mDate">Fecha</label><input id="mDate" type="date"></div>
           <div><label>Tipo</label><select id="mType"><option>Gasto</option><option>Ingreso</option><option>Inversión</option></select></div>
           <div><label>Categoría</label><select id="mCategory"></select></div>
           <div><label>Concepto</label><input id="mDescription" placeholder="Ej. Supermercado"></div>
@@ -756,7 +756,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
     <div class="inline-note" id="qsUnitsHint" style="margin-top:6px"></div>
   </div>
   <label>Concepto</label><input id="qsDesc" list="qsDescList" placeholder="Ej. Supermercado" autocomplete="off"><datalist id="qsDescList"></datalist>
-  <label>Fecha</label><div class="date-row"><input id="qsDate" type="date"><button type="button" class="secondary small" data-day="0">Hoy</button><button type="button" class="secondary small" data-day="-1">Ayer</button></div>
+  <label for="qsDate">Fecha</label><div class="date-row"><input id="qsDate" type="date"><button type="button" class="secondary small" data-day="0">Hoy</button><button type="button" class="secondary small" data-day="-1">Ayer</button></div>
   <div class="form-actions" style="margin-top:16px"><button type="button" class="primary" id="qsSave">Guardar</button><button type="button" class="secondary" id="qsSaveMore">Guardar y añadir otro</button><button type="button" class="danger icon-btn" id="qsDelete" hidden aria-label="Borrar movimiento" title="Borrar"><svg class="ico" aria-hidden="true"><use href="#i-trash"/></svg></button></div>
 </section>
 <div class="toast" id="toast" hidden></div>
