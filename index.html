@@ -171,6 +171,9 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 .swal2-title{font-size:20px!important;font-weight:700!important}.swal2-html-container{font-size:15px!important;line-height:1.5!important}
 .swal2-styled{min-height:44px!important;border-radius:10px!important;font-weight:700!important;box-shadow:none!important}
 .swal2-input{border-radius:10px!important;font-size:18px!important;text-align:center;font-variant-numeric:tabular-nums}
+.asset-edit-fields{display:grid;gap:18px;text-align:left}
+.asset-edit-fields label{font-size:14px}
+.asset-edit-fields input{min-height:48px;font-size:16px}
 .chart-pop{margin-top:8px;padding:10px 12px;border-radius:12px;background:var(--soft);border:1px solid var(--border);font-size:13px;display:flex;justify-content:space-between;gap:8px;align-items:center;flex-wrap:wrap}
 .period-compact{justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
 .period-nav{display:flex;align-items:center;gap:8px}.period-nav b{min-width:128px;text-align:center}.period-nav button{width:38px;min-height:38px;padding:0;font-size:20px}
@@ -2082,8 +2085,10 @@ async function editAsset(id){
  let values;
  if(S){
    const result=await S.fire({title:"Editar activo",showCancelButton:true,confirmButtonText:"Guardar",cancelButtonText:"Cancelar",
-     html:`<div class="field"><label for="editAssetName">Nombre</label><input id="editAssetName" value="${escapeHtml(initialName)}"></div>
-       <div class="field"><label for="editAssetAmount">${label}</label><input id="editAssetAmount" inputmode="decimal" value="${escapeHtml(initialAmount)}"></div>`,
+     html:`<div class="asset-edit-fields">
+       <div><label for="editAssetName">Nombre</label><input id="editAssetName" value="${escapeHtml(initialName)}"></div>
+       <div><label for="editAssetAmount">${label}</label><input id="editAssetAmount" inputmode="decimal" value="${escapeHtml(initialAmount)}"></div>
+     </div>`,
      preConfirm:()=>{
        const result=readValues(el("editAssetName").value,el("editAssetAmount").value);
        if(typeof result==="string"){Swal.showValidationMessage(result);return false}
