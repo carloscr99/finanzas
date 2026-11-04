@@ -570,6 +570,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
           <div><label for="categorySearch">Buscar categorías</label><input id="categorySearch" type="search" placeholder="Nombre de la categoría"></div>
           <div><label for="categoryFilterType">Filtrar por tipo</label><select id="categoryFilterType"><option value="">Todos los tipos</option><option>Gasto</option><option>Ingreso</option><option>Inversión</option></select></div>
         </div>
+        <div class="footer-tools section-gap"><button type="button" class="secondary small" id="clearCategoryFilters">Restablecer filtros</button></div>
         <div id="categoryList" class="chips section-gap"></div>
       </div>
 
@@ -2597,6 +2598,11 @@ el("mDate").value=todayISO();el("rStartDate").value=todayISO();setupPeriodSelect
 el("mType").onchange=()=>{updateMovementCategories();updateAccountHint()};el("mAccount").onchange=updateAccountHint;["mAmount","mUnits"].forEach(id=>el(id).addEventListener("input",()=>updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint")));el("mAsset").onchange=()=>updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint");el("mCategory").onchange=()=>updateInvestmentFields(true);el("rType").onchange=updateRecurringCategories;
 el("categorySearch").addEventListener("input",renderCategoryList);
 el("categoryFilterType").addEventListener("change",renderCategoryList);
+el("clearCategoryFilters").onclick=()=>{
+ el("categorySearch").value="";
+ el("categoryFilterType").value="";
+ renderCategoryList();
+};
 el("addCategory").onclick=addCategory;el("cIconBtn").onclick=chooseNewCatIcon;el("aIconBtn").onclick=chooseNewAssetIcon;el("aName").addEventListener("input",renderNewAssetIcon);renderNewAssetIcon();el("cName").addEventListener("input",renderNewCatIcon);el("cType").addEventListener("change",renderNewCatIcon);renderNewCatIcon();
 el("bpPrev").onclick=()=>shiftBudgetMonth(-1);el("bpNext").onclick=()=>shiftBudgetMonth(1);el("bpToday").onclick=()=>{const n=new Date();bp.y=n.getFullYear();bp.m=n.getMonth()+1;renderBudgets()};
 el("budgetFillAvg").onclick=async()=>{if(!(await uiConfirm("Se sustituirán los presupuestos actuales por la propuesta calculada con tu histórico. Las categorías sin propuesta se quedan como están.",{title:"¿Rellenar con la propuesta?",confirmText:"Rellenar"})))return;const n=fillBudgetsFromProposal();saveState();renderAll();toast(`${n} presupuestos rellenados`)};
