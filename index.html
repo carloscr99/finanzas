@@ -566,6 +566,10 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
           <div><label for="cName">Nombre</label><div class="name-ico"><button type="button" class="icon-opt" id="cIconBtn" aria-label="Elegir icono" title="Elegir icono"></button><input id="cName" placeholder="Ej. Restaurantes"></div></div>
           <div style="display:flex;align-items:end"><button class="primary" id="addCategory">Añadir categoría</button></div>
         </div>
+        <div class="grid-2 section-gap">
+          <div><label for="categorySearch">Buscar categorías</label><input id="categorySearch" type="search" placeholder="Nombre de la categoría"></div>
+          <div><label for="categoryFilterType">Filtrar por tipo</label><select id="categoryFilterType"><option value="">Todos los tipos</option><option>Gasto</option><option>Ingreso</option><option>Inversión</option></select></div>
+        </div>
         <div id="categoryList" class="chips section-gap"></div>
       </div>
 
@@ -1721,8 +1725,10 @@ function renderSearchCategories(){
  el("searchCategory").innerHTML=`<option value="">Todas</option>`+state.categories.slice().sort((a,b)=>a.name.localeCompare(b.name,"es")).map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join("");
 }
 function renderCategoryList(){
- const sorted=[...state.categories].sort((a,b)=>a.type.localeCompare(b.type)||a.name.localeCompare(b.name,"es"));
- el("categoryList").innerHTML=sorted.length?sorted.map(c=>`<span class="chip"><button type="button" class="chip-ico" data-iconcat="${c.id}" aria-label="Cambiar icono de ${escapeHtml(c.name)}" title="Cambiar icono">${catIconSvg(c)}</button><span class="pill ${c.type}">${c.type}</span>${escapeHtml(c.name)}<button type="button" data-rencat="${c.id}" aria-label="Renombrar ${escapeHtml(c.name)}" title="Renombrar"><svg class="ico" aria-hidden="true"><use href="#i-pencil"/></svg></button><button type="button" data-delcat="${c.id}" aria-label="Eliminar ${escapeHtml(c.name)}" title="Eliminar"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button></span>`).join(""):`<span class="muted">No hay categorías.</span>`;
+ const query=normText(el("categorySearch").value.trim()),type=el("categoryFilterType").value;
+ const sorted=state.categories.filter(c=>(!type||c.type===type)&&normText(c.name).includes(query))
+   .sort((a,b)=>a.type.localeCompare(b.type)||a.name.localeCompare(b.name,"es"));
+ el("categoryList").innerHTML=sorted.length?sorted.map(c=>`<span class="chip"><button type="button" class="chip-ico" data-iconcat="${c.id}" aria-label="Cambiar icono de ${escapeHtml(c.name)}" title="Cambiar icono">${catIconSvg(c)}</button><span class="pill ${c.type}">${c.type}</span>${escapeHtml(c.name)}<button type="button" data-rencat="${c.id}" aria-label="Renombrar ${escapeHtml(c.name)}" title="Renombrar"><svg class="ico" aria-hidden="true"><use href="#i-pencil"/></svg></button><button type="button" data-delcat="${c.id}" aria-label="Eliminar ${escapeHtml(c.name)}" title="Eliminar"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button></span>`).join(""):`<span class="muted">${state.categories.length?"No hay categorías que coincidan con los filtros.":"No hay categorías."}</span>`;
  el("categoryList").querySelectorAll("[data-delcat]").forEach(b=>b.onclick=()=>deleteCategory(b.dataset.delcat));
  el("categoryList").querySelectorAll("[data-rencat]").forEach(b=>b.onclick=()=>renameCategory(b.dataset.rencat));
  el("categoryList").querySelectorAll("[data-iconcat]").forEach(b=>b.onclick=()=>chooseCategoryIcon(b.dataset.iconcat));
@@ -2589,6 +2595,8 @@ function renderAll(){
 document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>showPage(b.dataset.page));
 el("mDate").value=todayISO();el("rStartDate").value=todayISO();setupPeriodSelectors();updatePeriodControls();
 el("mType").onchange=()=>{updateMovementCategories();updateAccountHint()};el("mAccount").onchange=updateAccountHint;["mAmount","mUnits"].forEach(id=>el(id).addEventListener("input",()=>updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint")));el("mAsset").onchange=()=>updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint");el("mCategory").onchange=()=>updateInvestmentFields(true);el("rType").onchange=updateRecurringCategories;
+el("categorySearch").addEventListener("input",renderCategoryList);
+el("categoryFilterType").addEventListener("change",renderCategoryList);
 el("addCategory").onclick=addCategory;el("cIconBtn").onclick=chooseNewCatIcon;el("aIconBtn").onclick=chooseNewAssetIcon;el("aName").addEventListener("input",renderNewAssetIcon);renderNewAssetIcon();el("cName").addEventListener("input",renderNewCatIcon);el("cType").addEventListener("change",renderNewCatIcon);renderNewCatIcon();
 el("bpPrev").onclick=()=>shiftBudgetMonth(-1);el("bpNext").onclick=()=>shiftBudgetMonth(1);el("bpToday").onclick=()=>{const n=new Date();bp.y=n.getFullYear();bp.m=n.getMonth()+1;renderBudgets()};
 el("budgetFillAvg").onclick=async()=>{if(!(await uiConfirm("Se sustituirán los presupuestos actuales por la propuesta calculada con tu histórico. Las categorías sin propuesta se quedan como están.",{title:"¿Rellenar con la propuesta?",confirmText:"Rellenar"})))return;const n=fillBudgetsFromProposal();saveState();renderAll();toast(`${n} presupuestos rellenados`)};
