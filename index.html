@@ -779,9 +779,11 @@ function normText(s){return String(s||"").toLowerCase().normalize("NFD").replace
 function textTokens(s){return normText(s).split(/[^a-z0-9]+/).filter(t=>t.length>=3&&!TEXT_STOP.has(t))}
 function assetMatchScore(a,txt){
  const isin=normText(a?.isin).trim();if(isin&&txt.includes(isin))return 100;
- const at=textTokens(a?.name),tt=new Set(textTokens(txt));if(!at.length)return 0;
- const common=at.filter(t=>tt.has(t)).length;
- return common>=Math.min(2,at.length)?common:0;
+ const tt=new Set(textTokens(txt));
+ return [a?.name,...(a?.previousNames||[])].reduce((best,name)=>{
+   const tokens=textTokens(name),common=tokens.filter(t=>tt.has(t)).length;
+   return common>=Math.min(2,tokens.length)?Math.max(best,common):best;
+ },0);
 }
 function bestAssetForText(txt,candidates=state.assets){
  const t=normText(txt);let best=null,bestScore=0,tie=false;
@@ -1296,7 +1298,8 @@ async function chooseNewAssetIcon(){
 }
 function assetMarketConfig(a){
  const isin=String(a?.isin||"").trim().toUpperCase();if(isin)return{feedKey:isin,label:a.name||isin};
- const n=normText(a?.name),type=normText(a?.type);
+ // El primer nombre conserva la identificación de Bitcoin tras un cambio de título.
+ const n=normText(a?.previousNames?.[0]??a?.name),type=normText(a?.type);
  if(n.includes("bitcoin")||n==="btc"||(type==="cripto"&&n.includes("btc")))return{feedKey:"BTC",label:"Bitcoin"};
  return null;
 }
@@ -2062,16 +2065,28 @@ function addAsset(){
  if(isCurrentAccount(asset))setAccountReference(asset,value,todayISO());
  state.assets.push(asset);["aName","aValue","aInvested","aUnits","aIsin"].forEach(id=>el(id).value="");newAssetIcon=null;renderNewAssetIcon();markDataUpdate("portfolio");saveState();renderAll();updateMarketPrices(false);
 }
+async function renameAsset(id){
+ const asset=state.assets.find(a=>a.id===id);if(!asset)return;
+ const input=await uiPrompt("Escribe el nuevo nombre del activo.",asset.name,{title:"Renombrar activo",inputmode:"text"});
+ if(input===null)return;
+ const name=input.trim();
+ if(!name)return uiError("Escribe un nombre para el activo.");
+ const current=state.assets.find(a=>a.id===id);if(!current||current.name===name)return;
+ current.previousNames=[...new Set([...(current.previousNames||[]),current.name])];
+ current.name=name;
+ markDataUpdate("portfolio");saveState();renderAll();toast("Nombre actualizado");
+}
 function renderAssets(){
  const {nw:total,invested,gain,liquidity,invValue,debts}=portfolioTotals(),portfolioRef=latestPortfolioReference();
  el("assetSplit").textContent=state.assets.length?`${euro.format(liquidity)} en cuentas y otros · ${euro.format(invValue)} en fondos${debts>0?` − ${euro.format(debts)} de deudas`:""}`:"—";
  el("assetTotal").classList.toggle("negative",total<0);
  el("assetTotal").textContent=euro.format(total);el("assetInvested").textContent=euro.format(invested);el("assetGain").textContent=euro.format(gain);el("assetGain").classList.toggle("negative",gain<0);el("assetGain").classList.toggle("positive",gain>=0);el("assetTotalCount").textContent=state.assets.length;
  el("assetLastUpdate").textContent=portfolioRef?`Actualizado ${formatDateTime(portfolioRef)}`:(state.assets.length?"Pendiente de registrar actualización":"Sin patrimonio");
- el("assetGrid").innerHTML=state.assets.length?state.assets.map(a=>{const g=Number(a.value)-Number(a.invested||0),units=Number(a.units||0),price=Number(a.unitPrice||0),meta=units>0?`<div class="sub">${assetDisplayUnits(units,assetUnitLabel(a)==="BTC"?8:6)} ${assetUnitLabel(a,true)}${price>0?` · ${euro.format(price)} / ud.`:""}</div>`:"",irr=assetAnnualizedReturn(a),irrHtml=irr===null?`<div class="sub">Rentabilidad anualizada: —${assetInvestmentMovements(a).length&&!(Number(a.units)>0)?" (las aportaciones registradas no cuadran con el capital aportado)":""}</div>`:`<div class="sub ${irr<0?"negative":"positive"}">Rentabilidad anualizada: ${(irr*100).toFixed(2).replace(".",",")} %</div>`,priceInfo=isDebt(a)?`<div class="sub">Pendiente de pagar. Resta del patrimonio neto; actualízalo cuando cambie o usa un traspaso hacia la deuda para registrar un pago.</div>`:isCurrentAccount(a)?`<div class="sub">Saldo calculado: referencia ${euro.format(a.refBalance||0)} el ${formatDate(a.refDate)} más los movimientos posteriores</div>`:a.updatedAt?`<div class="sub">Cotización: ${formatDate(a.updatedAt)}${a.priceSource?` · ${escapeHtml(a.priceSource)}`:""}</div>`:"";return`<div class="asset-card"><div class="asset-head"><button type="button" class="badge badge-ico" data-iconasset="${a.id}" aria-label="Cambiar icono de ${escapeHtml(a.name)}" title="Cambiar icono">${assetIconSvg(a)}</button><button type="button" class="badge" data-typeasset="${a.id}" title="Cambiar tipo">${escapeHtml(a.type)}</button></div><h3>${escapeHtml(a.name)}</h3><div class="big${isDebt(a)?" negative":""}">${isDebt(a)?"−":""}${euro.format(a.value)}</div>${isCurrentAccount(a)||isDebt(a)?"":`<div class="sub">Aportado: ${euro.format(a.invested||0)}</div>${meta}<div class="sub ${g<0?"negative":"positive"}">Diferencia: ${euro.format(g)}</div>${irrHtml}`}${priceInfo}${movementAccounts().includes(a)?(a.id===defaultAccount()?.id?`<div class="sub"><b>Cuenta por defecto</b> de los nuevos movimientos</div>`:""):""}<div class="form-actions">${iconBtn("secondary",`data-editasset="${a.id}"`,"i-pencil","Actualizar manualmente")}${Number(a.units)>0&&assetMarketConfig(a)?`<button class="secondary small" data-adjunits="${a.id}">Ajustar ${assetUnitLabel(a,true)}</button>`:""}${movementAccounts().includes(a)&&a.id!==defaultAccount()?.id?`<button class="secondary small" data-defacc="${a.id}">Usar por defecto</button>`:""}${iconBtn("danger",`data-delasset="${a.id}"`,"i-trash","Borrar")}</div></div>`}).join(""):`<div class="empty" style="grid-column:1/-1">No has añadido activos.</div>`;
+ el("assetGrid").innerHTML=state.assets.length?state.assets.map(a=>{const g=Number(a.value)-Number(a.invested||0),units=Number(a.units||0),price=Number(a.unitPrice||0),meta=units>0?`<div class="sub">${assetDisplayUnits(units,assetUnitLabel(a)==="BTC"?8:6)} ${assetUnitLabel(a,true)}${price>0?` · ${euro.format(price)} / ud.`:""}</div>`:"",irr=assetAnnualizedReturn(a),irrHtml=irr===null?`<div class="sub">Rentabilidad anualizada: —${assetInvestmentMovements(a).length&&!(Number(a.units)>0)?" (las aportaciones registradas no cuadran con el capital aportado)":""}</div>`:`<div class="sub ${irr<0?"negative":"positive"}">Rentabilidad anualizada: ${(irr*100).toFixed(2).replace(".",",")} %</div>`,priceInfo=isDebt(a)?`<div class="sub">Pendiente de pagar. Resta del patrimonio neto; actualízalo cuando cambie o usa un traspaso hacia la deuda para registrar un pago.</div>`:isCurrentAccount(a)?`<div class="sub">Saldo calculado: referencia ${euro.format(a.refBalance||0)} el ${formatDate(a.refDate)} más los movimientos posteriores</div>`:a.updatedAt?`<div class="sub">Cotización: ${formatDate(a.updatedAt)}${a.priceSource?` · ${escapeHtml(a.priceSource)}`:""}</div>`:"";return`<div class="asset-card"><div class="asset-head"><button type="button" class="badge badge-ico" data-iconasset="${a.id}" aria-label="Cambiar icono de ${escapeHtml(a.name)}" title="Cambiar icono">${assetIconSvg(a)}</button><button type="button" class="badge" data-typeasset="${a.id}" title="Cambiar tipo">${escapeHtml(a.type)}</button></div><h3>${escapeHtml(a.name)}</h3><div class="big${isDebt(a)?" negative":""}">${isDebt(a)?"−":""}${euro.format(a.value)}</div>${isCurrentAccount(a)||isDebt(a)?"":`<div class="sub">Aportado: ${euro.format(a.invested||0)}</div>${meta}<div class="sub ${g<0?"negative":"positive"}">Diferencia: ${euro.format(g)}</div>${irrHtml}`}${priceInfo}${movementAccounts().includes(a)?(a.id===defaultAccount()?.id?`<div class="sub"><b>Cuenta por defecto</b> de los nuevos movimientos</div>`:""):""}<div class="form-actions">${iconBtn("secondary",`data-editasset="${a.id}"`,"i-pencil","Actualizar manualmente")}<button type="button" class="secondary small" data-renameasset="${a.id}">Renombrar</button>${Number(a.units)>0&&assetMarketConfig(a)?`<button class="secondary small" data-adjunits="${a.id}">Ajustar ${assetUnitLabel(a,true)}</button>`:""}${movementAccounts().includes(a)&&a.id!==defaultAccount()?.id?`<button class="secondary small" data-defacc="${a.id}">Usar por defecto</button>`:""}${iconBtn("danger",`data-delasset="${a.id}"`,"i-trash","Borrar")}</div></div>`}).join(""):`<div class="empty" style="grid-column:1/-1">No has añadido activos.</div>`;
  el("assetGrid").querySelectorAll("[data-defacc]").forEach(b=>b.onclick=()=>{const a=state.assets.find(x=>x.id===b.dataset.defacc);if(!a)return;state.meta.defaultAccountId=a.id;saveState();renderAll();resetAccountSelect("mAccount");resetAccountSelect("rAccount");updateAccountHint();toast(`${a.name} es ahora la cuenta por defecto`)});
  el("assetGrid").querySelectorAll("[data-delasset]").forEach(b=>b.onclick=async()=>{if(await uiConfirm("Desaparecerá del patrimonio; los movimientos no se tocan.",{title:"¿Eliminar este activo?",danger:true,confirmText:"Eliminar"})){state.assets=state.assets.filter(x=>x.id!==b.dataset.delasset);markDataUpdate("portfolio");saveState();renderAll()}});
  el("assetGrid").querySelectorAll("[data-iconasset]").forEach(b=>b.onclick=()=>chooseAssetIcon(b.dataset.iconasset));
+ el("assetGrid").querySelectorAll("[data-renameasset]").forEach(b=>b.onclick=()=>renameAsset(b.dataset.renameasset));
  // Cambiar el tipo de un activo. La cuenta corriente queda fuera porque su saldo se calcula a partir de los movimientos.
  el("assetGrid").querySelectorAll("[data-typeasset]").forEach(b=>b.onclick=async()=>{const a=state.assets.find(x=>x.id===b.dataset.typeasset);if(!a)return;
    if(isCurrentAccount(a))return uiAlert("El tipo de la cuenta corriente no se puede cambiar: su saldo se calcula con los movimientos.");

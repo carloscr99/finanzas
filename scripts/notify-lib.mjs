@@ -52,7 +52,7 @@ export function addDaysISO(iso, days) {
 // Mismo criterio que assetMarketConfig() de la app: ISIN o Bitcoin.
 export function isMarketAsset(asset) {
   if (String(asset?.isin || "").trim()) return true;
-  const name = normalizeText(asset?.name);
+  const name = normalizeText(asset?.previousNames?.[0] ?? asset?.name);
   const type = normalizeText(asset?.type);
   return name.includes("bitcoin") || name === "btc" || (type === "cripto" && name.includes("btc"));
 }
@@ -60,17 +60,18 @@ export function isMarketAsset(asset) {
 export function marketAssetForTexts(texts, assets = []) {
   const haystack = normalizeText(texts.filter(Boolean).join(" "));
   if (!haystack) return null;
+  const hayTokens = new Set(textTokens(haystack));
   let best = null;
   let bestScore = 0;
   for (const asset of assets) {
     if (!isMarketAsset(asset)) continue;
     const isin = normalizeText(asset?.isin).trim();
     if (isin && haystack.includes(isin)) return asset;
-    const assetTokens = textTokens(asset?.name);
-    if (!assetTokens.length) continue;
-    const hayTokens = new Set(textTokens(haystack));
-    const common = assetTokens.filter(token => hayTokens.has(token)).length;
-    const score = common >= Math.min(2, assetTokens.length) ? common : 0;
+    const score = [asset?.name, ...(asset?.previousNames || [])].reduce((best, name) => {
+      const tokens = textTokens(name);
+      const common = tokens.filter(token => hayTokens.has(token)).length;
+      return common >= Math.min(2, tokens.length) ? Math.max(best, common) : best;
+    }, 0);
     if (score > bestScore) {
       best = asset;
       bestScore = score;
