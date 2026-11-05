@@ -161,6 +161,7 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 .cs-bar{display:block;height:4px;border-radius:999px;background:var(--btn2-bg);margin-top:6px;overflow:hidden}.cs-bar i{display:block;height:100%;border-radius:999px}
 .cs-table th,.cs-table td.amount{white-space:nowrap}.cs-table th.cs-center{text-align:center}.cs-table td.cs-pct-cell{width:40%;min-width:90px}.cs-pct{display:flex;align-items:center;gap:10px}.cs-pct .cs-bar{flex:1;margin-top:0;height:6px}.cs-pct span:last-child{flex:0 0 auto;text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600}.cs-table tr.cs-total td{font-weight:700;border-top:1px solid var(--border-strong)}.cs-table td.inv{color:var(--investment)}.cs-table td.amount{font-weight:600}.cs-table td.muted{color:var(--muted);font-weight:400}.cs-table td.mv-account{max-width:170px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .mitem.static{cursor:default}.mitem.static:active{background:transparent}.mitem .amt.warn,.cs-table td.warn{color:var(--warning)}
+#summaryRank .cs-table :is(th,td):nth-child(3){text-align:center}
 .cs-head{display:flex;justify-content:space-between;gap:8px;font-size:13px;color:var(--muted);padding:4px 4px 8px;border-bottom:1px solid var(--border)}.cs-head b{color:var(--text);font-variant-numeric:tabular-nums}
 .mday{font-size:12px;font-weight:700;color:var(--muted);padding:14px 4px 6px;text-transform:uppercase;letter-spacing:.04em;position:sticky;top:0;background:var(--panel);z-index:1}
 .empty-state{text-align:center;padding:28px 12px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:10px}
@@ -2354,7 +2355,7 @@ function renderCategorySummary(){
  const rows=list.map(r=>{const pct=typeTotals[sumType]?r.total/typeTotals[sumType]*100:0;return{key:r.id,icon:catIconSvg(r.c),ico:t.k,name:r.c?.name||"Sin categoría",count:r.count,sub:`${pctTxt(pct)} · ${intFmt.format(r.count)} mov.`,bar:[pct,t.color],barText:pctTxt(pct),amt:`${t.sign}${euro.format(r.total)}`,amtCls:t.cls}});
  const totalAmt=`${t.sign}${euro.format(typeTotals[sumType])}`;
  renderRank("summaryRank",{rows,empty:emptyRank(`Sin ${t.plural} en este periodo.`),
-  cols:[colName("Categoría"),colBar("% del total"),{h:"Movimientos",num:true,cls:()=>"muted",cell:r=>intFmt.format(r.count)},colAmt("Importe")],
+  cols:[colName("Categoría"),colBar("% del total"),{h:"Movimientos",cls:()=>"muted",cell:r=>intFmt.format(r.count)},colAmt("Importe")],
   total:{label:`Total ${t.plural}`,amt:totalAmt,amtCls:t.cls,cells:[`Total ${t.plural}`,"",intFmt.format(n),totalAmt]},
   onClick:id=>{const r=periodRange();goToMovements({type:sumType,categoryId:id,from:r.from,to:r.to,label:periodLabel()})}});
 }
