@@ -315,7 +315,11 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  }
  .iphone-ui .mobile-nav button{font-size:10px;min-width:0}
  .iphone-ui .mobile-nav button[data-page]{border-radius:23px}
- .iphone-ui .mobile-nav button[data-page].active{background:color-mix(in srgb,var(--muted) 14%,transparent);color:var(--investment)}
+ .iphone-ui .mobile-nav button[data-page].active{
+   color:var(--investment);
+   background:linear-gradient(165deg,rgba(255,255,255,.36),transparent 60%),color-mix(in srgb,var(--investment) 12%,transparent);
+   box-shadow:inset 0 1px 1px rgba(255,255,255,.48),inset 0 -1px 1px rgba(15,23,42,.15),0 2px 6px rgba(15,23,42,.12);
+ }
  .iphone-ui .mobile-nav .nav-ind{width:auto;height:26px}
  .iphone-ui .mobile-nav button.active .nav-ind{background:none}
  .iphone-ui .mobile-nav .nav-ind .ico{width:21px;height:21px}
@@ -330,6 +334,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .iphone-ui #page-dashboard .metric-label{font-weight:600}
  @media(prefers-reduced-transparency:reduce){
    .iphone-ui .mobile-nav{background:var(--panel);-webkit-backdrop-filter:none;backdrop-filter:none}
+   .iphone-ui .mobile-nav button[data-page].active{background:var(--investment-soft);box-shadow:none}
  }
 }
 </style>
@@ -2696,7 +2701,11 @@ function renderAll(){
  if(el("page-assets").classList.contains("active"))drawNetWorthChart();
 }
 
-document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>showPage(b.dataset.page));
+document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>{
+ const page=b.dataset.page;
+ const iphoneHome=page==="dashboard"&&b.closest(".mobile-nav")&&document.documentElement.classList.contains("iphone-ui");
+ showPage(page,iphoneHome?"instant":"smooth");
+});
 el("mDate").value=todayISO();el("rStartDate").value=todayISO();setupPeriodSelectors();updatePeriodControls();
 el("mType").onchange=()=>{updateMovementCategories();updateAccountHint()};el("mAccount").onchange=updateAccountHint;["mAmount","mUnits"].forEach(id=>el(id).addEventListener("input",()=>updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint")));el("mAsset").onchange=()=>updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint");el("mCategory").onchange=()=>updateInvestmentFields(true);el("rType").onchange=updateRecurringCategories;
 el("categorySearch").addEventListener("input",renderCategoryList);
