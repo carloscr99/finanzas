@@ -340,6 +340,12 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .iphone-ui #page-dashboard .panel{border-radius:22px;box-shadow:none}
  .iphone-ui #page-dashboard .chart-head h2{font-size:18px;letter-spacing:-.02em}
  .iphone-ui #page-dashboard .chart-hint{color:var(--muted)}
+ .iphone-ui #dataFreshness{
+   display:grid;gap:4px;padding:12px 14px;border-radius:16px;background:var(--panel);font-size:12px;
+ }
+ .iphone-ui #dataFreshness b{color:var(--text);font-size:13px}
+ .iphone-ui #dataFreshness .freshness-separator{display:none}
+ .iphone-ui #returnCalculationNote{margin-top:8px;padding:0;border:0;background:none;font-size:12px}
  .iphone-ui :is(#summaryRank,#patrimonyRank,#returnRank) .mlist{
    gap:0;background:var(--soft);border:1px solid var(--border);border-radius:16px;
  }
@@ -578,7 +584,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
       <div class="panel section-gap">
         <div class="chart-head"><div><h2>Rentabilidad anualizada por activo</h2><p class="chart-sub" id="subReturn"></p></div></div>
         <div id="returnRank"></div>
-        <div class="inline-note">Calculada mediante XIRR: tiene en cuenta el importe y la fecha de cada aportación y el valor actual del activo. Se actualiza al añadir, editar o borrar movimientos de inversión y al cambiar el precio actual.</div>
+        <div class="inline-note" id="returnCalculationNote">Calculada mediante XIRR: tiene en cuenta el importe y la fecha de cada aportación y el valor actual del activo. Se actualiza al añadir, editar o borrar movimientos de inversión y al cambiar el precio actual.</div>
       </div>
     </section>
 
@@ -1826,7 +1832,13 @@ function renderDataSize(){
 }
 function renderFreshness(){
  const mov=latestMovementReference(),port=latestPortfolioReference(),prices=state.meta?.lastPricesSyncAt;
- const node=el("dataFreshness");if(node)node.innerHTML=`<b>Últimas actualizaciones</b> · Movimientos: ${formatDateTime(mov)} · Patrimonio: ${formatDateTime(port)} · Cotizaciones: ${formatDateTime(prices)}`;
+ const node=el("dataFreshness");
+ if(node){
+   const updates=[["Movimientos",mov],["Patrimonio",port],["Cotizaciones",prices]];
+   const separator='<span class="freshness-separator"> · </span>';
+   node.innerHTML="<b>Últimas actualizaciones</b>"+separator+
+     updates.map(([label,date])=>`<span>${label}: ${formatDateTime(date)}</span>`).join(separator);
+ }
 }
 function updateMovementCategories(){
  const type=el("mType").value,previous=el("mCategory").value,cats=state.categories.filter(c=>c.type===type).sort((a,b)=>a.name.localeCompare(b.name,"es"));
