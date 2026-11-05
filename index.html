@@ -337,6 +337,17 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .iphone-ui .sheet .form-actions button{border-radius:16px}
  .iphone-ui #page-dashboard .summary-grid .card{border-radius:22px;box-shadow:none}
  .iphone-ui #page-dashboard .metric-label{font-weight:600}
+ .iphone-ui #page-dashboard .panel{border-radius:22px;box-shadow:none}
+ .iphone-ui #page-dashboard .chart-head h2{font-size:18px;letter-spacing:-.02em}
+ .iphone-ui #page-dashboard .chart-hint{color:var(--muted)}
+ .iphone-ui :is(#summaryRank,#patrimonyRank,#returnRank) .mlist{
+   gap:0;background:var(--soft);border:1px solid var(--border);border-radius:16px;
+ }
+ .iphone-ui :is(#summaryRank,#patrimonyRank,#returnRank) :is(.cs-head,.mitem){padding:10px}
+ .iphone-ui :is(#summaryRank,#patrimonyRank,#returnRank) .mitem:last-child{border-bottom:0}
+ .iphone-ui :is(#summaryRank,#patrimonyRank,#returnRank) .mitem{gap:8px}
+ .iphone-ui :is(#summaryRank,#patrimonyRank,#returnRank) .cs-bar{height:3px}
+ .iphone-ui :is(#summaryRank,#patrimonyRank,#returnRank) .cs-bar i{opacity:.72}
  @media(prefers-reduced-transparency:reduce){
    .iphone-ui .mobile-nav{background:var(--panel);-webkit-backdrop-filter:none;backdrop-filter:none}
    .iphone-ui .mobile-nav button[data-page].active{background:var(--investment-soft);box-shadow:none}
@@ -2436,7 +2447,20 @@ function renderReturnRank(){
 // ---------- Gráficos (Chart.js) ----------
 const charts={};
 const FONT="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif";
-function mountChart(id,config){if(charts[id])charts[id].destroy();charts[id]=new Chart(el(id),config);return charts[id]}
+function mountChart(id,config){
+ const canvas=el(id);
+ if(isMobile()&&document.documentElement.classList.contains("iphone-ui")&&canvas.closest("#page-dashboard")){
+   const {x,y}=config.options.scales;
+   x.border={display:false};
+   y.border={display:false};
+   y.grid={color:tok("--border"),drawTicks:false};
+   y.ticks={...y.ticks,maxTicksLimit:5,padding:8};
+   if(config.type==="bar")config.data.datasets.forEach(dataset=>{dataset.borderRadius=6});
+ }
+ if(charts[id])charts[id].destroy();
+ charts[id]=new Chart(canvas,config);
+ return charts[id];
+}
 function withAlpha(hex,a){return hex+Math.round(a*255).toString(16).padStart(2,"0")}
 function pointerCursor(e,els){if(e?.native?.target)e.native.target.style.cursor=els.length?"pointer":"default"}
 function pct1(v){return v.toFixed(1).replace(".",",")}
