@@ -1,11 +1,11 @@
 {
-  "updatedAt": "2026-11-04T22:59:49.934Z",
+  "updatedAt": "2026-11-05T14:11:42.357Z",
   "currency": "EUR",
   "assets": {
     "LU0996182563": {
       "name": "Amundi Index MSCI World AE-C",
-      "price": 432.87,
-      "priceDate": "2026-11-03",
+      "price": 437.71,
+      "priceDate": "2026-11-04",
       "source": "Financial Times (markets.ft.com)",
       "history": {
         "2026-10-21": 440.9,
@@ -16,13 +16,14 @@
         "2026-10-29": 441.74,
         "2026-10-30": 435.2,
         "2026-11-02": 432.29,
-        "2026-11-03": 432.87
+        "2026-11-03": 432.87,
+        "2026-11-04": 437.71
       }
     },
     "LU0996177134": {
       "name": "Amundi Index MSCI Emerging Markets AE-C",
-      "price": 237.38,
-      "priceDate": "2026-11-03",
+      "price": 237.91,
+      "priceDate": "2026-11-04",
       "source": "Financial Times (markets.ft.com)",
       "history": {
         "2026-10-21": 247.05,
@@ -33,13 +34,14 @@
         "2026-10-29": 244.84,
         "2026-10-30": 240.83,
         "2026-11-02": 241.43,
-        "2026-11-03": 237.38
+        "2026-11-03": 237.38,
+        "2026-11-04": 237.91
       }
     },
     "IE00BFZMJT78": {
       "name": "Neuberger Berman Short Duration Euro Bond Fund EUR I Acc",
-      "price": 117.93,
-      "priceDate": "2026-11-03",
+      "price": 118.13,
+      "priceDate": "2026-11-04",
       "source": "Financial Times (markets.ft.com)",
       "history": {
         "2026-10-23": 117.45,
@@ -49,13 +51,14 @@
         "2026-10-29": 117.88,
         "2026-10-30": 117.87,
         "2026-11-02": 117.88,
-        "2026-11-03": 117.93
+        "2026-11-03": 117.93,
+        "2026-11-04": 118.13
       }
     },
     "BTC": {
       "name": "Bitcoin",
-      "price": 71840,
-      "priceDate": "2026-11-04",
+      "price": 70891,
+      "priceDate": "2026-11-05",
       "source": "CoinGecko",
       "history": {
         "2026-10-24": 71794,
@@ -69,13 +72,14 @@
         "2026-11-01": 69728,
         "2026-11-02": 69286,
         "2026-11-03": 69442,
-        "2026-11-04": 71840
+        "2026-11-04": 71840,
+        "2026-11-05": 70891
       }
     },
     "IE00BYX5NX33": {
       "name": "Fidelity MSCI World Index Fund EUR P Acc",
-      "price": 14.38,
-      "priceDate": "2026-11-03",
+      "price": 14.54,
+      "priceDate": "2026-11-04",
       "source": "Financial Times (markets.ft.com)",
       "history": {
         "2026-10-23": 14.44,
@@ -85,13 +89,14 @@
         "2026-10-29": 14.67,
         "2026-10-30": 14.46,
         "2026-11-02": 14.36,
-        "2026-11-03": 14.38
+        "2026-11-03": 14.38,
+        "2026-11-04": 14.54
       }
     },
     "IE0031786696": {
       "name": "Vanguard Emerging Markets Stock Index Fund EUR Acc",
-      "price": 292.26,
-      "priceDate": "2026-11-03",
+      "price": 292.83,
+      "priceDate": "2026-11-04",
       "source": "Financial Times (markets.ft.com)",
       "history": {
         "2026-10-23": 297.31,
@@ -100,14 +105,15 @@
         "2026-10-29": 301.47,
         "2026-10-30": 296.48,
         "2026-11-02": 297.24,
-        "2026-11-03": 292.26
+        "2026-11-03": 292.26,
+        "2026-11-04": 292.83
       }
     },
     "IE00B4ND3602": {
       "name": "iShares Physical Gold ETC",
       "symbol": "PPFB:GER:EUR",
-      "price": 69.98,
-      "priceDate": "2026-11-04",
+      "price": 71.34,
+      "priceDate": "2026-11-05",
       "source": "Financial Times (markets.ft.com)",
       "history": {
         "2026-10-23": 69.23,
@@ -118,13 +124,14 @@
         "2026-10-30": 67.79,
         "2026-11-02": 68.71,
         "2026-11-03": 68.12,
-        "2026-11-04": 69.98
+        "2026-11-04": 69.98,
+        "2026-11-05": 71.34
       }
     },
     "IE00BH65QP47": {
       "name": "Vanguard Global Short-Term Bond Index Fund EUR Hedged Acc",
-      "price": 105.16,
-      "priceDate": "2026-11-03",
+      "price": 105.31,
+      "priceDate": "2026-11-04",
       "source": "Financial Times (markets.ft.com)",
       "history": {
         "2026-10-23": 104.88,
@@ -133,7 +140,8 @@
         "2026-10-29": 105.02,
         "2026-10-30": 105.16,
         "2026-11-02": 105.2,
-        "2026-11-03": 105.16
+        "2026-11-03": 105.16,
+        "2026-11-04": 105.31
       }
     }
   }
