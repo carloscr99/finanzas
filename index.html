@@ -304,6 +304,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  #page-dashboard .summary-grid .metric-value{font-size:clamp(21px,6.4vw,24px)}
 }
 @media(max-width:760px){
+ html.iphone-ui{scroll-behavior:auto}
  .iphone-ui body{font-family:-apple-system,BlinkMacSystemFont,"Inter",sans-serif}
  .iphone-ui .app{padding-bottom:calc(var(--nav-h) + 28px + env(safe-area-inset-bottom))}
  .iphone-ui .mobile-nav{
@@ -2704,6 +2705,10 @@ function renderAll(){
 document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>{
  const page=b.dataset.page;
  const iphoneHome=page==="dashboard"&&b.closest(".mobile-nav")&&document.documentElement.classList.contains("iphone-ui");
+ if(iphoneHome&&currentPage==="dashboard"){
+   requestAnimationFrame(()=>{document.scrollingElement.scrollTop=0});
+   return;
+ }
  showPage(page,iphoneHome?"instant":"smooth");
 });
 el("mDate").value=todayISO();el("rStartDate").value=todayISO();setupPeriodSelectors();updatePeriodControls();
