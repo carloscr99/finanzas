@@ -72,6 +72,12 @@ button{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:tran
 .category-fields #cIconBtn{width:44px;border-radius:10px}
 .category-fields .name-ico select{flex:1;min-width:0}
 .category-fields #addCategory{width:100%}
+@media(min-width:761px){
+ .category-fields{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 160px;align-items:end}
+ .category-fields :is(input,select,#clearCategoryFilters){min-height:44px}
+ .category-fields #clearCategoryFilters{width:100%;font-size:inherit}
+ .category-fields.category-create{padding-top:16px;border-top:1px solid var(--border)}
+}
 .grid-3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .grid-4,.summary-grid{grid-template-columns:repeat(4,minmax(0,1fr))}
 .summary-grid{margin-bottom:16px}
@@ -590,9 +596,9 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         <div class="category-fields">
           <div><label for="categorySearch">Buscar categorías</label><input id="categorySearch" type="search" placeholder="Nombre de la categoría"></div>
           <div><label for="categoryFilterType">Filtrar por tipo</label><select id="categoryFilterType"><option value="">Todos los tipos</option><option>Gasto</option><option>Ingreso</option><option>Inversión</option></select></div>
+          <div><button type="button" class="secondary small" id="clearCategoryFilters">Restablecer filtros</button></div>
         </div>
-        <div class="footer-tools section-gap"><button type="button" class="secondary small" id="clearCategoryFilters">Restablecer filtros</button></div>
-        <div class="category-fields section-gap">
+        <div class="category-fields category-create section-gap">
           <div>
             <label for="cType">Tipo</label>
             <div class="name-ico">
