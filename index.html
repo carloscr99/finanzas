@@ -225,7 +225,7 @@ button.badge[data-typeasset]{border:0;cursor:pointer;font-family:inherit}
 .file-label input{display:none}
 input:focus,select:focus{outline:2px solid var(--ring);outline-offset:1px;border-color:var(--border-strong)}
 button.primary:focus-visible,button.secondary:focus-visible,button.danger:focus-visible,.file-label:focus-within{outline:2px solid rgba(37,99,235,.28);outline-offset:2px}
-.mobile-nav{display:none}
+.mobile-nav,.mobile-nav use.nav-iphone{display:none}
 .section-gap{margin-top:16px}
 hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 [hidden]{display:none!important}
@@ -307,14 +307,20 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .iphone-ui body{font-family:-apple-system,BlinkMacSystemFont,"Inter",sans-serif}
  .iphone-ui .app{padding-bottom:calc(var(--nav-h) + 28px + env(safe-area-inset-bottom))}
  .iphone-ui .mobile-nav{
-   inset:auto 8px calc(8px + env(safe-area-inset-bottom));
-   height:calc(var(--nav-h) + 6px);padding:0 2px;
+   inset:auto 8px max(4px, calc(env(safe-area-inset-bottom) - 5px));
+   height:calc(var(--nav-h) + 6px);padding:4px;
    border:1px solid var(--border-strong);border-radius:28px;
    background:var(--nav-bg);box-shadow:0 6px 24px rgba(15,23,42,.18);
    -webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);
  }
  .iphone-ui .mobile-nav button{font-size:10px;min-width:0}
- .iphone-ui .mobile-nav .nav-ind{width:min(48px,100%)}
+ .iphone-ui .mobile-nav button[data-page]{border-radius:23px}
+ .iphone-ui .mobile-nav button[data-page].active{background:color-mix(in srgb,var(--muted) 14%,transparent);color:var(--investment)}
+ .iphone-ui .mobile-nav .nav-ind{width:auto;height:26px}
+ .iphone-ui .mobile-nav button.active .nav-ind{background:none}
+ .iphone-ui .mobile-nav .nav-ind .ico{width:21px;height:21px}
+ .iphone-ui .mobile-nav .nav-ind use.nav-default{display:none}
+ .iphone-ui .mobile-nav .nav-ind use.nav-iphone{display:inline}
  .iphone-ui .mobile-nav button.nav-add{width:46px;height:46px;min-height:46px;margin:auto}
  .iphone-ui .sheet{border-radius:30px 30px 0 0;border:1px solid var(--border);border-bottom:0}
  .iphone-ui .sheet-head{margin-bottom:14px}
@@ -331,6 +337,9 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 <body>
 <!-- Sprite de iconos (una sola familia outline, 24 px, trazo 1,75). Se usan con <svg class="ico"><use href="#i-…"/></svg>. -->
 <svg hidden aria-hidden="true" id="iconSprite" xmlns="http://www.w3.org/2000/svg">
+  <symbol id="nav-home" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M2.7 10.4 11 3.1a1.5 1.5 0 0 1 2 0l8.3 7.3a1 1 0 0 1-.7 1.8H19v7a1.8 1.8 0 0 1-1.8 1.8H14v-6h-4v6H6.8A1.8 1.8 0 0 1 5 19.2v-7H3.4a1 1 0 0 1-.7-1.8Z"/></symbol>
+  <symbol id="nav-movements" viewBox="0 0 24 24"><path stroke-width="2.2" d="M9 6h11M9 12h11M9 18h11"/><path stroke-width="2.8" d="M4 6h.01M4 12h.01M4 18h.01"/></symbol>
+  <symbol id="nav-assets" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M11 2a10 10 0 1 0 11 11H11Z"/><path fill="currentColor" stroke="none" d="M13 2v9h9a10 10 0 0 0-9-9Z"/></symbol>
   <symbol id="i-house" viewBox="0 0 24 24"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v10h14V10"/><path d="M10 20v-6h4v6"/></symbol>
   <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h12M9 12h12M9 18h12"/><circle cx="4.5" cy="6" r="1.1" fill="currentColor" stroke="none"/><circle cx="4.5" cy="12" r="1.1" fill="currentColor" stroke="none"/><circle cx="4.5" cy="18" r="1.1" fill="currentColor" stroke="none"/></symbol>
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
@@ -807,10 +816,10 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 <div class="toast" id="toast" hidden></div>
 
 <nav class="mobile-nav" aria-label="Navegación principal" hidden>
-  <button data-page="dashboard" class="active" aria-current="page"><span class="nav-ind"><svg class="ico" aria-hidden="true"><use href="#i-house"/></svg></span><span class="nav-lbl">Inicio</span></button>
-  <button data-page="movements"><span class="nav-ind"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg></span><span class="nav-lbl">Movimientos</span></button>
+  <button data-page="dashboard" class="active" aria-current="page"><span class="nav-ind"><svg class="ico" aria-hidden="true"><use class="nav-default" href="#i-house"/><use class="nav-iphone" href="#nav-home"/></svg></span><span class="nav-lbl">Inicio</span></button>
+  <button data-page="movements"><span class="nav-ind"><svg class="ico" aria-hidden="true"><use class="nav-default" href="#i-list"/><use class="nav-iphone" href="#nav-movements"/></svg></span><span class="nav-lbl">Movimientos</span></button>
   <button class="nav-add" id="navAdd" aria-label="Añadir movimiento"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></button>
-  <button data-page="assets"><span class="nav-ind"><svg class="ico" aria-hidden="true"><use href="#i-pie"/></svg></span><span class="nav-lbl">Patrimonio</span></button>
+  <button data-page="assets"><span class="nav-ind"><svg class="ico" aria-hidden="true"><use class="nav-default" href="#i-pie"/><use class="nav-iphone" href="#nav-assets"/></svg></span><span class="nav-lbl">Patrimonio</span></button>
   <button data-page="more"><span class="nav-ind"><svg class="ico" aria-hidden="true"><use href="#i-dots"/></svg></span><span class="nav-lbl">Más</span></button>
 </nav>
 
