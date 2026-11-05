@@ -318,8 +318,8 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .iphone-ui .mobile-nav button[data-page]{border-radius:23px}
  .iphone-ui .mobile-nav button[data-page].active{
    color:var(--investment);
-   background:linear-gradient(165deg,rgba(255,255,255,.36),transparent 60%),color-mix(in srgb,var(--investment) 12%,transparent);
-   box-shadow:inset 0 1px 1px rgba(255,255,255,.48),inset 0 -1px 1px rgba(15,23,42,.15),0 2px 6px rgba(15,23,42,.12);
+   background:color-mix(in srgb,var(--text) 8%,transparent);
+   box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 7%,transparent);
  }
  .iphone-ui .mobile-nav .nav-ind{width:auto;height:26px}
  .iphone-ui .mobile-nav button.active .nav-ind{background:none}
@@ -2706,7 +2706,8 @@ document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>{
  const page=b.dataset.page;
  const iphoneHome=page==="dashboard"&&b.closest(".mobile-nav")&&document.documentElement.classList.contains("iphone-ui");
  if(iphoneHome&&currentPage==="dashboard"){
-   requestAnimationFrame(()=>{document.scrollingElement.scrollTop=0});
+   const behavior=window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth";
+   requestAnimationFrame(()=>document.scrollingElement.scrollTo({top:0,behavior}));
    return;
  }
  showPage(page,iphoneHome?"instant":"smooth");
