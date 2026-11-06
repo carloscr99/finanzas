@@ -159,6 +159,8 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;background:var(--toast-bg);color:var(--toast-fg);padding:10px 16px;border-radius:999px;font-size:14px;z-index:80;box-shadow:var(--shadow);white-space:nowrap}
 .mlist{flex-direction:column}
 .movement-day-items{display:contents}
+.more-back{display:none}
+.settings-group{display:contents}
 .movement-history-count{display:none}
 .mitem{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 4px;border:0;border-bottom:1px solid var(--border);width:100%;background:transparent;text-align:left;font:inherit;color:var(--text);transition:background-color .12s}
 .mitem:active{background:var(--soft)}
@@ -407,6 +409,69 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .iphone-ui :is(#summaryRank,#patrimonyRank,#returnRank) .mitem{gap:8px}
  .iphone-ui :is(#summaryRank,#patrimonyRank,#returnRank) .cs-bar{height:3px}
  .iphone-ui :is(#summaryRank,#patrimonyRank,#returnRank) .cs-bar i{opacity:.72}
+ .iphone-ui :is(#page-more,#page-settings,#page-categories,#page-recurring,#page-budget) :is(.panel,.card){
+   border-radius:22px;box-shadow:none;
+ }
+ .iphone-ui .more-back{
+   display:inline-flex;align-items:center;gap:5px;min-height:44px;padding:0 8px 0 0;
+   border:0;background:none;color:var(--text);font-weight:600;
+ }
+ .iphone-ui #page-more .more-list{padding:4px 12px}
+ .iphone-ui #page-more .more-item{padding:8px 4px}
+ .iphone-ui #page-more .more-item > .ico:first-child{
+   box-sizing:content-box;width:18px;height:18px;padding:7px;border-radius:10px;background:var(--btn2-bg);
+ }
+ .iphone-ui #page-more .danger-item{color:var(--expense)}
+ .iphone-ui .settings-panel{display:contents}
+ .iphone-ui .settings-panel > hr{display:none}
+ .iphone-ui .settings-group{
+   display:block;margin-bottom:12px;padding:16px;background:var(--panel);border:1px solid var(--border);border-radius:22px;
+ }
+ .iphone-ui .settings-group h2{font-size:17px;margin-bottom:8px}
+ .iphone-ui .settings-group p{font-size:14px;margin:0 0 12px;overflow-wrap:anywhere}
+ .iphone-ui .settings-group :is(button,.file-label){white-space:normal}
+ .iphone-ui .settings-group button.danger{color:var(--expense);background:var(--expense-soft);border-color:transparent}
+ .iphone-ui .settings-group .pref-row{padding-top:10px;border-top:1px solid var(--border)}
+ .iphone-ui #page-categories :is(.category-create,#categoryList){padding-top:14px;border-top:1px solid var(--border)}
+ .iphone-ui #categoryList{display:grid;gap:0}
+ .iphone-ui #categoryList .chip{
+   display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:4px 8px;
+   border:0;border-bottom:1px solid var(--border);border-radius:0;background:none;padding:8px 0;
+ }
+ .iphone-ui #categoryList .chip:last-child{border-bottom:0}
+ .iphone-ui #categoryList .chip-ico{grid-area:1 / 1 / 3}
+ .iphone-ui #categoryList .category-name{grid-area:1 / 2;overflow-wrap:anywhere;font-weight:600}
+ .iphone-ui #categoryList .pill{grid-area:2 / 2;justify-self:start}
+ .iphone-ui #categoryList [data-rencat]{grid-area:1 / 3 / 3}
+ .iphone-ui #categoryList [data-delcat]{grid-area:1 / 4 / 3}
+ .iphone-ui #categoryList .chip button{min-height:44px;min-width:36px}
+ .iphone-ui #page-recurring #generateRecurring{margin-top:8px}
+ .iphone-ui :is(#page-recurring,#budgetsPanel) .table-wrap table,
+ .iphone-ui :is(#recurringTable,#budgetTable){display:block}
+ .iphone-ui :is(#page-recurring,#budgetsPanel) .table-wrap thead{
+   position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);
+ }
+ .iphone-ui :is(#recurringTable,#budgetTable) tr{
+   display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px;
+   padding:12px;margin-bottom:8px;border:1px solid var(--border);border-radius:16px;background:var(--soft);
+ }
+ .iphone-ui :is(#recurringTable,#budgetTable) td{
+   padding:0;border:0;text-align:left;white-space:normal;overflow-wrap:anywhere;
+ }
+ .iphone-ui :is(#recurringTable,#budgetTable) td:first-child{
+   grid-column:1 / -1;font-weight:650;color:var(--text);
+ }
+ .iphone-ui #recurringTable .actions{grid-column:1 / -1;display:flex;justify-content:flex-end}
+ .iphone-ui #recurringTable .actions button{min-height:44px;min-width:44px}
+ .iphone-ui #budgetTable td:last-child:not(.empty){grid-column:1 / -1;width:auto!important}
+ .iphone-ui #budgetTable td[data-label]::before{
+   content:attr(data-label);display:block;color:var(--muted);font-size:11px;
+ }
+ .iphone-ui #page-budget .period-compact{gap:8px}
+ .iphone-ui #bpCards .metric-value{overflow-wrap:anywhere}
+ .iphone-ui #budgetRank .mlist{gap:0;border:1px solid var(--border);border-radius:16px;background:var(--soft)}
+ .iphone-ui #budgetRank :is(.cs-head,.mitem){padding:10px}
+ .iphone-ui #budgetRank .mitem:last-child{border-bottom:0}
  @media(prefers-reduced-transparency:reduce){
    .iphone-ui .mobile-nav{background:var(--panel);-webkit-backdrop-filter:none;backdrop-filter:none}
    .iphone-ui .mobile-nav button[data-page].active{background:var(--investment-soft);box-shadow:none}
@@ -706,6 +771,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
     </section>
 
     <section id="page-categories" class="page">
+      <button type="button" class="more-back" data-page="more"><svg class="ico sm" aria-hidden="true"><use href="#i-caret-left"/></svg>Más</button>
       <div class="page-head"><div><h1>Categorías</h1><p>Organiza tus ingresos, gastos e inversiones.</p></div></div>
       <div class="panel">
         <div class="category-fields">
@@ -730,6 +796,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
     </section>
 
     <section id="page-recurring" class="page">
+      <button type="button" class="more-back" data-page="more"><svg class="ico sm" aria-hidden="true"><use href="#i-caret-left"/></svg>Más</button>
       <div class="page-head"><div><h1>Movimientos recurrentes</h1><p>Automatiza nómina, alquiler, suscripciones y aportaciones periódicas.</p></div></div>
       <div class="panel">
         <div class="form-grid">
@@ -799,13 +866,17 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
     </section>
 
     <section id="page-settings" class="page">
+      <button type="button" class="more-back" data-page="more"><svg class="ico sm" aria-hidden="true"><use href="#i-caret-left"/></svg>Más</button>
       <div class="page-head"><div><h1>Ajustes</h1><p>Copias de seguridad y opciones de la aplicación.</p></div></div>
-      <div class="panel">
+      <div class="panel settings-panel">
+        <section class="settings-group">
         <h2>Cuenta</h2>
         <p class="muted">Sesión iniciada como <b id="settingsEmail"></b>. Tus datos se guardan en tu cuenta (Firebase) y se sincronizan entre tus dispositivos.</p>
         <div class="inline-note" id="dataSize" style="margin-bottom:12px">Calculando el tamaño de tus datos…</div>
         <div class="footer-tools"><button class="secondary" id="logoutSettings">Cerrar sesión</button></div>
+        </section>
         <hr>
+        <section class="settings-group">
         <h2>Copia de seguridad</h2>
         <p class="muted">Exporta un archivo .json como copia de seguridad, o importa el que exportaste desde la versión anterior.</p>
         <div class="footer-tools">
@@ -813,7 +884,9 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
           <label class="file-label">Importar datos<input id="importData" type="file" accept="application/json"></label>
           <button class="danger" id="clearAll">Borrar todos los datos</button>
         </div>
+        </section>
         <hr>
+        <section class="settings-group">
         <h2>Avisos push</h2>
         <p class="muted">Avisos gratuitos de <b>Mis Finanzas</b> en este dispositivo. Se envían desde una tarea diaria de GitHub y solo si hay algo que hacer: nunca por cada movimiento ni por las cotizaciones.</p>
         <div class="inline-note" id="pushStatus" style="margin-bottom:12px">Comprobando los avisos de este dispositivo…</div>
@@ -826,12 +899,16 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
           <label class="pref-row"><input type="checkbox" id="pushExpenses" checked><span>Gastos que vencen mañana<small>Un aviso el día anterior con los pagos recurrentes de tipo Gasto (alquiler, teléfono, suscripciones…).</small></span></label>
           <label class="pref-row"><input type="checkbox" id="pushInvestments" checked><span>Inversiones del día<small>El mismo día de una aportación recurrente a un fondo con ISIN o Bitcoin, para que revises las participaciones en la app.</small></span></label>
         </div>
+        </section>
         <hr>
+        <section class="settings-group">
         <h2>Cotizaciones del patrimonio</h2>
         <div class="inline-note">La web obtiene automáticamente las cotizaciones desde el archivo público <b>prices.json</b> de GitHub cada vez que la abres o pulsas “Sincronizar cotizaciones”. La fecha de cotización de cada activo se conserva por separado de la fecha/hora en la que se sincronizó y recalculó el patrimonio.</div>
+        </section>
       </div>
     </section>
     <section id="page-budget" class="page">
+      <button type="button" class="more-back" data-page="more"><svg class="ico sm" aria-hidden="true"><use href="#i-caret-left"/></svg>Más</button>
       <div class="page-head"><div><h1>Presupuesto</h1><p>Cuánto quieres gastar al mes por categoría y cómo vas.</p></div></div>
       <div class="panel">
         <div class="period-compact" style="display:flex">
@@ -1919,7 +1996,7 @@ function renderCategoryList(){
  const query=normText(el("categorySearch").value.trim()),type=el("categoryFilterType").value;
  const sorted=state.categories.filter(c=>(!type||c.type===type)&&normText(c.name).includes(query))
    .sort((a,b)=>a.type.localeCompare(b.type)||a.name.localeCompare(b.name,"es"));
- el("categoryList").innerHTML=sorted.length?sorted.map(c=>`<span class="chip"><button type="button" class="chip-ico" data-iconcat="${c.id}" aria-label="Cambiar icono de ${escapeHtml(c.name)}" title="Cambiar icono">${catIconSvg(c)}</button><span class="pill ${c.type}">${c.type}</span>${escapeHtml(c.name)}<button type="button" data-rencat="${c.id}" aria-label="Renombrar ${escapeHtml(c.name)}" title="Renombrar"><svg class="ico" aria-hidden="true"><use href="#i-pencil"/></svg></button><button type="button" data-delcat="${c.id}" aria-label="Eliminar ${escapeHtml(c.name)}" title="Eliminar"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button></span>`).join(""):`<span class="muted">${state.categories.length?"No hay categorías que coincidan con los filtros.":"No hay categorías."}</span>`;
+ el("categoryList").innerHTML=sorted.length?sorted.map(c=>`<span class="chip"><button type="button" class="chip-ico" data-iconcat="${c.id}" aria-label="Cambiar icono de ${escapeHtml(c.name)}" title="Cambiar icono">${catIconSvg(c)}</button><span class="pill ${c.type}">${c.type}</span><span class="category-name">${escapeHtml(c.name)}</span><button type="button" data-rencat="${c.id}" aria-label="Renombrar ${escapeHtml(c.name)}" title="Renombrar"><svg class="ico" aria-hidden="true"><use href="#i-pencil"/></svg></button><button type="button" data-delcat="${c.id}" aria-label="Eliminar ${escapeHtml(c.name)}" title="Eliminar"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button></span>`).join(""):`<span class="muted">${state.categories.length?"No hay categorías que coincidan con los filtros.":"No hay categorías."}</span>`;
  el("categoryList").querySelectorAll("[data-delcat]").forEach(b=>b.onclick=()=>deleteCategory(b.dataset.delcat));
  el("categoryList").querySelectorAll("[data-rencat]").forEach(b=>b.onclick=()=>renameCategory(b.dataset.rencat));
  el("categoryList").querySelectorAll("[data-iconcat]").forEach(b=>b.onclick=()=>chooseCategoryIcon(b.dataset.iconcat));
@@ -2432,7 +2509,7 @@ function renderBudgetTable(){
  const {stats,months:n,from,to}=budgetStats();
  const cats=state.categories.filter(c=>c.type==="Gasto").sort((a,b)=>(stats.get(b.id)?.mean||0)-(stats.get(a.id)?.mean||0)||a.name.localeCompare(b.name,"es"));
  el("subBudgets").textContent=n?`Últimos ${n} meses completos (${monthLabelKey(from)} – ${monthLabelKey(to)})`:"Todavía no hay meses completos de histórico";
- el("budgetTable").innerHTML=cats.length?cats.map(c=>{const st=stats.get(c.id),b=state.budgets?.[c.id];return`<tr><td>${catLabel(c)}</td><td class="muted">${st.kind}</td><td class="amount muted">${euro.format(st.mean)}</td><td class="amount muted">${euro.format(st.max)}</td><td class="amount">${st.proposal===null?"—":euro.format(st.proposal)}</td><td class="amount" style="width:150px"><input type="number" min="0" step="5" inputmode="decimal" data-budget="${c.id}" value="${b!=null?b:""}" placeholder="—" style="text-align:right"></td></tr>`}).join(""):`<tr><td colspan="6" class="empty">No hay categorías de gasto.</td></tr>`;
+ el("budgetTable").innerHTML=cats.length?cats.map(c=>{const st=stats.get(c.id),b=state.budgets?.[c.id];return`<tr><td>${catLabel(c)}</td><td class="muted">${st.kind}</td><td class="amount muted" data-label="Media 12 m">${euro.format(st.mean)}</td><td class="amount muted" data-label="Máx. 12 m">${euro.format(st.max)}</td><td class="amount" data-label="Propuesta">${st.proposal===null?"—":euro.format(st.proposal)}</td><td class="amount" style="width:150px" data-label="Presupuesto (€/mes)"><input type="number" min="0" step="5" inputmode="decimal" aria-label="Presupuesto mensual de ${escapeHtml(c.name)}" data-budget="${c.id}" value="${b!=null?b:""}" placeholder="—" style="text-align:right"></td></tr>`}).join(""):`<tr><td colspan="6" class="empty">No hay categorías de gasto.</td></tr>`;
  el("budgetTable").querySelectorAll("[data-budget]").forEach(inp=>inp.onchange=()=>{const v=Number(String(inp.value).replace(",","."));state.budgets=state.budgets||{};if(inp.value===""||!Number.isFinite(v)||v<=0)delete state.budgets[inp.dataset.budget];else state.budgets[inp.dataset.budget]=Math.round(v*100)/100;saveState();renderBudgets();toast("Presupuesto guardado")});
 }
 function renderBudgets(){
