@@ -141,6 +141,7 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 .sheet.dragging{transition:none}
 .sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--border-strong);margin:0 auto 12px;touch-action:none}
 .sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;touch-action:none}.sheet-head h2{margin:0}
+.movement-delete-label{display:none}
 .icon-btn{border:0;background:var(--btn2-bg);width:40px;height:40px;border-radius:50%;color:var(--btn2-fg);display:inline-flex;align-items:center;justify-content:center}
 .big-amount{font-size:34px;font-weight:800;text-align:right;min-height:60px}
 .seg-full{display:flex;width:100%;margin-bottom:12px}.seg-full button{flex:1;padding:10px 6px}
@@ -337,6 +338,13 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .iphone-ui .sheet-head{margin-bottom:14px}
  .iphone-ui .sheet .big-amount{border-radius:18px;background:var(--soft)}
  .iphone-ui .sheet .form-actions button{border-radius:16px}
+ .iphone-ui #quickSheet #qsSave{min-height:50px}
+ .iphone-ui #quickSheet #qsDelete{
+   align-self:center;width:auto;margin-top:4px;padding:8px 16px;gap:8px;
+   border:0;background:transparent;color:var(--expense);font-size:14px;
+ }
+ .iphone-ui #quickSheet #qsDelete:active{background:var(--expense-soft)}
+ .iphone-ui #quickSheet .movement-delete-label{display:inline}
  .iphone-ui #page-dashboard .summary-grid .card{border-radius:22px;box-shadow:none}
  .iphone-ui #page-dashboard .metric-label{font-weight:600}
  .iphone-ui #page-dashboard .panel{border-radius:22px;box-shadow:none}
@@ -886,7 +894,13 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
   </div>
   <label>Concepto</label><input id="qsDesc" list="qsDescList" placeholder="Ej. Supermercado" autocomplete="off"><datalist id="qsDescList"></datalist>
   <label for="qsDate">Fecha</label><div class="date-row"><input id="qsDate" type="date"><button type="button" class="secondary" data-day="0">Hoy</button><button type="button" class="secondary" data-day="-1">Ayer</button></div>
-  <div class="form-actions" style="margin-top:16px"><button type="button" class="primary" id="qsSave">Guardar</button><button type="button" class="secondary" id="qsSaveMore">Guardar y añadir otro</button><button type="button" class="danger icon-btn" id="qsDelete" hidden aria-label="Borrar movimiento" title="Borrar"><svg class="ico" aria-hidden="true"><use href="#i-trash"/></svg></button></div>
+  <div class="form-actions" style="margin-top:16px">
+    <button type="button" class="primary" id="qsSave">Guardar</button>
+    <button type="button" class="secondary" id="qsSaveMore">Guardar y añadir otro</button>
+    <button type="button" class="danger icon-btn" id="qsDelete" hidden aria-label="Eliminar movimiento" title="Eliminar movimiento">
+      <svg class="ico" aria-hidden="true"><use href="#i-trash"/></svg><span class="movement-delete-label">Eliminar movimiento</span>
+    </button>
+  </div>
 </section>
 <div class="toast" id="toast" hidden></div>
 
