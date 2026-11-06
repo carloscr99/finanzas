@@ -159,7 +159,7 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;background:var(--toast-bg);color:var(--toast-fg);padding:10px 16px;border-radius:999px;font-size:14px;z-index:80;box-shadow:var(--shadow);white-space:nowrap}
 .mlist{flex-direction:column}
 .movement-day-items{display:contents}
-.movement-history-head{display:none}
+.movement-history-count{display:none}
 .mitem{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 4px;border:0;border-bottom:1px solid var(--border);width:100%;background:transparent;text-align:left;font:inherit;color:var(--text);transition:background-color .12s}
 .mitem:active{background:var(--soft)}
 .mico{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none}
@@ -362,11 +362,8 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  }
  .iphone-ui .movement-filter-controls .searchbar{margin-bottom:0}
  .iphone-ui #movementFilters .kpi-strip{display:none}
- .iphone-ui .movement-history-head{
-   display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:20px;
- }
- .iphone-ui .movement-history-head h2{margin:0;font-size:17px}
- .iphone-ui #movementHistoryCount{
+ .iphone-ui .movement-history-count{
+   display:inline-block;margin-left:auto;
    padding:3px 9px;border-radius:999px;background:var(--btn2-bg);color:var(--muted);
    font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;
  }
@@ -375,7 +372,10 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .iphone-ui #movementFilters .searchbar.collapsed > :not(:first-child){display:none}
  .iphone-ui #movementFilters #searchText{background:var(--soft);border-radius:12px}
  .iphone-ui #movementFilters #toggleFilters{border-radius:999px}
- .iphone-ui #movementList .mday{position:static;background:none;text-transform:none}
+ .iphone-ui #movementList .mday{
+   display:flex;justify-content:space-between;align-items:center;gap:8px;
+   position:static;background:none;text-transform:none;
+ }
  .iphone-ui #movementList .movement-day-items{
    display:block;border:1px solid var(--border);border-radius:16px;background:var(--soft);
  }
@@ -698,7 +698,6 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
           </div>
           <div class="section-gap">Se cambian solo el tipo y la categoría (sirve para corregir el histórico). Las compras de fondos con participaciones pierden su enlace con el activo. Los movimientos con cuenta asignada se recalculan en esa cuenta con el nuevo tipo.</div>
         </div>
-        <div class="movement-history-head"><h2>Historial</h2><span id="movementHistoryCount" aria-live="polite">0 visibles</span></div>
         <div id="movementList" class="mlist mobile-only section-gap"></div>
         <div class="table-wrap desktop-only section-gap">
           <table><thead><tr><th>Fecha</th><th>Tipo</th><th>Categoría</th><th>Concepto</th><th>Cuenta</th><th style="text-align:right">Importe</th><th></th></tr></thead><tbody id="movementTable"></tbody></table>
@@ -2039,18 +2038,18 @@ function movementAccountLabel(m){return accountLabel(m)}
 function renderMovements(){
  const movs=movementSearchResults(),count=intFmt.format(movs.length);
  el("visibleCount").textContent=count;
- el("movementHistoryCount").textContent=`${count} ${movs.length===1?"visible":"visibles"}`;
  el("movementTable").innerHTML=movs.length?movs.map(m=>{const u=movementUnitsInfo(m);return `<tr><td>${formatDate(m.date)}</td><td><span class="pill ${m.type}">${m.type}</span></td><td><span class="cat-cell">${catIconSvg(getCat(m.categoryId))}${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")}</span></td><td>${escapeHtml(m.description)}</td><td class="muted mv-account">${escapeHtml(movementAccountLabel(m)||"—")}</td><td class="amount">${euro.format(m.amount)}${u?` <span class="badge"${u.estimated?` title="Aproximadas: importe ÷ última cotización de prices.json"`:""}>${u.text}</span>`:""}</td><td class="actions">${iconBtn("secondary",`data-edit="${m.id}"`,"i-pencil","Editar")}${iconBtn("danger",`data-del="${m.id}"`,"i-trash","Borrar")}</td></tr>`}).join(""):`<tr><td colspan="7" class="empty">No hay movimientos.</td></tr>`;
  el("movementTable").querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editMovement(b.dataset.edit));
  el("movementTable").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>deleteMovement(b.dataset.del));
  // Lista táctil para móvil (agrupada por día; tocar abre la hoja de edición). El círculo lleva el icono de la categoría con el color del tipo; signo + texto: el tipo nunca se indica solo por color.
  const list=el("movementList"),LIMIT=300,shown=movs.slice(0,LIMIT);let html="",lastDate="";
+ const countBadge=`<span class="movement-history-count">${count} ${movs.length===1?"visible":"visibles"}</span>`;
  const TYPE_UI={Gasto:{cls:"negative",k:"g",sign:"−"},Ingreso:{cls:"positive",k:"i",sign:"+"},"Inversión":{cls:"inv",k:"v",sign:""}};
  shown.forEach(m=>{
    if(m.date!==lastDate){
      if(html)html+="</div>";
      lastDate=m.date;
-     html+=`<div class="mday">${formatDate(m.date)}</div><div class="movement-day-items">`;
+     html+=`<div class="mday">${formatDate(m.date)}${html?"":countBadge}</div><div class="movement-day-items">`;
    }
    const t=TYPE_UI[m.type]||TYPE_UI.Gasto,u=movementUnitsInfo(m),account=movementAccountLabel(m);
    const separator='<span class="movement-meta-separator"> · </span>';
@@ -2058,7 +2057,7 @@ function renderMovements(){
    html+=`<button type="button" class="mitem" data-id="${m.id}"><span class="mico ${t.k}">${catIconSvg(getCat(m.categoryId))}</span><span class="mtext"><b>${escapeHtml(m.description)}</b>${details}</span><span class="mamt"><span class="amt ${t.cls}">${t.sign}${euro.format(m.amount)}</span>${u?`<small class="munits"${u.estimated?' title="Aproximadas: importe ÷ última cotización de prices.json"':""}>${u.text}</small>`:""}</span></button>`;
  });
  if(html)html+="</div>";
- if(!html)html=`<div class="empty-state"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg><p>${state.movements.length?"Ningún movimiento coincide con los filtros.":"Todavía no hay movimientos."}</p><button type="button" class="primary" data-empty-add>Añadir movimiento</button></div>`;
+ if(!html)html=`${countBadge}<div class="empty-state"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg><p>${state.movements.length?"Ningún movimiento coincide con los filtros.":"Todavía no hay movimientos."}</p><button type="button" class="primary" data-empty-add>Añadir movimiento</button></div>`;
  if(movs.length>LIMIT)html+=`<div class="empty">Mostrando ${intFmt.format(LIMIT)} de ${intFmt.format(movs.length)}. Usa los filtros para acotar.</div>`;
  list.innerHTML=html;
  list.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>{const m=state.movements.find(x=>x.id===b.dataset.id);if(m)openQuickSheet(m)});
