@@ -304,15 +304,28 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .sheet label{font-size:14px}
  .mitem b{font-size:16px}
 }
-#assetOverviewActions,#assetCountSummary{display:none}
+#assetOverviewActions,#assetCountSummary,.asset-iphone-heading{display:none}
 .iphone-ui #assetOverviewActions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:16px 0 8px}
-.iphone-ui #assetCountSummary{display:block}
-.iphone-ui #assetCountCard{display:none}
+.iphone-ui #page-assets.active{display:flex;flex-direction:column}
+.iphone-ui #page-assets .asset-iphone-heading{display:block}
+.iphone-ui #page-assets .asset-standard-heading,.iphone-ui #assetCountCard{display:none}
+.iphone-ui #page-assets .asset-iphone-heading h1{font-size:32px;letter-spacing:-.035em}
+.iphone-ui #assetCountSummary,.iphone-ui #assetLastUpdate{display:inline}
+.iphone-ui #assetCountSummary::after{content:" · "}
 #assetOverviewActions h2{margin:0}
 .iphone-ui #page-assets :is(.card,.panel){border-radius:22px;box-shadow:none}
-.iphone-ui #page-assets > .summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
-.iphone-ui #assetNetWorthCard{grid-column:1/-1}
+.iphone-ui #page-assets > .summary-grid{
+ grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
+ padding:16px;background:var(--panel);border:1px solid var(--border);border-radius:22px;
+}
+.iphone-ui #page-assets > .summary-grid > .card{padding:0;border:0;background:none}
+.iphone-ui #page-assets > .summary-grid > #assetNetWorthCard{
+ grid-column:1/-1;padding-bottom:14px;border-bottom:1px solid var(--border);border-radius:0;
+}
 .iphone-ui #assetTotal{font-size:clamp(24px,8vw,36px);line-height:1.15}
+.iphone-ui #page-assets > .summary-grid > .card:not(#assetNetWorthCard) .metric-value{font-size:18px}
+.iphone-ui #assetSplit,.iphone-ui #page-assets > .summary-grid > .card:not(#assetNetWorthCard) .metric-sub{display:none}
+.iphone-ui #assetPriceControls{order:1;margin-top:16px}
 .iphone-ui #page-assets .metric-value{overflow-wrap:anywhere}
 .iphone-ui #netWorthChart{max-width:100%}
 .iphone-ui #assetGrid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
@@ -870,14 +883,17 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
     </section>
 
     <section id="page-assets" class="page">
-      <div class="page-head"><div><h1>Patrimonio e inversiones</h1><p>Registra cuentas, fondos, cripto, oro, efectivo y otros activos.</p></div></div>
+      <div class="page-head">
+        <div class="asset-standard-heading"><h1>Patrimonio e inversiones</h1><p>Registra cuentas, fondos, cripto, oro, efectivo y otros activos.</p></div>
+        <div class="asset-iphone-heading"><h1>Patrimonio</h1><p>Cuentas e inversiones de un vistazo.</p></div>
+      </div>
       <div class="summary-grid">
-        <div class="card" id="assetNetWorthCard"><div class="metric-label">Patrimonio neto</div><div class="metric-value" id="assetTotal">0 €</div><div class="metric-sub" id="assetSplit">—</div><div class="metric-sub" id="assetLastUpdate">Sin actualizar</div><div class="metric-sub" id="assetCountSummary"></div></div>
+        <div class="card" id="assetNetWorthCard"><div class="metric-label">Patrimonio neto</div><div class="metric-value" id="assetTotal">0 €</div><div class="metric-sub" id="assetSplit">—</div><div class="metric-sub"><span id="assetCountSummary"></span><span id="assetLastUpdate">Sin actualizar</span></div></div>
         <div class="card investment"><div class="metric-label">Capital invertido</div><div class="metric-value" id="assetInvested">0 €</div><div class="metric-sub">Solo fondos con ISIN y cripto; cuentas, depósitos y seguros no cuentan</div></div>
         <div class="card"><div class="metric-label">Ganancia / pérdida</div><div class="metric-value" id="assetGain">0 €</div><div class="metric-sub">Valor de los fondos menos su capital aportado</div></div>
         <div class="card" id="assetCountCard"><div class="metric-label">Número de activos</div><div class="metric-value" id="assetTotalCount">0</div></div>
       </div>
-      <div class="inline-note" style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
+      <div class="inline-note" id="assetPriceControls" style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
         <span id="priceStatus">Cotizaciones: conectando con GitHub…</span>
         <button class="secondary small" id="refreshPrices">Sincronizar cotizaciones</button>
       </div>
