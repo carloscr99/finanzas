@@ -313,6 +313,9 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 .iphone-ui #assetCountSummary,.iphone-ui #assetLastUpdate{display:inline}
 .iphone-ui #assetCountSummary::after{content:" · "}
 #assetOverviewActions h2{margin:0}
+.iphone-ui #assetFormDetails:not([open]),.iphone-ui #assetFormDetails > summary{display:none}
+.iphone-ui #assetFormDetails{margin:0 0 12px}
+.iphone-ui #assetFormDetails > .form-grid{margin-top:0}
 .iphone-ui #page-assets :is(.card,.panel){border-radius:22px;box-shadow:none}
 .iphone-ui #page-assets > .summary-grid{
  grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
@@ -902,7 +905,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         <div class="chart-box"><canvas id="netWorthChart"></canvas></div>
         <div class="chart-hint">Un punto por día con cambios: cotizaciones, movimientos, traspasos o actualizaciones manuales. Patrimonio neto, valor de los fondos y capital aportado a los fondos.</div>
       </div>
-      <div id="assetOverviewActions"><h2>Activos</h2><button type="button" class="secondary small" id="openAssetForm">Añadir activo</button></div>
+      <div id="assetOverviewActions"><h2>Activos</h2><button type="button" class="secondary small" id="openAssetForm" aria-controls="assetFormDetails" aria-expanded="false">Añadir activo</button></div>
       <div id="assetGrid" class="asset-grid"></div>
       <dialog id="assetDetail" aria-labelledby="assetDetailName"></dialog>
       <details class="panel section-gap" id="transferDetails">
@@ -3095,17 +3098,24 @@ el("toggleFilters").onclick=()=>{
 el("monthlyToggle").onclick=()=>{monthlyShowAll=!monthlyShowAll;drawMonthlyChart()};
 // Si el sistema cambia entre claro y oscuro con la app abierta, se repintan los gráficos con los colores del nuevo tema.
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{if(el("page-dashboard").classList.contains("active"))renderCharts()});
-el("assetFormDetails").open=!isMobile();
-el("openAssetForm").onclick=()=>{
- const form=el("assetFormDetails");form.open=true;
- form.scrollIntoView({block:"start"});
- el("aName").focus({preventScroll:true});
-};el("transferDetails").open=false;
+const assetForm=el("assetFormDetails"),iphoneAssets=document.documentElement.classList.contains("iphone-ui");
+if(iphoneAssets){
+ el("assetOverviewActions").after(assetForm);
+ const button=el("openAssetForm");
+ button.onclick=()=>{
+   assetForm.open=!assetForm.open;
+   button.setAttribute("aria-expanded",String(assetForm.open));
+   button.textContent=assetForm.open?"Cerrar formulario":"Añadir activo";
+ };
+}else{
+ assetForm.open=!isMobile();
+}
+el("transferDetails").open=false;
 el("aType").onchange=()=>{el("aCurrentNote").hidden=el("aType").value!=="Cuenta corriente";el("aDebtNote").hidden=el("aType").value!=="Deuda";renderNewAssetIcon()};
 let lastMobile=isMobile(),resizeTimer=null;
 window.addEventListener("resize",layoutDashboardCards);
 document.fonts?.ready.then(layoutDashboardCards);
-window.addEventListener("resize",()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(isMobile()!==lastMobile){lastMobile=isMobile();el("assetFormDetails").open=!lastMobile;if(el("page-dashboard").classList.contains("active"))renderCharts()}},200)});
+window.addEventListener("resize",()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(isMobile()!==lastMobile){lastMobile=isMobile();if(!iphoneAssets)assetForm.open=!lastMobile;if(el("page-dashboard").classList.contains("active"))renderCharts()}},200)});
 el("loginGoogle").onclick=login;el("loginFallback").onclick=login;el("logoutSidebar").onclick=logout;el("logoutSettings").onclick=logout;el("logoutMore").onclick=logout;
 el("authRetry").onclick=()=>{if(pendingUser)enterApp(pendingUser)};
 enableSheetSwipe();
