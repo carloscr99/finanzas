@@ -158,8 +158,6 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;background:var(--toast-bg);color:var(--toast-fg);padding:10px 16px;border-radius:999px;font-size:14px;z-index:80;box-shadow:var(--shadow);white-space:nowrap}
 .mlist{flex-direction:column}
 .movement-day-items{display:contents}
-.movement-list-tools{display:contents}
-.movement-count-short{display:none}
 .mitem{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 4px;border:0;border-bottom:1px solid var(--border);width:100%;background:transparent;text-align:left;font:inherit;color:var(--text);transition:background-color .12s}
 .mitem:active{background:var(--soft)}
 .mico{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none}
@@ -354,15 +352,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
    margin-bottom:12px;padding:14px;background:var(--panel);border:1px solid var(--border);border-radius:20px;
  }
  .iphone-ui .movement-filter-controls .searchbar{margin-bottom:0}
- .iphone-ui .movement-list-tools{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:8px}
- .iphone-ui .movement-list-tools .kpi-strip{display:block}
- .iphone-ui .movement-list-tools .kpi-mini{
-   display:flex;align-items:baseline;gap:4px;padding:0;border:0;background:none;font-size:12px;
- }
- .iphone-ui .movement-list-tools .kpi-mini b{margin:0;font-size:inherit}
- .iphone-ui .movement-count-label{display:none}
- .iphone-ui .movement-count-short{display:inline}
- .iphone-ui .movement-list-tools .footer-tools{margin-top:0}
+ .iphone-ui #movementFilters .kpi-strip{display:none}
  .iphone-ui #movementFilters .searchbar.collapsed{display:grid}
  .iphone-ui #movementFilters .searchbar.collapsed > :not(:first-child){display:none}
  .iphone-ui #movementFilters #searchText{background:var(--soft);border-radius:12px}
@@ -673,12 +663,10 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
             <div><label for="searchTo">Hasta</label><input id="searchTo" type="date"></div>
           </div>
         </div>
-        <div class="movement-list-tools">
-          <div class="kpi-strip">
-            <div class="kpi-mini"><span class="muted movement-count-label">Movimientos visibles</span><b id="visibleCount">0</b><span class="muted movement-count-short">visibles</span></div>
-          </div>
-          <div class="footer-tools section-gap"><button class="secondary small" id="bulkToggle">Cambiar categoría de los visibles…</button></div>
+        <div class="kpi-strip">
+          <div class="kpi-mini"><span class="muted">Movimientos visibles</span><b id="visibleCount">0</b></div>
         </div>
+        <div class="footer-tools section-gap"><button class="secondary small" id="bulkToggle">Cambiar categoría de los visibles…</button></div>
         <div id="bulkPanel" class="inline-note section-gap" hidden>
           <b>Cambiar tipo y categoría de todos los movimientos visibles</b>
           <div class="grid-3 section-gap">
