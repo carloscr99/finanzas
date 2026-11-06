@@ -333,6 +333,9 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 .iphone-ui #netWorthChart{max-width:100%}
 .iphone-ui #assetGrid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
 .asset-group h3{margin:0 0 6px}
+.iphone-ui .asset-group #transferDetails{
+ margin:8px 0 0;padding:12px 0 0;border:0;border-top:1px solid var(--border);border-radius:0;background:none;
+}
 .asset-row{
  display:grid;grid-template-columns:36px minmax(0,1fr) auto auto;align-items:center;gap:8px;
  width:100%;min-height:56px;padding:8px 0;border:0;background:none;color:var(--text);text-align:left;
@@ -2491,19 +2494,24 @@ async function editAsset(id,priceOnly=false){
  markDataUpdate("portfolio");saveState();renderAll();toast("Activo actualizado");
 }
 function renderAssetGroups(grid){
+ const transfer=el("transferDetails");
+ const transferFocus=transfer.contains(document.activeElement)?document.activeElement:null;
+ if(grid.contains(transfer))grid.after(transfer);
  const groups={"Cuentas y liquidez":[],"Inversiones":[],"Deudas":[]};
  for(const asset of state.assets){
    const group=isDebt(asset)?"Deudas":isInvestmentAsset(asset)||["Fondo","Cripto","Oro"].includes(asset.type)?"Inversiones":"Cuentas y liquidez";
    groups[group].push(asset);
  }
  grid.innerHTML=Object.entries(groups).filter(([,assets])=>assets.length).map(([name,assets])=>`
-   <section class="panel asset-group"><h3>${name}</h3>
+   <section class="panel asset-group${name==="Cuentas y liquidez"?" asset-liquidity":""}"><h3>${name}</h3>
    ${assets.map(a=>`<button type="button" class="asset-row" data-asset-detail="${escapeHtml(a.id)}">
      <span class="asset-row-icon">${assetIconSvg(a)}</span>
      <span><b>${escapeHtml(a.name)}</b><small>${escapeHtml(a.type)}</small></span>
      <strong class="${isDebt(a)?"negative":""}">${isDebt(a)?"−":""}${euro.format(a.value)}</strong>
      <svg class="ico sm" aria-hidden="true"><use href="#i-caret-right"/></svg>
    </button>`).join("")}</section>`).join("")||'<div class="empty">No has añadido activos.</div>';
+ grid.querySelector(".asset-liquidity")?.append(transfer);
+ transferFocus?.focus({preventScroll:true});
  grid.querySelectorAll("[data-asset-detail]").forEach(button=>{
    button.onclick=()=>showAssetDetail(button.dataset.assetDetail);
  });
@@ -3104,6 +3112,7 @@ window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>
 const assetForm=el("assetFormDetails"),iphoneAssets=document.documentElement.classList.contains("iphone-ui");
 if(iphoneAssets){
  el("assetOverviewActions").after(assetForm);
+ el("transferDetails").querySelector("summary").textContent="Traspasar entre cuentas";
  const button=el("openAssetForm");
  button.onclick=()=>{
    assetForm.open=!assetForm.open;
