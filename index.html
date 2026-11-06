@@ -381,15 +381,11 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .iphone-ui #movementList .mtext,.iphone-ui #movementList .mamt{display:contents}
  .iphone-ui #movementList .mico{grid-area:1 / 1 / span 3}
  .iphone-ui #movementList .mitem b{grid-area:1 / 2;font-size:15px;white-space:normal;overflow-wrap:anywhere}
- .iphone-ui #movementList .mtext small{grid-area:2 / 2 / 3 / 4}
+ .iphone-ui #movementList .mtext small{grid-area:2 / 2}
  .iphone-ui #movementList .movement-meta{line-height:1.45}
- .iphone-ui #movementList .movement-meta-separator{display:none}
- .iphone-ui #movementList .movement-type{
-   display:inline-block;margin-left:6px;padding:1px 6px;border-radius:6px;
-   background:var(--btn2-bg);font-size:11px;font-weight:600;white-space:nowrap;
- }
+ .iphone-ui #movementList .movement-meta-separator:has(+ .movement-account){display:none}
  .iphone-ui #movementList .movement-account{display:block;font-size:12px}
- .iphone-ui #movementList .amt{grid-area:1 / 3;text-align:right}
+ .iphone-ui #movementList .amt{grid-area:1 / 3 / 3 / 4;align-self:center;text-align:right}
  .iphone-ui #movementList .munits{grid-area:3 / 2 / 4 / 4;color:var(--investment)}
  .iphone-ui #movementList .mitem::after{
    content:"";grid-area:1 / 4 / span 3;width:6px;height:6px;border:solid var(--muted);border-width:1.5px 1.5px 0 0;transform:rotate(45deg);
