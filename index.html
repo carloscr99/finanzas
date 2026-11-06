@@ -2744,12 +2744,13 @@ function renderAll(){
 
 document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>{
  const page=b.dataset.page;
- const iphoneTab=b.closest(".mobile-nav")&&document.documentElement.classList.contains("iphone-ui");
- if(iphoneTab&&currentPage===page){
+ const mobileTab=b.closest(".mobile-nav");
+ if(mobileTab&&currentPage===page){
    const behavior=window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth";
    requestAnimationFrame(()=>document.scrollingElement.scrollTo({top:0,behavior}));
    return;
  }
+ const iphoneTab=mobileTab&&document.documentElement.classList.contains("iphone-ui");
  showPage(page,iphoneTab?"instant":"smooth");
 });
 el("mDate").value=todayISO();el("rStartDate").value=todayISO();setupPeriodSelectors();updatePeriodControls();
