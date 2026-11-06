@@ -13,7 +13,6 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Mis Finanzas">
 <title>Mis Finanzas</title>
-<script>if (/iPhone/i.test(navigator.userAgent)) document.documentElement.classList.add("iphone-ui");</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap">
@@ -230,7 +229,7 @@ button.badge[data-typeasset]{border:0;cursor:pointer;font-family:inherit}
 .file-label input{display:none}
 input:focus,select:focus{outline:2px solid var(--ring);outline-offset:1px;border-color:var(--border-strong)}
 button.primary:focus-visible,button.secondary:focus-visible,button.danger:focus-visible,.file-label:focus-within{outline:2px solid rgba(37,99,235,.28);outline-offset:2px}
-.mobile-nav,.mobile-nav use.nav-iphone{display:none}
+.mobile-nav{display:none}
 .section-gap{margin-top:16px}
 hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 [hidden]{display:none!important}
@@ -304,37 +303,39 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .sheet label{font-size:14px}
  .mitem b{font-size:16px}
 }
-#assetOverviewActions,#assetCountSummary,.asset-iphone-heading{display:none}
-.iphone-ui #assetOverviewActions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:16px 0 8px}
-.iphone-ui #page-assets.active{display:flex;flex-direction:column}
-.iphone-ui #page-assets .asset-iphone-heading{display:block}
-.iphone-ui #page-assets .asset-standard-heading,.iphone-ui #assetCountCard{display:none}
-.iphone-ui #page-assets .asset-iphone-heading h1{font-size:32px;letter-spacing:-.035em}
-.iphone-ui #assetCountSummary,.iphone-ui #assetLastUpdate{display:inline}
-.iphone-ui #assetCountSummary::after{content:" · "}
+#assetOverviewActions,#assetCountSummary,.asset-mobile-heading{display:none}
 #assetOverviewActions h2{margin:0}
-.iphone-ui #assetFormDetails:not([open]),.iphone-ui #assetFormDetails > summary{display:none}
-.iphone-ui #assetFormDetails{margin:0 0 12px}
-.iphone-ui #assetFormDetails > .form-grid{margin-top:0}
-.iphone-ui #page-assets :is(.card,.panel){border-radius:22px;box-shadow:none}
-.iphone-ui #page-assets > .summary-grid{
- grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
- padding:16px;background:var(--panel);border:1px solid var(--border);border-radius:22px;
-}
-.iphone-ui #page-assets > .summary-grid > .card{padding:0;border:0;background:none}
-.iphone-ui #page-assets > .summary-grid > #assetNetWorthCard{
- grid-column:1/-1;padding-bottom:14px;border-bottom:1px solid var(--border);border-radius:0;
-}
-.iphone-ui #assetTotal{font-size:clamp(24px,8vw,36px);line-height:1.15}
-.iphone-ui #page-assets > .summary-grid > .card:not(#assetNetWorthCard) .metric-value{font-size:18px}
-.iphone-ui #assetSplit,.iphone-ui #page-assets > .summary-grid > .card:not(#assetNetWorthCard) .metric-sub{display:none}
-.iphone-ui #assetPriceControls{order:1;margin-top:16px}
-.iphone-ui #page-assets .metric-value{overflow-wrap:anywhere}
-.iphone-ui #netWorthChart{max-width:100%}
-.iphone-ui #assetGrid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
 .asset-group h3{margin:0 0 6px}
-.iphone-ui .asset-group #transferDetails{
- margin:8px 0 0;padding:12px 0 0;border:0;border-top:1px solid var(--border);border-radius:0;background:none;
+@media(max-width:760px){
+ #assetOverviewActions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:16px 0 8px}
+ #page-assets.active{display:flex;flex-direction:column}
+ #page-assets .asset-mobile-heading{display:block}
+ #page-assets .asset-standard-heading,#assetCountCard{display:none}
+ #page-assets .asset-mobile-heading h1{font-size:32px;letter-spacing:-.035em}
+ #assetCountSummary,#assetLastUpdate{display:inline}
+ #assetCountSummary::after{content:" · "}
+ #assetFormDetails:not([open]),#assetFormDetails > summary{display:none}
+ #assetFormDetails{margin:0 0 12px}
+ #assetFormDetails > .form-grid{margin-top:0}
+ #page-assets :is(.card,.panel){border-radius:22px;box-shadow:none}
+ #page-assets > .summary-grid{
+  grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
+  padding:16px;background:var(--panel);border:1px solid var(--border);border-radius:22px;
+ }
+ #page-assets > .summary-grid > .card{padding:0;border:0;background:none}
+ #page-assets > .summary-grid > #assetNetWorthCard{
+  grid-column:1/-1;padding-bottom:14px;border-bottom:1px solid var(--border);border-radius:0;
+ }
+ #assetTotal{font-size:clamp(24px,8vw,36px);line-height:1.15}
+ #page-assets > .summary-grid > .card:not(#assetNetWorthCard) .metric-value{font-size:18px}
+ #assetSplit,#page-assets > .summary-grid > .card:not(#assetNetWorthCard) .metric-sub{display:none}
+ #assetPriceControls{order:1;margin-top:16px}
+ #page-assets .metric-value{overflow-wrap:anywhere}
+ #netWorthChart{max-width:100%}
+ #assetGrid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+ .asset-group #transferDetails{
+  margin:8px 0 0;padding:12px 0 0;border:0;border-top:1px solid var(--border);border-radius:0;background:none;
+ }
 }
 .asset-row{
  display:grid;grid-template-columns:36px minmax(0,1fr) auto auto;align-items:center;gap:8px;
@@ -378,10 +379,10 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  #page-dashboard .summary-grid .metric-value{font-size:clamp(21px,6.4vw,24px)}
 }
 @media(max-width:760px){
- html.iphone-ui{scroll-behavior:auto}
- .iphone-ui body{font-family:-apple-system,BlinkMacSystemFont,"Inter",sans-serif}
- .iphone-ui .app{padding-bottom:calc(var(--nav-h) + 28px + env(safe-area-inset-bottom))}
- .iphone-ui .mobile-nav{
+ html{scroll-behavior:auto}
+ body{font-family:system-ui,"Inter",sans-serif}
+ .app{padding-bottom:calc(var(--nav-h) + 28px + env(safe-area-inset-bottom))}
+ .mobile-nav{
    inset:auto 8px max(4px, calc(env(safe-area-inset-bottom) - 10px));
    height:calc(var(--nav-h) + 6px);padding:4px;
    grid-template-columns:minmax(0,.8fr) minmax(0,1.35fr) minmax(46px,.8fr) minmax(0,1.3fr) minmax(0,.75fr);
@@ -389,161 +390,159 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
    background:var(--nav-bg);box-shadow:0 6px 24px rgba(15,23,42,.18);
    -webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);
  }
- .iphone-ui .mobile-nav button{font-size:10px;min-width:0}
- .iphone-ui .mobile-nav button[data-page]{border-radius:23px}
- .iphone-ui .mobile-nav button[data-page].active{
+ .mobile-nav button{font-size:10px;min-width:0}
+ .mobile-nav button[data-page]{border-radius:23px}
+ .mobile-nav button[data-page].active{
    color:var(--text);
    background:color-mix(in srgb,var(--text) 8%,transparent);
    box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 7%,transparent);
  }
  @media(prefers-color-scheme:dark){
-   .iphone-ui .mobile-nav button[data-page].active{color:#fff}
+   .mobile-nav button[data-page].active{color:#fff}
  }
- .iphone-ui .mobile-nav .nav-ind{width:auto;height:26px}
- .iphone-ui .mobile-nav button.active .nav-ind{background:none}
- .iphone-ui .mobile-nav .nav-ind .ico{width:21px;height:21px}
- .iphone-ui .mobile-nav .nav-ind use.nav-default{display:none}
- .iphone-ui .mobile-nav .nav-ind use.nav-iphone{display:inline}
- .iphone-ui .mobile-nav button.nav-add{width:46px;height:46px;min-height:46px;margin:auto}
- .iphone-ui .sheet{border-radius:30px 30px 0 0;border:1px solid var(--border);border-bottom:0}
- .iphone-ui .sheet-head{margin-bottom:14px}
- .iphone-ui .sheet .big-amount{border-radius:18px;background:var(--soft)}
- .iphone-ui .sheet .form-actions button{border-radius:16px}
- .iphone-ui #quickSheet #qsSave{min-height:50px}
- .iphone-ui #quickSheet #qsDelete{
+ .mobile-nav .nav-ind{width:auto;height:26px}
+ .mobile-nav button.active .nav-ind{background:none}
+ .mobile-nav .nav-ind .ico{width:21px;height:21px}
+ .mobile-nav button.nav-add{width:46px;height:46px;min-height:46px;margin:auto}
+ .sheet{border-radius:30px 30px 0 0;border:1px solid var(--border);border-bottom:0}
+ .sheet-head{margin-bottom:14px}
+ .sheet .big-amount{border-radius:18px;background:var(--soft)}
+ .sheet .form-actions button{border-radius:16px}
+ #quickSheet #qsSave{min-height:50px}
+ #quickSheet #qsDelete{
    align-self:center;width:auto;margin-top:4px;padding:8px 16px;gap:8px;
    border:0;background:transparent;color:var(--expense);font-size:14px;
  }
- .iphone-ui #quickSheet #qsDelete:active{background:var(--expense-soft)}
- .iphone-ui #quickSheet .movement-delete-label{display:inline}
- .iphone-ui #page-dashboard .summary-grid .card{border-radius:22px;box-shadow:none}
- .iphone-ui #page-dashboard .metric-label{font-weight:600}
- .iphone-ui #page-dashboard .panel{border-radius:22px;box-shadow:none}
- .iphone-ui #page-dashboard .chart-head h2{font-size:18px;letter-spacing:-.02em}
- .iphone-ui #page-dashboard .chart-hint{color:var(--muted)}
- .iphone-ui #dataFreshness{
+ #quickSheet #qsDelete:active{background:var(--expense-soft)}
+ #quickSheet .movement-delete-label{display:inline}
+ #page-dashboard .summary-grid .card{border-radius:22px;box-shadow:none}
+ #page-dashboard .metric-label{font-weight:600}
+ #page-dashboard .panel{border-radius:22px;box-shadow:none}
+ #page-dashboard .chart-head h2{font-size:18px;letter-spacing:-.02em}
+ #page-dashboard .chart-hint{color:var(--muted)}
+ #dataFreshness{
    display:grid;gap:4px;padding:12px 14px;border-radius:16px;background:var(--panel);font-size:12px;
  }
- .iphone-ui #dataFreshness b{color:var(--text);font-size:13px}
- .iphone-ui #dataFreshness .freshness-separator{display:none}
- .iphone-ui #returnCalculationNote{margin-top:8px;padding:0;border:0;background:none;font-size:12px}
- .iphone-ui #movementFilters{padding:0;border:0;background:none;box-shadow:none}
- .iphone-ui .movement-filter-controls{
+ #dataFreshness b{color:var(--text);font-size:13px}
+ #dataFreshness .freshness-separator{display:none}
+ #returnCalculationNote{margin-top:8px;padding:0;border:0;background:none;font-size:12px}
+ #movementFilters{padding:0;border:0;background:none;box-shadow:none}
+ .movement-filter-controls{
    margin-bottom:12px;padding:14px;background:var(--panel);border:1px solid var(--border);border-radius:20px;
  }
- .iphone-ui .movement-filter-controls .searchbar{margin-bottom:0}
- .iphone-ui #movementFilters .kpi-strip{display:none}
- .iphone-ui .movement-history-count{
+ .movement-filter-controls .searchbar{margin-bottom:0}
+ #movementFilters .kpi-strip{display:none}
+ .movement-history-count{
    display:block;margin:18px 4px 2px;color:var(--text);font-size:16px;font-weight:600;letter-spacing:-.015em;
  }
- .iphone-ui .movement-history-count b{
+ .movement-history-count b{
    font-weight:750;font-variant-numeric:tabular-nums;
  }
- .iphone-ui #movementList{margin-top:0}
- .iphone-ui #movementFilters .searchbar.collapsed{display:grid}
- .iphone-ui #movementFilters .searchbar.collapsed > :not(:first-child){display:none}
- .iphone-ui #movementFilters #searchText{background:var(--soft);border-radius:12px}
- .iphone-ui #movementFilters #toggleFilters{border-radius:999px}
- .iphone-ui #movementList .mday{
+ #movementList{margin-top:0}
+ #movementFilters .searchbar.collapsed{display:grid}
+ #movementFilters .searchbar.collapsed > :not(:first-child){display:none}
+ #movementFilters #searchText{background:var(--soft);border-radius:12px}
+ #movementFilters #toggleFilters{border-radius:999px}
+ #movementList .mday{
    position:static;background:none;text-transform:none;
  }
- .iphone-ui #movementList .movement-day-items{
+ #movementList .movement-day-items{
    display:block;border:1px solid var(--border);border-radius:16px;background:var(--soft);
  }
- .iphone-ui #movementList .mitem{
+ #movementList .mitem{
    display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:3px 8px;padding:10px;border-radius:inherit;
  }
- .iphone-ui #movementList .mitem:not(:first-child){border-top-left-radius:0;border-top-right-radius:0}
- .iphone-ui #movementList .mitem:not(:last-child){border-bottom-left-radius:0;border-bottom-right-radius:0}
- .iphone-ui #movementList .mitem:last-child{border-bottom:0}
- .iphone-ui #movementList .mitem:active{background:var(--btn2-bg)}
- .iphone-ui #movementList .mtext,.iphone-ui #movementList .mamt{display:contents}
- .iphone-ui #movementList .mico{grid-area:1 / 1 / span 3}
- .iphone-ui #movementList .mitem b{grid-area:1 / 2;font-size:15px;white-space:normal;overflow-wrap:anywhere}
- .iphone-ui #movementList .mtext small{grid-area:2 / 2}
- .iphone-ui #movementList .movement-meta{min-width:0;line-height:1.45}
- .iphone-ui #movementList .movement-type{white-space:nowrap}
- .iphone-ui #movementList .movement-meta-separator:has(+ .movement-account){display:none}
- .iphone-ui #movementList .movement-account{display:block;font-size:12px}
- .iphone-ui #movementList .amt{grid-area:1 / 3 / 3 / 4;align-self:center;text-align:right}
- .iphone-ui #movementList .munits{grid-area:3 / 2 / 4 / 4;color:var(--investment)}
- .iphone-ui #movementList .mitem::after{
+ #movementList .mitem:not(:first-child){border-top-left-radius:0;border-top-right-radius:0}
+ #movementList .mitem:not(:last-child){border-bottom-left-radius:0;border-bottom-right-radius:0}
+ #movementList .mitem:last-child{border-bottom:0}
+ #movementList .mitem:active{background:var(--btn2-bg)}
+ #movementList .mtext,#movementList .mamt{display:contents}
+ #movementList .mico{grid-area:1 / 1 / span 3}
+ #movementList .mitem b{grid-area:1 / 2;font-size:15px;white-space:normal;overflow-wrap:anywhere}
+ #movementList .mtext small{grid-area:2 / 2}
+ #movementList .movement-meta{min-width:0;line-height:1.45}
+ #movementList .movement-type{white-space:nowrap}
+ #movementList .movement-meta-separator:has(+ .movement-account){display:none}
+ #movementList .movement-account{display:block;font-size:12px}
+ #movementList .amt{grid-area:1 / 3 / 3 / 4;align-self:center;text-align:right}
+ #movementList .munits{grid-area:3 / 2 / 4 / 4;color:var(--investment)}
+ #movementList .mitem::after{
    content:"";grid-area:1 / 4 / span 3;width:6px;height:6px;border:solid var(--muted);border-width:1.5px 1.5px 0 0;transform:rotate(45deg);
  }
- .iphone-ui :is(#summaryRank,#patrimonyRank,#returnRank) .mlist{
+ :is(#summaryRank,#patrimonyRank,#returnRank) .mlist{
    gap:0;background:var(--soft);border:1px solid var(--border);border-radius:16px;
  }
- .iphone-ui :is(#summaryRank,#patrimonyRank,#returnRank) :is(.cs-head,.mitem){padding:10px}
- .iphone-ui :is(#summaryRank,#patrimonyRank,#returnRank) .mitem:last-child{border-bottom:0}
- .iphone-ui :is(#summaryRank,#patrimonyRank,#returnRank) .mitem{gap:8px}
- .iphone-ui :is(#summaryRank,#patrimonyRank,#returnRank) .cs-bar{height:3px}
- .iphone-ui :is(#summaryRank,#patrimonyRank,#returnRank) .cs-bar i{opacity:.72}
- .iphone-ui :is(#page-more,#page-settings,#page-categories,#page-recurring,#page-budget) :is(.panel,.card){
+ :is(#summaryRank,#patrimonyRank,#returnRank) :is(.cs-head,.mitem){padding:10px}
+ :is(#summaryRank,#patrimonyRank,#returnRank) .mitem:last-child{border-bottom:0}
+ :is(#summaryRank,#patrimonyRank,#returnRank) .mitem{gap:8px}
+ :is(#summaryRank,#patrimonyRank,#returnRank) .cs-bar{height:3px}
+ :is(#summaryRank,#patrimonyRank,#returnRank) .cs-bar i{opacity:.72}
+ :is(#page-more,#page-settings,#page-categories,#page-recurring,#page-budget) :is(.panel,.card){
    border-radius:22px;box-shadow:none;
  }
- .iphone-ui .more-back{
+ .more-back{
    display:inline-flex;align-items:center;gap:5px;min-height:44px;padding:0 8px 0 0;
    border:0;background:none;color:var(--text);font-weight:600;
  }
- .iphone-ui #page-more .more-list{padding:4px 12px}
- .iphone-ui #page-more .more-item{padding:8px 4px}
- .iphone-ui #page-more .more-item > .ico:first-child{
+ #page-more .more-list{padding:4px 12px}
+ #page-more .more-item{padding:8px 4px}
+ #page-more .more-item > .ico:first-child{
    box-sizing:content-box;width:18px;height:18px;padding:7px;border-radius:10px;background:var(--btn2-bg);
  }
- .iphone-ui #page-more .danger-item{color:var(--expense)}
- .iphone-ui .settings-panel{display:contents}
- .iphone-ui .settings-panel > hr{display:none}
- .iphone-ui .settings-group{
+ #page-more .danger-item{color:var(--expense)}
+ .settings-panel{display:contents}
+ .settings-panel > hr{display:none}
+ .settings-group{
    display:block;margin-bottom:12px;padding:16px;background:var(--panel);border:1px solid var(--border);border-radius:22px;
  }
- .iphone-ui .settings-group h2{font-size:17px;margin-bottom:8px}
- .iphone-ui .settings-group p{font-size:14px;margin:0 0 12px;overflow-wrap:anywhere}
- .iphone-ui .settings-group :is(button,.file-label){white-space:normal}
- .iphone-ui .settings-group button.danger{color:var(--expense);background:var(--expense-soft);border-color:transparent}
- .iphone-ui .settings-group .pref-row{padding-top:10px;border-top:1px solid var(--border)}
- .iphone-ui #page-categories :is(.category-create,#categoryList){padding-top:14px;border-top:1px solid var(--border)}
- .iphone-ui #categoryList{display:grid;gap:0}
- .iphone-ui #categoryList .chip{
+ .settings-group h2{font-size:17px;margin-bottom:8px}
+ .settings-group p{font-size:14px;margin:0 0 12px;overflow-wrap:anywhere}
+ .settings-group :is(button,.file-label){white-space:normal}
+ .settings-group button.danger{color:var(--expense);background:var(--expense-soft);border-color:transparent}
+ .settings-group .pref-row{padding-top:10px;border-top:1px solid var(--border)}
+ #page-categories :is(.category-create,#categoryList){padding-top:14px;border-top:1px solid var(--border)}
+ #categoryList{display:grid;gap:0}
+ #categoryList .chip{
    display:grid;grid-template-columns:auto minmax(0,1fr) auto auto;gap:4px 8px;
    border:0;border-bottom:1px solid var(--border);border-radius:0;background:none;padding:8px 0;
  }
- .iphone-ui #categoryList .chip:last-child{border-bottom:0}
- .iphone-ui #categoryList .chip-ico{grid-area:1 / 1 / 3}
- .iphone-ui #categoryList .category-name{grid-area:1 / 2;overflow-wrap:anywhere;font-weight:600}
- .iphone-ui #categoryList .pill{grid-area:2 / 2;justify-self:start}
- .iphone-ui #categoryList [data-rencat]{grid-area:1 / 3 / 3}
- .iphone-ui #categoryList [data-delcat]{grid-area:1 / 4 / 3}
- .iphone-ui #categoryList .chip button{min-height:44px;min-width:36px}
- .iphone-ui #page-recurring #generateRecurring{margin-top:8px}
- .iphone-ui :is(#page-recurring,#budgetsPanel) .table-wrap table,
- .iphone-ui :is(#recurringTable,#budgetTable){display:block}
- .iphone-ui :is(#page-recurring,#budgetsPanel) .table-wrap thead{
+ #categoryList .chip:last-child{border-bottom:0}
+ #categoryList .chip-ico{grid-area:1 / 1 / 3}
+ #categoryList .category-name{grid-area:1 / 2;overflow-wrap:anywhere;font-weight:600}
+ #categoryList .pill{grid-area:2 / 2;justify-self:start}
+ #categoryList [data-rencat]{grid-area:1 / 3 / 3}
+ #categoryList [data-delcat]{grid-area:1 / 4 / 3}
+ #categoryList .chip button{min-height:44px;min-width:36px}
+ #page-recurring #generateRecurring{margin-top:8px}
+ :is(#page-recurring,#budgetsPanel) .table-wrap table,
+ :is(#recurringTable,#budgetTable){display:block}
+ :is(#page-recurring,#budgetsPanel) .table-wrap thead{
    position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);
  }
- .iphone-ui :is(#recurringTable,#budgetTable) tr{
+ :is(#recurringTable,#budgetTable) tr{
    display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px 10px;
    padding:12px;margin-bottom:8px;border:1px solid var(--border);border-radius:16px;background:var(--soft);
  }
- .iphone-ui :is(#recurringTable,#budgetTable) td{
+ :is(#recurringTable,#budgetTable) td{
    padding:0;border:0;text-align:left;white-space:normal;overflow-wrap:anywhere;
  }
- .iphone-ui :is(#recurringTable,#budgetTable) td:first-child{
+ :is(#recurringTable,#budgetTable) td:first-child{
    grid-column:1 / -1;font-weight:650;color:var(--text);
  }
- .iphone-ui #recurringTable .actions{grid-column:1 / -1;display:flex;justify-content:flex-end}
- .iphone-ui #recurringTable .actions button{min-height:44px;min-width:44px}
- .iphone-ui #budgetTable td:last-child:not(.empty){grid-column:1 / -1;width:auto!important}
- .iphone-ui #budgetTable td[data-label]::before{
+ #recurringTable .actions{grid-column:1 / -1;display:flex;justify-content:flex-end}
+ #recurringTable .actions button{min-height:44px;min-width:44px}
+ #budgetTable td:last-child:not(.empty){grid-column:1 / -1;width:auto!important}
+ #budgetTable td[data-label]::before{
    content:attr(data-label);display:block;color:var(--muted);font-size:11px;
  }
- .iphone-ui #page-budget .period-compact{gap:8px}
- .iphone-ui #bpCards .metric-value{overflow-wrap:anywhere}
- .iphone-ui #budgetRank .mlist{gap:0;border:1px solid var(--border);border-radius:16px;background:var(--soft)}
- .iphone-ui #budgetRank :is(.cs-head,.mitem){padding:10px}
- .iphone-ui #budgetRank .mitem:last-child{border-bottom:0}
+ #page-budget .period-compact{gap:8px}
+ #bpCards .metric-value{overflow-wrap:anywhere}
+ #budgetRank .mlist{gap:0;border:1px solid var(--border);border-radius:16px;background:var(--soft)}
+ #budgetRank :is(.cs-head,.mitem){padding:10px}
+ #budgetRank .mitem:last-child{border-bottom:0}
  @media(prefers-reduced-transparency:reduce){
-   .iphone-ui .mobile-nav{background:var(--panel);-webkit-backdrop-filter:none;backdrop-filter:none}
-   .iphone-ui .mobile-nav button[data-page].active{background:var(--investment-soft);box-shadow:none}
+   .mobile-nav{background:var(--panel);-webkit-backdrop-filter:none;backdrop-filter:none}
+   .mobile-nav button[data-page].active{background:var(--investment-soft);box-shadow:none}
  }
 }
 </style>
@@ -891,7 +890,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
     <section id="page-assets" class="page">
       <div class="page-head">
         <div class="asset-standard-heading"><h1>Patrimonio e inversiones</h1><p>Registra cuentas, fondos, cripto, oro, efectivo y otros activos.</p></div>
-        <div class="asset-iphone-heading"><h1>Patrimonio</h1><p>Cuentas e inversiones de un vistazo.</p></div>
+        <div class="asset-mobile-heading"><h1>Patrimonio</h1><p>Cuentas e inversiones de un vistazo.</p></div>
       </div>
       <div class="summary-grid">
         <div class="card" id="assetNetWorthCard"><div class="metric-label">Patrimonio neto</div><div class="metric-value" id="assetTotal">0 €</div><div class="metric-sub" id="assetSplit">—</div><div class="metric-sub"><span id="assetCountSummary"></span><span id="assetLastUpdate">Sin actualizar</span></div></div>
@@ -1055,10 +1054,10 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 <div class="toast" id="toast" hidden></div>
 
 <nav class="mobile-nav" aria-label="Navegación principal" hidden>
-  <button data-page="dashboard" class="active" aria-current="page"><span class="nav-ind"><svg class="ico" aria-hidden="true"><use class="nav-default" href="#i-house"/><use class="nav-iphone" href="#nav-home"/></svg></span><span class="nav-lbl">Inicio</span></button>
-  <button data-page="movements"><span class="nav-ind"><svg class="ico" aria-hidden="true"><use class="nav-default" href="#i-list"/><use class="nav-iphone" href="#nav-movements"/></svg></span><span class="nav-lbl">Movimientos</span></button>
+  <button data-page="dashboard" class="active" aria-current="page"><span class="nav-ind"><svg class="ico" aria-hidden="true"><use href="#nav-home"/></svg></span><span class="nav-lbl">Inicio</span></button>
+  <button data-page="movements"><span class="nav-ind"><svg class="ico" aria-hidden="true"><use href="#nav-movements"/></svg></span><span class="nav-lbl">Movimientos</span></button>
   <button class="nav-add" id="navAdd" aria-label="Añadir movimiento"><svg class="ico" aria-hidden="true"><use href="#i-plus"/></svg></button>
-  <button data-page="assets"><span class="nav-ind"><svg class="ico" aria-hidden="true"><use class="nav-default" href="#i-pie"/><use class="nav-iphone" href="#nav-assets"/></svg></span><span class="nav-lbl">Patrimonio</span></button>
+  <button data-page="assets"><span class="nav-ind"><svg class="ico" aria-hidden="true"><use href="#nav-assets"/></svg></span><span class="nav-lbl">Patrimonio</span></button>
   <button data-page="more"><span class="nav-ind"><svg class="ico" aria-hidden="true"><use href="#i-dots"/></svg></span><span class="nav-lbl">Más</span></button>
 </nav>
 
@@ -2571,7 +2570,7 @@ function renderAssets(){
  el("assetLastUpdate").textContent=portfolioRef?`Actualizado ${formatDateTime(portfolioRef)}`:(state.assets.length?"Pendiente de registrar actualización":"Sin patrimonio");
  el("assetCountSummary").textContent=`${intFmt.format(state.assets.length)} ${state.assets.length===1?"activo":"activos"}`;
  const grid=el("assetGrid"),detail=el("assetDetail");
- if(document.documentElement.classList.contains("iphone-ui")){
+ if(isMobile()){
    renderAssetGroups(grid);
    if(detail.open){
      if(state.assets.some(a=>a.id===detail.dataset.assetId))showAssetDetail(detail.dataset.assetId);
@@ -2772,7 +2771,7 @@ const charts={};
 const FONT="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif";
 function mountChart(id,config){
  const canvas=el(id);
- if(isMobile()&&document.documentElement.classList.contains("iphone-ui")&&canvas.closest("#page-dashboard,#page-assets")){
+ if(isMobile()&&canvas.closest("#page-dashboard,#page-assets")){
    const {x,y}=config.options.scales;
    x.border={display:false};
    y.border={display:false};
@@ -3061,8 +3060,7 @@ document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>{
    requestAnimationFrame(()=>document.scrollingElement.scrollTo({top:0,behavior}));
    return;
  }
- const iphoneTab=mobileTab&&document.documentElement.classList.contains("iphone-ui");
- showPage(page,iphoneTab?"instant":"smooth");
+ showPage(page,mobileTab?"instant":"smooth");
 });
 el("mDate").value=todayISO();el("rStartDate").value=todayISO();setupPeriodSelectors();updatePeriodControls();
 el("mType").onchange=()=>{updateMovementCategories();updateAccountHint()};el("mAccount").onchange=updateAccountHint;["mAmount","mUnits"].forEach(id=>el(id).addEventListener("input",()=>updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint")));el("mAsset").onchange=()=>updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint");el("mCategory").onchange=()=>updateInvestmentFields(true);el("rType").onchange=updateRecurringCategories;
@@ -3109,25 +3107,35 @@ el("toggleFilters").onclick=()=>{
 el("monthlyToggle").onclick=()=>{monthlyShowAll=!monthlyShowAll;drawMonthlyChart()};
 // Si el sistema cambia entre claro y oscuro con la app abierta, se repintan los gráficos con los colores del nuevo tema.
 window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{if(el("page-dashboard").classList.contains("active"))renderCharts()});
-const assetForm=el("assetFormDetails"),iphoneAssets=document.documentElement.classList.contains("iphone-ui");
-if(iphoneAssets){
- el("assetOverviewActions").after(assetForm);
- el("transferDetails").querySelector("summary").textContent="Traspasar entre cuentas";
- const button=el("openAssetForm");
- button.onclick=()=>{
-   assetForm.open=!assetForm.open;
-   button.setAttribute("aria-expanded",String(assetForm.open));
-   button.textContent=assetForm.open?"Cerrar formulario":"Añadir activo";
- };
-}else{
- assetForm.open=!isMobile();
+const assetForm=el("assetFormDetails"),assetFormButton=el("openAssetForm");
+function setAssetFormOpen(open){
+ assetForm.open=open;
+ assetFormButton.setAttribute("aria-expanded",String(open));
+ assetFormButton.textContent=open?"Cerrar formulario":"Añadir activo";
 }
-el("transferDetails").open=false;
+function layoutAssetForms(mobile){
+ const transfer=el("transferDetails"),detail=el("assetDetail");
+ if(mobile){
+   el("assetOverviewActions").after(assetForm);
+ }else{
+   if(detail.open)detail.close();
+   detail.after(transfer);
+   transfer.after(assetForm);
+ }
+ transfer.querySelector("summary").textContent=mobile?"Traspasar entre cuentas":"Traspaso entre cuentas";
+ setAssetFormOpen(!mobile);
+}
+assetFormButton.onclick=()=>setAssetFormOpen(!assetForm.open);
+layoutAssetForms(isMobile());
 el("aType").onchange=()=>{el("aCurrentNote").hidden=el("aType").value!=="Cuenta corriente";el("aDebtNote").hidden=el("aType").value!=="Deuda";renderNewAssetIcon()};
-let lastMobile=isMobile(),resizeTimer=null;
 window.addEventListener("resize",layoutDashboardCards);
 document.fonts?.ready.then(layoutDashboardCards);
-window.addEventListener("resize",()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(isMobile()!==lastMobile){lastMobile=isMobile();if(!iphoneAssets)assetForm.open=!lastMobile;if(el("page-dashboard").classList.contains("active"))renderCharts()}},200)});
+window.matchMedia("(max-width:760px)").addEventListener("change",({matches})=>{
+ layoutAssetForms(matches);
+ renderAssets();
+ if(currentPage==="dashboard")renderCharts();
+ if(currentPage==="assets")drawNetWorthChart();
+});
 el("loginGoogle").onclick=login;el("loginFallback").onclick=login;el("logoutSidebar").onclick=logout;el("logoutSettings").onclick=logout;el("logoutMore").onclick=logout;
 el("authRetry").onclick=()=>{if(pendingUser)enterApp(pendingUser)};
 enableSheetSwipe();
