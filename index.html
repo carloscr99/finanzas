@@ -2516,9 +2516,12 @@ function showAssetDetail(id){
  const gain=Number(asset.value)-Number(asset.invested||0),irr=assetAnnualizedReturn(asset),unit=assetUnitLabel(asset,true);
  const metric=(label,value,cls="")=>`<div><small>${label}</small><strong class="${cls}">${value}</strong></div>`;
  const changeClass=value=>value<0?"negative":"positive";
- const source=debt?"Pendiente de pagar. Resta del patrimonio neto.":account
-   ?`Saldo calculado desde la referencia de ${euro.format(asset.refBalance||0)} del ${formatDate(asset.refDate)}, más los movimientos posteriores.`
-   :[price>0?`Cotización: ${euro.format(price)} por unidad`:"",asset.priceSource?`Fuente: ${escapeHtml(asset.priceSource)}`:"",asset.updatedAt?formatDate(asset.updatedAt):""].filter(Boolean).join(" · ");
+ const source=debt?["Pendiente de pagar. Resta del patrimonio neto."]:account
+   ?[`Saldo calculado desde la referencia de ${euro.format(asset.refBalance||0)} del ${formatDate(asset.refDate)}, más los movimientos posteriores.`]
+   :[
+     price>0?`Cotización: ${euro.format(price)} por unidad`:"",
+     [asset.priceSource?`Fuente: ${escapeHtml(asset.priceSource)}`:"",asset.updatedAt?formatDate(asset.updatedAt):""].filter(Boolean).join(" · ")
+   ].filter(Boolean);
  const eligible=movementAccounts().includes(asset),isDefault=eligible&&asset.id===defaultAccount()?.id;
  detail.dataset.assetId=id;
  detail.innerHTML=`<div class="sheet-handle" aria-hidden="true"></div>
@@ -2535,7 +2538,7 @@ function showAssetDetail(id){
      ${units>0||isInvestmentAsset(asset)?metric(unit[0].toUpperCase()+unit.slice(1),assetDisplayUnits(units,unit==="BTC"?8:6)):""}
      ${metric("Rentabilidad anualizada",irr===null?"—":`${(irr*100).toFixed(2).replace(".",",")} %`,irr===null?"":changeClass(irr))}
    </div>`}
-   ${source?`<p class="asset-detail-source">${source}</p>`:""}
+   ${source.length?`<p class="asset-detail-source">${source.join("<br>")}</p>`:""}
    ${isDefault?'<p class="asset-detail-source">Cuenta por defecto de los nuevos movimientos</p>':""}
    <div class="asset-detail-actions">
      <button type="button" class="primary" data-editasset="${key}">Editar activo</button>
