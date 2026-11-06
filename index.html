@@ -21,7 +21,7 @@
 /* Tokens de diseño (tema claro, Minimal/Flat; paleta "finanzas personales" de ui-ux-pro-max adaptada a claro) */
 :root{
   --bg:#f3f5f9;--panel:#fff;--text:#0f172a;--muted:#475569;--border:#e2e8f0;
-  --income:#16803b;--expense:#c73737;--investment:#2563eb;--accent:#0f172a;
+  --income:#16803b;--expense:#c73737;--investment:#2563eb;--action-blue:#2563eb;--accent:#0f172a;
   --accent2:#334155;--warning:#b7791f;--soft:#f8fafc;--shadow:0 8px 24px rgba(15,23,42,.06);
   --primary:#0f172a;--on-primary:#fff;--success:#059669;--danger:#dc2626;--ring:#2563eb;
   --border-strong:#cbd5e1;--btn2-bg:#eef2f7;--btn2-fg:#1f2937;--input-bg:#fff;--toast-bg:#111827;--toast-fg:#fff;
@@ -34,7 +34,7 @@
 @media (prefers-color-scheme:dark){
   :root{
     --bg:#0b1120;--panel:#151d2e;--text:#f1f5f9;--muted:#9fb0c5;--border:#263246;--soft:#1c2536;
-    --income:#4ade80;--expense:#f87171;--investment:#60a5fa;--accent:#0f172a;--accent2:#94a3b8;--warning:#fbbf24;
+    --income:#4ade80;--expense:#f87171;--investment:#bfdbfe;--accent:#0f172a;--accent2:#94a3b8;--warning:#fbbf24;
     --shadow:0 8px 24px rgba(0,0,0,.35);--primary:#e2e8f0;--on-primary:#0f172a;--success:#34d399;--danger:#f87171;--ring:#60a5fa;
     --border-strong:#3b4961;--btn2-bg:#243047;--btn2-fg:#e2e8f0;--input-bg:#0f172a;--toast-bg:#e2e8f0;--toast-fg:#0f172a;
     --nav-bg:rgba(21,29,46,.92);--nav-pill:rgba(96,165,250,.22);--chart-neutral:#cbd5e1;
@@ -183,7 +183,7 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 .empty-state{text-align:center;padding:28px 12px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:10px}
 .empty-state .ico{width:36px;height:36px;color:var(--muted)}.empty-state p{margin:0}
 .account-row{display:flex;align-items:center;gap:12px}
-.avatar{width:44px;height:44px;border-radius:50%;background:var(--investment);color:#fff;font-weight:700;font-size:18px;display:flex;align-items:center;justify-content:center;flex:none}
+.avatar{width:44px;height:44px;border-radius:50%;background:var(--action-blue);color:#fff;font-weight:700;font-size:18px;display:flex;align-items:center;justify-content:center;flex:none}
 .account-text b{display:block;font-size:15px}.account-text small{color:var(--muted);font-size:13px;word-break:break-all}
 .more-item{display:flex;align-items:center;gap:12px;width:100%;min-height:56px;padding:0 4px;border:0;border-bottom:1px solid var(--border);background:transparent;font:inherit;font-size:16px;font-weight:600;color:var(--text);text-align:left;transition:background-color .12s}
 .more-item:last-child{border-bottom:0}.more-item:active{background:var(--soft)}
@@ -278,7 +278,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .mobile-nav button.active{color:var(--primary)}
  .mobile-nav button.active .nav-ind{background:var(--nav-pill)}
  .mobile-nav button.active .ico{stroke-width:2.25}
- .mobile-nav button.nav-add{background:var(--investment);color:#fff;width:52px;height:52px;min-height:52px;border-radius:50%;padding:0;margin:-18px auto 0;box-shadow:0 6px 16px rgba(37,99,235,.35);transition:transform .12s,box-shadow .12s}
+ .mobile-nav button.nav-add{background:var(--action-blue);color:#fff;width:52px;height:52px;min-height:52px;border-radius:50%;padding:0;margin:-18px auto 0;box-shadow:0 6px 16px rgba(37,99,235,.35);transition:transform .12s,box-shadow .12s}
  .mobile-nav button.nav-add:active{transform:scale(.94);box-shadow:0 3px 8px rgba(37,99,235,.3)}
  .mobile-nav button.nav-add .ico{stroke-width:2.5;width:26px;height:26px}
  .panel,.card{border-radius:var(--radius)}
@@ -396,9 +396,6 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .iphone-ui #movementList .movement-account{display:block;font-size:12px}
  .iphone-ui #movementList .amt{grid-area:1 / 3 / 3 / 4;align-self:center;text-align:right}
  .iphone-ui #movementList .munits{grid-area:3 / 2 / 4 / 4;color:var(--investment)}
- @media(prefers-color-scheme:dark){
-   .iphone-ui #movementList :is(.amt.inv,.munits,.mico.v){color:#bfdbfe}
- }
  .iphone-ui #movementList .mitem::after{
    content:"";grid-area:1 / 4 / span 3;width:6px;height:6px;border:solid var(--muted);border-width:1.5px 1.5px 0 0;transform:rotate(45deg);
  }
@@ -1006,13 +1003,13 @@ function normalizeState(s){
 // ---------- Diálogos: SweetAlert2 con los colores del tema; si la librería no carga (sin conexión), diálogos nativos ----------
 function swalBase(){
  if(!window.Swal)return null;
- return Swal.mixin({background:tok("--panel"),color:tok("--text"),confirmButtonColor:tok("--investment"),cancelButtonColor:tok("--muted"),reverseButtons:true,heightAuto:false,scrollbarPadding:false});
+ return Swal.mixin({background:tok("--panel"),color:tok("--text"),confirmButtonColor:tok("--action-blue"),cancelButtonColor:tok("--muted"),reverseButtons:true,heightAuto:false,scrollbarPadding:false});
 }
 async function uiAlert(msg,opts={}){const S=swalBase();if(!S){alert(msg);return}await S.fire({title:opts.title||"",text:msg,icon:opts.icon||"info",confirmButtonText:opts.confirmText||"Entendido"})}
 function uiError(msg,title="Revisa los datos"){return uiAlert(msg,{icon:"error",title})}
 async function uiConfirm(msg,opts={}){
  const S=swalBase();if(!S)return confirm((opts.title?opts.title+" ":"")+msg);
- const r=await S.fire({title:opts.title||"¿Seguro?",text:msg,icon:opts.icon||(opts.danger?"warning":"question"),showCancelButton:true,confirmButtonText:opts.confirmText||"Sí, continuar",cancelButtonText:"Cancelar",confirmButtonColor:opts.danger?tok("--danger"):tok("--investment"),focusCancel:!!opts.danger});
+ const r=await S.fire({title:opts.title||"¿Seguro?",text:msg,icon:opts.icon||(opts.danger?"warning":"question"),showCancelButton:true,confirmButtonText:opts.confirmText||"Sí, continuar",cancelButtonText:"Cancelar",confirmButtonColor:opts.danger?tok("--danger"):tok("--action-blue"),focusCancel:!!opts.danger});
  return r.isConfirmed;
 }
 async function uiPrompt(msg,def,opts={}){
