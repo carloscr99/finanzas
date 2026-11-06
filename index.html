@@ -352,7 +352,11 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
    margin-bottom:12px;padding:14px;background:var(--panel);border:1px solid var(--border);border-radius:20px;
  }
  .iphone-ui .movement-filter-controls .searchbar{margin-bottom:0}
- .iphone-ui #movementFilters .kpi-strip{display:none}
+ .iphone-ui #movementFilters .kpi-strip{display:flex;justify-content:flex-end;margin-top:8px}
+ .iphone-ui #movementFilters .kpi-mini{
+   display:flex;align-items:baseline;gap:5px;padding:0;border:0;background:none;font-size:12px;
+ }
+ .iphone-ui #movementFilters .kpi-mini b{margin:0;font-size:inherit}
  .iphone-ui #movementFilters .searchbar.collapsed{display:grid}
  .iphone-ui #movementFilters .searchbar.collapsed > :not(:first-child){display:none}
  .iphone-ui #movementFilters #searchText{background:var(--soft);border-radius:12px}
@@ -662,9 +666,9 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
             <div><label for="searchFrom">Desde</label><input id="searchFrom" type="date"></div>
             <div><label for="searchTo">Hasta</label><input id="searchTo" type="date"></div>
           </div>
-        </div>
-        <div class="kpi-strip">
-          <div class="kpi-mini"><span class="muted">Movimientos visibles</span><b id="visibleCount">0</b></div>
+          <div class="kpi-strip">
+            <div class="kpi-mini"><span class="muted">Movimientos visibles</span><b id="visibleCount">0</b></div>
+          </div>
         </div>
         <div class="footer-tools section-gap"><button class="secondary small" id="bulkToggle">Cambiar categoría de los visibles…</button></div>
         <div id="bulkPanel" class="inline-note section-gap" hidden>
