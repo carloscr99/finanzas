@@ -308,7 +308,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .iphone-ui body{font-family:-apple-system,BlinkMacSystemFont,"Inter",sans-serif}
  .iphone-ui .app{padding-bottom:calc(var(--nav-h) + 28px + env(safe-area-inset-bottom))}
  .iphone-ui .mobile-nav{
-   inset:auto 8px max(4px, calc(env(safe-area-inset-bottom) - 5px));
+   inset:auto 8px max(4px, calc(env(safe-area-inset-bottom) - 10px));
    height:calc(var(--nav-h) + 6px);padding:4px;
    grid-template-columns:minmax(0,.9fr) minmax(0,1.25fr) minmax(46px,.85fr) minmax(0,1.2fr) minmax(0,.8fr);
    border:1px solid var(--border-strong);border-radius:28px;
@@ -2744,13 +2744,13 @@ function renderAll(){
 
 document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>{
  const page=b.dataset.page;
- const iphoneHome=page==="dashboard"&&b.closest(".mobile-nav")&&document.documentElement.classList.contains("iphone-ui");
- if(iphoneHome&&currentPage==="dashboard"){
+ const iphoneTab=b.closest(".mobile-nav")&&document.documentElement.classList.contains("iphone-ui");
+ if(iphoneTab&&currentPage===page){
    const behavior=window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth";
    requestAnimationFrame(()=>document.scrollingElement.scrollTo({top:0,behavior}));
    return;
  }
- showPage(page,iphoneHome?"instant":"smooth");
+ showPage(page,iphoneTab?"instant":"smooth");
 });
 el("mDate").value=todayISO();el("rStartDate").value=todayISO();setupPeriodSelectors();updatePeriodControls();
 el("mType").onchange=()=>{updateMovementCategories();updateAccountHint()};el("mAccount").onchange=updateAccountHint;["mAmount","mUnits"].forEach(id=>el(id).addEventListener("input",()=>updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint")));el("mAsset").onchange=()=>updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint");el("mCategory").onchange=()=>updateInvestmentFields(true);el("rType").onchange=updateRecurringCategories;
