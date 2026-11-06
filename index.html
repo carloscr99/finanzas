@@ -363,17 +363,15 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .iphone-ui .movement-filter-controls .searchbar{margin-bottom:0}
  .iphone-ui #movementFilters .kpi-strip{display:none}
  .iphone-ui .movement-history-count{
-   display:inline-block;margin-left:auto;
-   padding:3px 9px;border-radius:999px;background:var(--btn2-bg);color:var(--muted);
-   font-size:12px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;
+   display:block;margin:14px 4px 0;color:var(--muted);font-size:14px;font-weight:600;
  }
+ .iphone-ui .movement-history-count b{color:var(--text);font-variant-numeric:tabular-nums}
  .iphone-ui #movementList{margin-top:0}
  .iphone-ui #movementFilters .searchbar.collapsed{display:grid}
  .iphone-ui #movementFilters .searchbar.collapsed > :not(:first-child){display:none}
  .iphone-ui #movementFilters #searchText{background:var(--soft);border-radius:12px}
  .iphone-ui #movementFilters #toggleFilters{border-radius:999px}
  .iphone-ui #movementList .mday{
-   display:flex;justify-content:space-between;align-items:center;gap:8px;
    position:static;background:none;text-transform:none;
  }
  .iphone-ui #movementList .movement-day-items{
@@ -2043,13 +2041,13 @@ function renderMovements(){
  el("movementTable").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>deleteMovement(b.dataset.del));
  // Lista táctil para móvil (agrupada por día; tocar abre la hoja de edición). El círculo lleva el icono de la categoría con el color del tipo; signo + texto: el tipo nunca se indica solo por color.
  const list=el("movementList"),LIMIT=300,shown=movs.slice(0,LIMIT);let html="",lastDate="";
- const countBadge=`<span class="movement-history-count">${count} ${movs.length===1?"visible":"visibles"}</span>`;
+ const countLabel=`<div class="movement-history-count"><b>${count}</b> ${movs.length===1?"movimiento visible":"movimientos visibles"}</div>`;
  const TYPE_UI={Gasto:{cls:"negative",k:"g",sign:"−"},Ingreso:{cls:"positive",k:"i",sign:"+"},"Inversión":{cls:"inv",k:"v",sign:""}};
  shown.forEach(m=>{
    if(m.date!==lastDate){
      if(html)html+="</div>";
      lastDate=m.date;
-     html+=`<div class="mday">${formatDate(m.date)}${html?"":countBadge}</div><div class="movement-day-items">`;
+     html+=`<div class="mday">${formatDate(m.date)}</div><div class="movement-day-items">`;
    }
    const t=TYPE_UI[m.type]||TYPE_UI.Gasto,u=movementUnitsInfo(m),account=movementAccountLabel(m);
    const separator='<span class="movement-meta-separator"> · </span>';
@@ -2057,9 +2055,9 @@ function renderMovements(){
    html+=`<button type="button" class="mitem" data-id="${m.id}"><span class="mico ${t.k}">${catIconSvg(getCat(m.categoryId))}</span><span class="mtext"><b>${escapeHtml(m.description)}</b>${details}</span><span class="mamt"><span class="amt ${t.cls}">${t.sign}${euro.format(m.amount)}</span>${u?`<small class="munits"${u.estimated?' title="Aproximadas: importe ÷ última cotización de prices.json"':""}>${u.text}</small>`:""}</span></button>`;
  });
  if(html)html+="</div>";
- if(!html)html=`${countBadge}<div class="empty-state"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg><p>${state.movements.length?"Ningún movimiento coincide con los filtros.":"Todavía no hay movimientos."}</p><button type="button" class="primary" data-empty-add>Añadir movimiento</button></div>`;
+ if(!html)html=`<div class="empty-state"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg><p>${state.movements.length?"Ningún movimiento coincide con los filtros.":"Todavía no hay movimientos."}</p><button type="button" class="primary" data-empty-add>Añadir movimiento</button></div>`;
  if(movs.length>LIMIT)html+=`<div class="empty">Mostrando ${intFmt.format(LIMIT)} de ${intFmt.format(movs.length)}. Usa los filtros para acotar.</div>`;
- list.innerHTML=html;
+ list.innerHTML=countLabel+html;
  list.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>{const m=state.movements.find(x=>x.id===b.dataset.id);if(m)openQuickSheet(m)});
  const emptyAdd=list.querySelector("[data-empty-add]");if(emptyAdd)emptyAdd.onclick=()=>openQuickSheet(null);
  const nFilters=["searchText","searchType","searchCategory","searchFrom","searchTo"].filter(id=>el(id).value).length;
