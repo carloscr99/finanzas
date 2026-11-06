@@ -363,9 +363,12 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .iphone-ui .movement-filter-controls .searchbar{margin-bottom:0}
  .iphone-ui #movementFilters .kpi-strip{display:none}
  .iphone-ui .movement-history-count{
-   display:block;margin:14px 4px 0;color:var(--muted);font-size:14px;font-weight:600;
+   display:flex;align-items:center;gap:8px;margin:14px 4px 0;color:var(--text);font-size:14px;font-weight:600;
  }
- .iphone-ui .movement-history-count b{color:var(--text);font-variant-numeric:tabular-nums}
+ .iphone-ui .movement-history-count b{
+   min-width:28px;padding:3px 8px;border-radius:999px;background:var(--investment-soft);
+   color:var(--investment);text-align:center;font-variant-numeric:tabular-nums;
+ }
  .iphone-ui #movementList{margin-top:0}
  .iphone-ui #movementFilters .searchbar.collapsed{display:grid}
  .iphone-ui #movementFilters .searchbar.collapsed > :not(:first-child){display:none}
