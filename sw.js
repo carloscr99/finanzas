@@ -2,7 +2,7 @@
 // y también sin conexión. Los datos (Firestore), el login (Google) y las cotizaciones (prices.json) nunca pasan por aquí.
 //
 // Sube la versión de CACHE cada vez que cambie la lista PRECACHE (por ejemplo al actualizar Chart.js o Firebase).
-const CACHE = "finanzas-v4";
+const CACHE = "finanzas-v5";
 const PRECACHE = [
   "./",
   "./index.html",
