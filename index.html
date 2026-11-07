@@ -1619,6 +1619,13 @@ async function chooseNewAssetIcon(){
  const choice=await pickIcon("Icono del nuevo activo",assetIconId(draft),!!newAssetIcon);if(!choice)return;
  newAssetIcon=choice==="auto"?null:choice;renderNewAssetIcon();
 }
+// ISIN: 2 letras de país + 9 alfanuméricos + dígito de control (Luhn sobre las letras pasadas a números, A=10…Z=35).
+function isValidIsin(value){
+ const isin=String(value||"").trim().toUpperCase();if(!/^[A-Z]{2}[A-Z0-9]{9}[0-9]$/.test(isin))return false;
+ const digits=isin.replace(/[A-Z]/g,ch=>String(ch.charCodeAt(0)-55));let sum=0;
+ for(let i=digits.length-1,dbl=false;i>=0;i--,dbl=!dbl){let n=Number(digits[i]);if(dbl){n*=2;if(n>9)n-=9}sum+=n}
+ return sum%10===0;
+}
 function assetMarketConfig(a){
  const isin=String(a?.isin||"").trim().toUpperCase();if(isin)return{feedKey:isin,label:a.name||isin};
  // El primer nombre conserva la identificación de Bitcoin tras un cambio de título.
@@ -1876,11 +1883,11 @@ async function updateMarketPrices(showAlert=false){
    if(!response.ok)throw new Error(`HTTP ${response.status}`);
    const feed=await response.json();
    if(!feed||!feed.assets)throw new Error("Formato de prices.json no válido");
-   let changed=0;
+   let changed=0;const missing=[];
    for(const a of targets){
      const cfg=assetMarketConfig(a),row=cfg?feed.assets[cfg.feedKey]:null;
      const price=Number(row?.price);
-     if(!row||!Number.isFinite(price)||price<=0)continue;
+     if(!row||!Number.isFinite(price)||price<=0){missing.push(a);continue}
      a.unitPrice=price;
      if(Number(a.units)>0)a.value=Number(a.units)*price;
      a.updatedAt=row.priceDate||todayISO();
@@ -1899,9 +1906,11 @@ async function updateMarketPrices(showAlert=false){
    if(status){
      const priceDates=targets.map(a=>a.updatedAt).filter(Boolean).sort();
      const newest=priceDates.length?priceDates[priceDates.length-1]:null;
-     status.textContent=`Cotizaciones: sincronizadas ${formatDateTime(syncAt)} · fichero GitHub ${formatDateTime(feedAt)}${newest?` · cotización más reciente ${formatDate(newest)}`:""}.`;
+     const pend=missing.length?` · sin cotización todavía: ${missing.map(a=>a.name).join(", ")} (se añadirá${missing.length===1?"":"n"} en la próxima actualización automática)`:"";
+     status.textContent=`Cotizaciones: sincronizadas ${formatDateTime(syncAt)} · fichero GitHub ${formatDateTime(feedAt)}${newest?` · cotización más reciente ${formatDate(newest)}`:""}${pend}.`;
    }
-   if(showAlert)uiAlert(`Cotizaciones sincronizadas desde GitHub. ${changed} activo${changed===1?"":"s"} actualizado${changed===1?"":"s"}.`);
+   if(showAlert)uiAlert(`Cotizaciones sincronizadas desde GitHub. ${changed} activo${changed===1?"":"s"} actualizado${changed===1?"":"s"}.${missing.length?` Pendiente${missing.length===1?"":"s"} de añadir a las cotizaciones: ${missing.map(a=>a.name).join(", ")}.`:""}`);
+   return{changed,missing};
  }catch(err){
    if(status){
      const last=state.meta?.lastPricesSyncAt;
@@ -2428,9 +2437,14 @@ async function adjustAssetUnits(id){
 function addAsset(){
  const name=el("aName").value.trim(),type=el("aType").value,value=Number(el("aValue").value||0),invested=el("aInvested").value===""?0:Number(el("aInvested").value),units=el("aUnits").value===""?0:Number(el("aUnits").value),isin=el("aIsin").value.trim().toUpperCase();
  if(!name||!Number.isFinite(value)||value<0||!Number.isFinite(invested)||invested<0||!Number.isFinite(units)||units<0)return uiError("Completa los datos correctamente.");
+ if(isin&&!isValidIsin(isin))return uiError(`El ISIN «${isin}» no es válido: revisa que tenga 12 caracteres (p. ej. LU0996182563).`);
  const asset={id:uuid(),name,type,value,invested,units,isin,createdAt:todayISO()};applyIconChoice(asset,newAssetIcon);
  if(isCurrentAccount(asset))setAccountReference(asset,value,todayISO());
- state.assets.push(asset);["aName","aValue","aInvested","aUnits","aIsin"].forEach(id=>el(id).value="");newAssetIcon=null;renderNewAssetIcon();markDataUpdate("portfolio");saveState();renderAll();updateMarketPrices(false);
+ state.assets.push(asset);["aName","aValue","aInvested","aUnits","aIsin"].forEach(id=>el(id).value="");newAssetIcon=null;renderNewAssetIcon();markDataUpdate("portfolio");saveState();renderAll();
+ updateMarketPrices(false).then(res=>{
+   // ISIN que aún no está en prices.json: la tarea automática de cotizaciones lo descubre en Firestore y lo añade.
+   if(isin&&res?.missing?.includes(asset))uiAlert(`El ISIN ${isin} todavía no está en las cotizaciones. Se añadirá solo en la próxima actualización automática (dos veces al día) y desde entonces su precio se actualizará como el de los demás fondos.`,{icon:"info",title:"Cotización pendiente"});
+ });
 }
 async function editAsset(id,priceOnly=false){
  const asset=state.assets.find(a=>a.id===id);if(!asset)return;
