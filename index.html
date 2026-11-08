@@ -2437,7 +2437,7 @@ async function adjustAssetUnits(id){
 }
 function addAsset(){
  const name=el("aName").value.trim(),type=el("aType").value,value=Number(el("aValue").value||0),invested=el("aInvested").value===""?0:Number(el("aInvested").value),units=el("aUnits").value===""?0:Number(el("aUnits").value),isin=el("aIsin").value.trim().toUpperCase();
- if(!name||!Number.isFinite(value)||value<0||!Number.isFinite(invested)||invested<0||!Number.isFinite(units)||units<0)return uiError("Completa los datos correctamente.");
+ if(!name||!Number.isFinite(value)||(value<0&&(units>0||isin||!/^(Cuenta|Efectivo|Otro)/i.test(type)))||!Number.isFinite(invested)||invested<0||!Number.isFinite(units)||units<0)return uiError("Completa los datos correctamente.");
  if(isin&&!isValidIsin(isin))return uiError(`El ISIN «${isin}» no es válido: revisa que tenga 12 caracteres (p. ej. LU0996182563).`);
  const asset={id:uuid(),name,type,value,invested,units,isin,createdAt:todayISO()};applyIconChoice(asset,newAssetIcon);
  if(isCurrentAccount(asset))setAccountReference(asset,value,todayISO());
@@ -2457,7 +2457,7 @@ async function editAsset(id,priceOnly=false){
    if(!name)return "Escribe un nombre para el activo.";
    if(text===initialAmount)return {name};
    const amount=Number(text.replace(",","."));
-   if(!text||!Number.isFinite(amount)||(!isAccount&&amount<0))return "Indica un importe válido.";
+   if(!text||!Number.isFinite(amount)||(!isAccount&&hasUnits&&amount<0))return "Indica un importe válido.";
    return {name,amount};
  };
  const S=swalBase();
