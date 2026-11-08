@@ -1748,7 +1748,7 @@ function updateInvestmentFields(reset=false){
 function applyInvestmentMovementToAsset(m,sign){
  if(m?.type!=="Inversión"||!m.assetId)return;const a=state.assets.find(x=>x.id===m.assetId);if(!a)return;
  a.invested=Math.max(0,Number(a.invested||0)+sign*Number(m.amount||0));
- if(!assetMarketConfig(a)){a.value=Math.max(0,Number(a.value||0)+sign*Number(m.amount||0));return} // cuenta de ahorro: el dinero entra tal cual
+ if(!assetMarketConfig(a)){a.value=Number(a.value||0)+sign*Number(m.amount||0);return} // cuenta de ahorro: el dinero entra tal cual
  a.units=Math.max(0,Number(a.units||0)+sign*Number(m.units||0));
  if(Number(a.unitPrice)>0&&Number.isFinite(Number(a.units)))a.value=Number(a.units)*Number(a.unitPrice);
 }
@@ -1776,7 +1776,7 @@ function applyMovementToAccount(m,sign){
  const id=movementAccountId(m);if(!id)return;const a=state.assets.find(x=>x.id===id);
  if(!a||isCurrentAccount(a)||isDebt(a)||assetMarketConfig(a)||a.id===m.assetId)return;
  const delta=sign*movementNet(m);
- a.value=Math.max(0,Number(a.value||0)+delta);
+ a.value=Number(a.value||0)+delta; /* puede quedar en negativo */
  if(m.type!=="Ingreso")a.invested=Math.max(0,Number(a.invested||0)+delta);
  a.updatedAt=todayISO();
 }
@@ -1845,7 +1845,7 @@ function transferableAssets(){return state.assets.filter(a=>!assetMarketConfig(a
 function applyTransferToAsset(a,delta){
  if(isCurrentAccount(a)){a.refBalance=Number(a.refBalance||0)+delta;a.value=currentAccountValue(a);a.invested=a.value}
  else if(isDebt(a)){a.value=Math.max(0,Number(a.value||0)-delta)} // traspasar dinero a una deuda la reduce; desde una deuda, la aumenta
- else{a.value=Math.max(0,Number(a.value||0)+delta);a.invested=Math.max(0,Number(a.invested||0)+delta)}
+ else{a.value=Number(a.value||0)+delta;a.invested=Math.max(0,Number(a.invested||0)+delta)}
  a.updatedAt=todayISO();
 }
 function renderTransferForm(){
