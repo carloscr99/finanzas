@@ -2,19 +2,19 @@
 // y también sin conexión. Los datos (Firestore), el login (Google) y las cotizaciones (prices.json) nunca pasan por aquí.
 //
 // Sube la versión de CACHE cada vez que cambie la lista PRECACHE (por ejemplo al actualizar Chart.js o Firebase).
-const CACHE = "finanzas-v9";
+const CACHE = "finanzas-v10";
 const PRECACHE = [
   "./",
   "./index.html",
   "./firebase-config.js",
   "./push-config.js",
-  "./manifest.webmanifest?v=9",
+  "./manifest.webmanifest?v=10",
   "./icon-192.png",
-  "./icon-192.png?v=9",
-  "./icon-512.png?v=9",
-  "./icon-maskable.png?v=9",
+  "./icon-192.png?v=10",
+  "./icon-512.png?v=10",
+  "./icon-maskable.png?v=10",
   "./badge-96.png",
-  "./apple-touch-icon.png?v=9",
+  "./apple-touch-icon.png?v=10",
   "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js",
   "https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.14.5/sweetalert2.all.min.js",
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js",
