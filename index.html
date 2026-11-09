@@ -20,8 +20,8 @@
 /* Tokens de diseño (tema claro, Minimal/Flat; paleta "finanzas personales" de ui-ux-pro-max adaptada a claro) */
 :root{
   --bg:#f3f5f9;--panel:#fff;--text:#0f172a;--muted:#475569;--border:#e2e8f0;
-  --income:#16803b;--expense:#c73737;--investment:#2563eb;--action-blue:#2563eb;--accent:#0f172a;
-  --accent2:#334155;--warning:#b7791f;--soft:#f8fafc;--shadow:0 8px 24px rgba(15,23,42,.06);
+  --income:#16803b;--expense:#c73737;--investment:#2563eb;--action-blue:#2563eb;
+  --warning:#b7791f;--soft:#f8fafc;--shadow:0 8px 24px rgba(15,23,42,.06);
   --primary:#0f172a;--on-primary:#fff;--success:#059669;--danger:#dc2626;--ring:#2563eb;
   --border-strong:#cbd5e1;--btn2-bg:#eef2f7;--btn2-fg:#1f2937;--input-bg:#fff;--toast-bg:#111827;--toast-fg:#fff;
   --nav-bg:rgba(255,255,255,.92);--nav-pill:rgba(37,99,235,.14);--chart-neutral:#0f172a;
@@ -33,13 +33,12 @@
 @media (prefers-color-scheme:dark){
   :root{
     --bg:#0b1120;--panel:#151d2e;--text:#f1f5f9;--muted:#9fb0c5;--border:#263246;--soft:#1c2536;
-    --income:#4ade80;--expense:#f87171;--investment:#38b6ff;--accent:#0f172a;--accent2:#94a3b8;--warning:#fbbf24;
+    --income:#4ade80;--expense:#f87171;--investment:#38b6ff;--warning:#fbbf24;
     --shadow:0 8px 24px rgba(0,0,0,.35);--primary:#e2e8f0;--on-primary:#0f172a;--success:#34d399;--danger:#f87171;--ring:#60a5fa;
     --border-strong:#3b4961;--btn2-bg:#243047;--btn2-fg:#e2e8f0;--input-bg:#0f172a;--toast-bg:#e2e8f0;--toast-fg:#0f172a;
     --nav-bg:rgba(21,29,46,.92);--nav-pill:rgba(96,165,250,.22);--chart-neutral:#cbd5e1;
     --income-soft:rgba(74,222,128,.16);--expense-soft:rgba(248,113,113,.16);--investment-soft:rgba(56,182,255,.16);
   }
-  .sidebar{border-right:1px solid var(--border)}
 }
 *{box-sizing:border-box}
 html{background:var(--bg);scroll-behavior:smooth;-webkit-text-size-adjust:100%}
@@ -49,17 +48,31 @@ button{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:tran
 :focus-visible{outline:2px solid var(--ring);outline-offset:2px}
 .ico{width:24px;height:24px;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
 .ico.sm{width:20px;height:20px}
-.metric-value,.big-amount,.mitem .amt,td.amount,.asset-card .big,.kpi-mini b{font-variant-numeric:tabular-nums}
+.metric-value,.big-amount,.mitem .amt,td.amount,.movement-count b{font-variant-numeric:tabular-nums}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:0s!important;animation-duration:0s!important;scroll-behavior:auto!important}}
-.app{display:grid;grid-template-columns:230px 1fr;min-height:100dvh}
-.sidebar{background:var(--accent);color:#fff;padding:24px 16px;position:sticky;top:0;height:100vh}
-.brand{font-weight:800;font-size:20px;padding:0 10px 22px;white-space:nowrap;letter-spacing:-.01em}
-.brand small{display:block;font-weight:500;font-size:12px;color:#94a3b8;margin-top:4px}
-.nav{display:flex;flex-direction:column;gap:6px}
-.nav button{border:0;background:transparent;color:#cbd5e1;text-align:left;padding:11px 13px;border-radius:12px;font-weight:600;display:flex;align-items:center;gap:10px}
-.nav button .ico{width:20px;height:20px}
-.nav button.active,.nav button:hover{background:#1e293b;color:#fff}
-.content{min-width:0;padding:26px}
+.app{display:grid;grid-template-columns:216px minmax(0,1fr);gap:24px;max-width:1680px;min-height:100dvh;margin:auto;padding:20px}
+.sidebar{
+ display:flex;flex-direction:column;position:sticky;top:20px;height:calc(100dvh - 40px);
+ overflow:auto;padding:16px 12px;border:1px solid var(--border);border-radius:24px;
+ background:var(--nav-bg);color:var(--text);box-shadow:var(--shadow);
+ -webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);
+}
+.brand{display:flex;align-items:center;gap:9px;padding:4px 4px 20px;font-size:17px;font-weight:800;line-height:1.3;white-space:nowrap;letter-spacing:-.02em}
+.brand img{flex:none;border-radius:9px}
+.brand small{display:block;color:var(--muted);font-size:12px;font-weight:500}
+.nav{display:flex;flex-direction:column;gap:4px;padding-bottom:16px}
+.nav-section{margin:14px 10px 4px;color:var(--muted);font-size:12px;font-weight:650}
+.nav button{
+ display:flex;align-items:center;gap:10px;min-height:42px;padding:8px 10px;border:0;border-radius:14px;
+ background:transparent;color:var(--muted);font-size:14px;font-weight:600;text-align:left;
+}
+.nav button .ico{width:19px;height:19px}
+.nav button:hover{background:var(--soft);color:var(--text)}
+.nav button.active{
+ color:var(--text);background:color-mix(in srgb,var(--text) 8%,transparent);
+ box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 7%,transparent);
+}
+.content{min-width:0;padding:6px 0 28px}
 .page{display:none}.page.active{display:block}
 .page-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px}
 .page-head h1{margin:0 0 4px;font-size:29px}.page-head p{margin:0;color:var(--muted)}
@@ -122,6 +135,7 @@ td.actions{white-space:nowrap;width:1%}
 .muted{color:var(--muted)}
 .empty{text-align:center;padding:24px;color:var(--muted)}
 .chart-box{position:relative;height:300px;width:100%}
+.chart-box canvas{max-width:100%}
 .chart-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap;margin-bottom:10px}
 .chart-head h2{margin:0 0 4px}
 .chart-sub{margin:0;color:var(--muted);font-size:13px}
@@ -160,7 +174,6 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 .mlist{flex-direction:column}
 .movement-day-items{display:contents}
 .more-back{display:none}
-.settings-group{display:contents}
 .movement-history-count{display:none}
 .mitem{display:flex;align-items:center;gap:12px;min-height:56px;padding:8px 4px;border:0;border-bottom:1px solid var(--border);width:100%;background:transparent;text-align:left;font:inherit;color:var(--text);transition:background-color .12s}
 .mitem:active{background:var(--soft)}
@@ -209,13 +222,6 @@ details.panel summary{cursor:pointer;font-weight:700;font-size:17px;list-style:n
 details.panel summary::-webkit-details-marker{display:none}details.panel summary::after{content:"+";font-size:22px;color:var(--muted)}details.panel[open] summary::after{content:"−"}
 .legend{display:flex;gap:14px;flex-wrap:wrap;margin-top:8px;color:var(--muted);font-size:13px}
 .legend i{width:10px;height:10px;border-radius:50%;display:inline-block;margin-right:5px}
-.kpi-strip{display:grid;grid-template-columns:minmax(180px,240px);gap:12px}
-.kpi-mini{padding:12px;border:1px solid var(--border);border-radius:14px;background:var(--soft)}
-.kpi-mini b{display:block;font-size:18px;margin-top:4px}
-.asset-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
-.asset-card{border:1px solid var(--border);border-radius:16px;padding:15px;background:var(--panel)}
-.asset-card h3{margin-bottom:6px;overflow-wrap:anywhere}.asset-head{display:flex;align-items:center;gap:6px}.badge.badge-ico{display:inline-flex;align-items:center;justify-content:center;padding:0;width:25px;height:25px}button.badge-ico{cursor:pointer;border:1px solid transparent}button.badge-ico:hover{border-color:var(--border-strong)}.badge-ico .ico{width:15px;height:15px}.asset-card .big{font-size:22px;font-weight:800}
-.asset-card .sub{font-size:12px;color:var(--muted);margin-top:4px}
 .badge{font-size:11px;font-weight:700;border-radius:999px;background:var(--btn2-bg);color:var(--btn2-fg);padding:4px 8px;display:inline-block}
 button.badge[data-typeasset]{border:0;cursor:pointer;font-family:inherit}
 .swal2-popup select.swal2-select{width:calc(100% - 72px);background:var(--input-bg);color:var(--text);border:1px solid var(--border-strong)}
@@ -234,9 +240,8 @@ button.primary:focus-visible,button.secondary:focus-visible,button.danger:focus-
 .section-gap{margin-top:16px}
 hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 [hidden]{display:none!important}
-.sidebar{display:flex;flex-direction:column}
-.user-box{margin-top:auto;padding:12px 10px 0;border-top:1px solid #334155;font-size:12px;color:#94a3b8;word-break:break-all}
-.user-box button{margin-top:8px;width:100%;background:#1e293b;color:#fff;border:1px solid #334155;border-radius:10px;padding:8px;font-weight:700}
+.user-box{margin-top:auto;padding:12px 4px 0;border-top:1px solid var(--border);font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.user-box button{margin-top:8px;width:100%;background:var(--btn2-bg);color:var(--btn2-fg);border:1px solid var(--border);border-radius:12px;padding:8px;font-weight:650}
 .auth-screen{
  min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;
  padding:24px max(18px,env(safe-area-inset-right)) 24px max(18px,env(safe-area-inset-left));
@@ -278,17 +283,17 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  #returnRank .cs-table th:nth-child(5),#returnRank .cs-table td:nth-child(5){display:none} /* sin sitio para la columna «Desde» */
 }
 @media(max-width:1100px){
- .app{grid-template-columns:190px 1fr}.grid-4,.summary-grid,.asset-grid{grid-template-columns:repeat(2,1fr)}
+ .grid-4,.summary-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
  .form-grid,.form-grid-4,.searchbar{grid-template-columns:repeat(2,minmax(0,1fr))}
 }
 @media(display-mode:standalone){
  html{overscroll-behavior-y:none}
 }
 @media(max-width:760px){
- .app{display:block;padding-bottom:calc(var(--nav-h) + 16px + env(safe-area-inset-bottom))}.sidebar{display:none}
+ .app{display:block;padding:0}.sidebar{display:none}
  .content{padding:calc(12px + env(safe-area-inset-top)) 16px 16px}
  .page-head{display:block;margin-bottom:14px}.page-head h1{font-size:22px}.page-head p{font-size:13px}
- .grid-2,.grid-3,.grid-4,.summary-grid,.asset-grid,.kpi-strip{grid-template-columns:minmax(0,1fr)}
+ .grid-2,.grid-3,.grid-4,.summary-grid{grid-template-columns:minmax(0,1fr)}
  .grid-2,.grid-3,.grid-4,.summary-grid{gap:12px}
  .form-grid,.form-grid-4,.toolbar,.searchbar{grid-template-columns:minmax(0,1fr)}
  /* Safari en iOS puede sumar el padding del control de fecha a su ancho del 100 %. */
@@ -326,39 +331,51 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .sheet label{font-size:14px}
  .mitem b{font-size:16px}
 }
-#assetOverviewActions,#assetCountSummary,.asset-mobile-heading{display:none}
+/* Superficies compartidas por el diseño de escritorio y el de móvil. */
+.page :is(.panel,.card){border-radius:22px;box-shadow:none}
+#page-dashboard .metric-label{font-weight:600}
+#page-dashboard .chart-head h2{letter-spacing:-.02em}
+#dataFreshness{padding:12px 14px;border-radius:16px;background:var(--panel);font-size:12px}
+#dataFreshness b{color:var(--text);font-size:13px}
+#returnCalculationNote{margin-top:8px;padding:0;border:0;background:none;font-size:12px}
+.settings-panel{display:grid;gap:12px;padding:0;border:0;background:none}
+.settings-panel > hr{display:none}
+.settings-group{display:block;min-width:0;padding:16px;background:var(--panel);border:1px solid var(--border);border-radius:22px}
+.settings-group h2{font-size:17px;margin-bottom:8px}
+.settings-group p{font-size:14px;margin:0 0 12px;overflow-wrap:anywhere}
+.settings-group :is(button,.file-label){white-space:normal}
+.settings-group button.danger{color:var(--expense);background:var(--expense-soft);border-color:transparent}
+.settings-group .pref-row{padding-top:10px;border-top:1px solid var(--border)}
+#assetOverviewActions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:16px 0 8px}
 #assetOverviewActions h2{margin:0}
+#page-assets.active{display:flex;flex-direction:column}
+#assetCountSummary::after{content:" · "}
+#assetFormDetails:not([open]),#assetFormDetails > summary{display:none}
+#assetFormDetails{margin:0 0 12px}
+#assetFormDetails > .form-grid{margin-top:0}
+#page-assets > .summary-grid{
+ grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
+ padding:16px;background:var(--panel);border:1px solid var(--border);border-radius:22px;
+}
+#page-assets > .summary-grid > .card{padding:0;border:0;background:none}
+#page-assets > .summary-grid > #assetNetWorthCard{
+ grid-column:1/-1;padding-bottom:14px;border-bottom:1px solid var(--border);border-radius:0;
+}
+#assetTotal{font-size:clamp(24px,8vw,36px);line-height:1.15}
+#page-assets > .summary-grid > .card:not(#assetNetWorthCard) .metric-value{font-size:18px}
+#assetPriceControls{order:1;margin-top:16px}
+#page-assets .metric-value{overflow-wrap:anywhere}
+#assetGrid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
+.asset-group{min-width:0}
 .asset-group h3{margin:0 0 6px}
+.asset-group #transferDetails{
+ margin:8px 0 0;padding:12px 0 0;border:0;border-top:1px solid var(--border);border-radius:0;background:none;
+}
+.asset-liquidity #transferDetails .form-grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media(max-width:760px){
- #assetOverviewActions{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:16px 0 8px}
- #page-assets.active{display:flex;flex-direction:column}
- #page-assets .asset-mobile-heading{display:block}
- #page-assets .asset-standard-heading,#assetCountCard{display:none}
- #page-assets .asset-mobile-heading h1{font-size:32px;letter-spacing:-.035em}
- #assetCountSummary,#assetLastUpdate{display:inline}
- #assetCountSummary::after{content:" · "}
- #assetFormDetails:not([open]),#assetFormDetails > summary{display:none}
- #assetFormDetails{margin:0 0 12px}
- #assetFormDetails > .form-grid{margin-top:0}
- #page-assets :is(.card,.panel){border-radius:22px;box-shadow:none}
- #page-assets > .summary-grid{
-  grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
-  padding:16px;background:var(--panel);border:1px solid var(--border);border-radius:22px;
- }
- #page-assets > .summary-grid > .card{padding:0;border:0;background:none}
- #page-assets > .summary-grid > #assetNetWorthCard{
-  grid-column:1/-1;padding-bottom:14px;border-bottom:1px solid var(--border);border-radius:0;
- }
- #assetTotal{font-size:clamp(24px,8vw,36px);line-height:1.15}
- #page-assets > .summary-grid > .card:not(#assetNetWorthCard) .metric-value{font-size:18px}
+ #page-assets .page-head h1{font-size:32px;letter-spacing:-.035em}
  #assetSplit,#page-assets > .summary-grid > .card:not(#assetNetWorthCard) .metric-sub{display:none}
- #assetPriceControls{order:1;margin-top:16px}
- #page-assets .metric-value{overflow-wrap:anywhere}
- #netWorthChart{max-width:100%}
- #assetGrid{display:grid;grid-template-columns:minmax(0,1fr);gap:12px}
- .asset-group #transferDetails{
-  margin:8px 0 0;padding:12px 0 0;border:0;border-top:1px solid var(--border);border-radius:0;background:none;
- }
+ .asset-liquidity #transferDetails .form-grid-4{grid-template-columns:minmax(0,1fr)}
 }
 .asset-row{
  display:grid;grid-template-columns:36px minmax(0,1fr) auto auto;align-items:center;gap:8px;
@@ -438,23 +455,14 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  }
  #quickSheet #qsDelete:active{background:var(--expense-soft)}
  #quickSheet .movement-delete-label{display:inline}
- #page-dashboard .summary-grid .card{border-radius:22px;box-shadow:none}
- #page-dashboard .metric-label{font-weight:600}
- #page-dashboard .panel{border-radius:22px;box-shadow:none}
- #page-dashboard .chart-head h2{font-size:18px;letter-spacing:-.02em}
- #page-dashboard .chart-hint{color:var(--muted)}
- #dataFreshness{
-   display:grid;gap:4px;padding:12px 14px;border-radius:16px;background:var(--panel);font-size:12px;
- }
- #dataFreshness b{color:var(--text);font-size:13px}
+ #page-dashboard .chart-head h2{font-size:18px}
+ #dataFreshness{display:grid;gap:4px}
  #dataFreshness .freshness-separator{display:none}
- #returnCalculationNote{margin-top:8px;padding:0;border:0;background:none;font-size:12px}
  #movementFilters{padding:0;border:0;background:none;box-shadow:none}
  .movement-filter-controls{
    margin-bottom:12px;padding:14px;background:var(--panel);border:1px solid var(--border);border-radius:20px;
  }
  .movement-filter-controls .searchbar{margin-bottom:0}
- #movementFilters .kpi-strip{display:none}
  .movement-history-count{
    display:block;margin:18px 4px 2px;color:var(--text);font-size:16px;font-weight:600;letter-spacing:-.015em;
  }
@@ -500,9 +508,6 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  :is(#summaryRank,#patrimonyRank,#returnRank) .mitem{gap:8px}
  :is(#summaryRank,#patrimonyRank,#returnRank) .cs-bar{height:3px}
  :is(#summaryRank,#patrimonyRank,#returnRank) .cs-bar i{opacity:.72}
- :is(#page-more,#page-settings,#page-categories,#page-recurring,#page-budget) :is(.panel,.card){
-   border-radius:22px;box-shadow:none;
- }
  .more-back{
    display:inline-flex;align-items:center;gap:5px;min-height:44px;padding:0 8px 0 0;
    border:0;background:none;color:var(--text);font-weight:600;
@@ -513,16 +518,6 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
    box-sizing:content-box;width:18px;height:18px;padding:7px;border-radius:10px;background:var(--btn2-bg);
  }
  #page-more .danger-item{color:var(--expense)}
- .settings-panel{display:contents}
- .settings-panel > hr{display:none}
- .settings-group{
-   display:block;margin-bottom:12px;padding:16px;background:var(--panel);border:1px solid var(--border);border-radius:22px;
- }
- .settings-group h2{font-size:17px;margin-bottom:8px}
- .settings-group p{font-size:14px;margin:0 0 12px;overflow-wrap:anywhere}
- .settings-group :is(button,.file-label){white-space:normal}
- .settings-group button.danger{color:var(--expense);background:var(--expense-soft);border-color:transparent}
- .settings-group .pref-row{padding-top:10px;border-top:1px solid var(--border)}
  #page-categories :is(.category-create,#categoryList){padding-top:14px;border-top:1px solid var(--border)}
  #categoryList{display:grid;gap:0}
  #categoryList .chip{
@@ -567,6 +562,74 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
    .mobile-nav{background:var(--panel);-webkit-backdrop-filter:none;backdrop-filter:none}
    .mobile-nav button[data-page].active{background:var(--investment-soft);box-shadow:none}
  }
+}
+@media(min-width:761px){
+ .page-head h1{font-size:clamp(30px,3vw,38px);line-height:1.2;letter-spacing:-.035em}
+ .page-head p{font-size:14px}
+ .page :is(input:not([type="checkbox"]),select){border-radius:12px}
+ .page :is(button.primary,button.secondary,.file-label):not(.icon-btn){border-radius:12px}
+ .page .seg{padding:3px;border-radius:14px}
+ .page .seg button{border-radius:10px}
+ .toolbar{grid-template-columns:repeat(3,minmax(0,1fr)) auto}
+ .metric-value{font-size:clamp(23px,2.35vw,31px);letter-spacing:-.025em;overflow-wrap:anywhere}
+ #page-dashboard .summary-grid .metric-value{white-space:nowrap}
+ .page .table-wrap{border:1px solid var(--border);border-radius:16px;background:var(--soft)}
+ .page .table-wrap :is(th,td){padding:12px}
+ .page .table-wrap th{background:var(--btn2-bg)}
+ .page .table-wrap tbody tr:last-child td{border-bottom:0}
+ .page .table-wrap .cs-bar i{opacity:.8}
+ :is(#summaryRank,#patrimonyRank) .cs-table{min-width:550px}
+ #movementFilters{padding:0;border:0;background:none}
+ .movement-filter-controls{padding:18px;border:1px solid var(--border);border-radius:22px;background:var(--panel)}
+ .movement-filter-controls .searchbar{margin-bottom:0}
+ .movement-filter-controls #searchText{background:var(--soft)}
+ .movement-list-tools{justify-content:space-between}
+ .movement-count{font-size:15px;color:var(--muted)}
+ .movement-count b{color:var(--text);font-weight:750}
+ #movementTable td:first-child,#movementTable td.amount{white-space:nowrap}
+ #movementTable td.amount .badge{display:block;width:max-content;margin:3px 0 0 auto}
+ #movementTable .mv-account{min-width:95px;overflow-wrap:anywhere}
+ #movementTable .cat-cell{min-width:110px;overflow-wrap:anywhere}
+ .page button.danger.icon-btn{background:var(--expense-soft);border-color:transparent;color:var(--expense)}
+ .asset-row:hover{background:var(--soft)}
+ .asset-row{padding:10px 6px;min-height:62px}
+ #page-assets > .summary-grid{padding:20px;gap:16px}
+ #assetTotal{font-size:clamp(32px,4vw,44px)}
+ #page-assets > .summary-grid > .card:not(#assetNetWorthCard) .metric-value{font-size:23px}
+ #assetDetail{
+   inset:0;width:min(560px,calc(100% - 40px));margin:auto;padding:22px;
+   border:1px solid var(--border);border-radius:26px;box-shadow:var(--shadow);
+ }
+ #quickSheet{
+   top:50%;bottom:auto;width:min(560px,calc(100% - 40px));padding:22px;
+   border:1px solid var(--border);border-radius:26px;transform:translate(-50%,calc(-50% + 12px));
+ }
+ #quickSheet.open{transform:translate(-50%,-50%)}
+ :is(#assetDetail,#quickSheet) .sheet-handle{display:none}
+ #quickSheet .big-amount{border-radius:18px;background:var(--soft)}
+ #quickSheet .form-actions button{border-radius:14px;min-height:44px}
+ .fab{background:var(--action-blue);color:#fff}
+ #categoryList{display:grid;gap:0;padding-top:6px;border-top:1px solid var(--border)}
+ #categoryList .chip{
+   display:grid;grid-template-columns:auto minmax(0,1fr) auto auto auto;gap:10px;
+   border:0;border-bottom:1px solid var(--border);border-radius:0;background:none;padding:8px 0;
+ }
+ #categoryList .chip:last-child{border-bottom:0}
+ #categoryList .category-name{overflow-wrap:anywhere;font-weight:600}
+ .settings-group{padding:20px}
+}
+@media(min-width:761px) and (max-width:1020px){
+ .app{grid-template-columns:180px minmax(0,1fr);gap:16px;padding:12px}
+ .sidebar{top:12px;height:calc(100dvh - 24px)}
+ #page-dashboard > .grid-2{grid-template-columns:minmax(0,1fr)}
+}
+@media(min-width:1101px){
+ #assetGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #assetGrid > :only-child{grid-column:1/-1}
+ .settings-panel{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
+}
+@media(prefers-reduced-transparency:reduce){
+ .sidebar{background:var(--panel);-webkit-backdrop-filter:none;backdrop-filter:none}
 }
 </style>
 </head>
@@ -718,13 +781,14 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 </div>
 <div class="app" hidden>
   <aside class="sidebar">
-    <div class="brand">Mis Finanzas<small>Control personal</small></div>
-    <nav class="nav">
-      <button data-page="dashboard" class="active"><svg class="ico" aria-hidden="true"><use href="#i-house"/></svg>Dashboard</button>
+    <div class="brand"><img src="icon-192.png?v=12" alt="" width="36" height="36"><div>Mis Finanzas<small>Control personal</small></div></div>
+    <nav class="nav" aria-label="Navegación principal">
+      <button data-page="dashboard" class="active" aria-current="page"><svg class="ico" aria-hidden="true"><use href="#i-house"/></svg>Dashboard</button>
       <button data-page="movements"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg>Movimientos</button>
+      <button data-page="assets"><svg class="ico" aria-hidden="true"><use href="#i-pie"/></svg>Patrimonio</button>
+      <div class="nav-section">Más</div>
       <button data-page="categories"><svg class="ico" aria-hidden="true"><use href="#i-tag"/></svg>Categorías</button>
       <button data-page="recurring"><svg class="ico" aria-hidden="true"><use href="#i-repeat"/></svg>Recurrentes</button>
-      <button data-page="assets"><svg class="ico" aria-hidden="true"><use href="#i-pie"/></svg>Patrimonio</button>
       <button data-page="budget"><svg class="ico" aria-hidden="true"><use href="#i-gauge"/></svg>Presupuesto</button>
       <button data-page="settings"><svg class="ico" aria-hidden="true"><use href="#i-gear"/></svg>Ajustes</button>
     </nav>
@@ -845,11 +909,11 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
             <div><label for="searchFrom">Desde</label><input id="searchFrom" type="date"></div>
             <div><label for="searchTo">Hasta</label><input id="searchTo" type="date"></div>
           </div>
-          <div class="kpi-strip">
-            <div class="kpi-mini"><span class="muted">Movimientos visibles</span><b id="visibleCount">0</b></div>
-          </div>
         </div>
-        <div class="footer-tools section-gap"><button class="secondary small" id="bulkToggle">Cambiar categoría de los visibles…</button></div>
+        <div class="footer-tools section-gap movement-list-tools">
+          <div class="movement-count desktop-only"><b id="visibleCount">0</b> <span id="visibleCountLabel">movimientos visibles</span></div>
+          <button class="secondary small" id="bulkToggle">Cambiar categoría de los visibles…</button>
+        </div>
         <div id="bulkPanel" class="inline-note section-gap" hidden>
           <b>Cambiar tipo y categoría de todos los movimientos visibles</b>
           <div class="grid-3 section-gap">
@@ -917,14 +981,12 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 
     <section id="page-assets" class="page">
       <div class="page-head">
-        <div class="asset-standard-heading"><h1>Patrimonio e inversiones</h1><p>Registra cuentas, fondos, cripto, oro, efectivo y otros activos.</p></div>
-        <div class="asset-mobile-heading"><h1>Patrimonio</h1><p>Cuentas e inversiones de un vistazo.</p></div>
+        <div><h1>Patrimonio</h1><p>Cuentas e inversiones de un vistazo.</p></div>
       </div>
       <div class="summary-grid">
         <div class="card" id="assetNetWorthCard"><div class="metric-label">Patrimonio neto</div><div class="metric-value" id="assetTotal">0 €</div><div class="metric-sub" id="assetSplit">—</div><div class="metric-sub"><span id="assetCountSummary"></span><span id="assetLastUpdate">Sin actualizar</span></div></div>
         <div class="card investment"><div class="metric-label">Capital invertido</div><div class="metric-value" id="assetInvested">0 €</div><div class="metric-sub">Solo fondos con ISIN y cripto; cuentas, depósitos y seguros no cuentan</div></div>
         <div class="card"><div class="metric-label">Ganancia / pérdida</div><div class="metric-value" id="assetGain">0 €</div><div class="metric-sub">Valor de los fondos menos su capital aportado</div></div>
-        <div class="card" id="assetCountCard"><div class="metric-label">Número de activos</div><div class="metric-value" id="assetTotalCount">0</div></div>
       </div>
       <div class="inline-note" id="assetPriceControls" style="display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px">
         <span id="priceStatus">Cotizaciones: conectando con GitHub…</span>
@@ -936,7 +998,21 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         <div class="chart-hint">Un punto por día con cambios: cotizaciones, movimientos, traspasos o actualizaciones manuales. Patrimonio neto, valor de los fondos y capital aportado a los fondos.</div>
       </div>
       <div id="assetOverviewActions"><h2>Activos</h2><button type="button" class="secondary small" id="openAssetForm" aria-controls="assetFormDetails" aria-expanded="false">Añadir activo</button></div>
-      <div id="assetGrid" class="asset-grid"></div>
+      <details class="panel" id="assetFormDetails">
+        <summary>Añadir activo</summary>
+        <div class="form-grid">
+          <div><label for="aName">Nombre</label><div class="name-ico"><button type="button" class="icon-opt" id="aIconBtn" aria-label="Elegir icono" title="Elegir icono"></button><input id="aName" placeholder="Ej. Amundi Index MSCI World"></div></div>
+          <div><label>Tipo</label><select id="aType"><option>Cuenta</option><option>Cuenta corriente</option><option>Depósito</option><option>SIALP</option><option>Fondo</option><option>Cripto</option><option>Oro</option><option>Efectivo</option><option>Otro</option><option>Deuda</option></select></div>
+          <div><label>Valor actual (€)</label><input id="aValue" type="number" min="0" step="0.01" placeholder="Manual / inicial"></div>
+          <div id="aDebtNote" class="inline-note" hidden style="grid-column:1/-1">Deuda: escribe en «Valor actual» lo que queda por pagar (por ejemplo, cuotas pendientes más el pago final). Restará del patrimonio neto y no cuenta como inversión.</div>
+          <div id="aCurrentNote" class="inline-note" hidden style="grid-column:1/-1">Cuenta corriente: el valor que pongas es el <b>saldo real de hoy</b>. A partir de ahora la app lo moverá sola con cada ingreso, gasto e inversión que registres en esta cuenta. Cuando mires el banco, usa «Editar activo» para fijar el saldo real como nueva referencia. Puedes tener varias (por ejemplo, Santander y Revolut) y elegir cuál es la cuenta por defecto de los movimientos.</div>
+          <div><label>Capital aportado (€)</label><input id="aInvested" type="number" min="0" step="0.01" placeholder="Opcional"></div>
+          <div><label>Participaciones / títulos</label><input id="aUnits" type="number" min="0" step="0.000001" placeholder="Opcional"></div>
+          <div><label>ISIN</label><input id="aIsin" placeholder="Opcional, para cotización automática"></div>
+          <div style="display:flex;align-items:end"><button class="primary" id="addAsset">Añadir activo</button></div>
+        </div>
+      </details>
+      <div id="assetGrid"></div>
       <dialog id="assetDetail" aria-labelledby="assetDetailName"></dialog>
       <details class="panel section-gap" id="transferDetails">
         <summary>Traspaso entre cuentas</summary>
@@ -949,20 +1025,6 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         </div>
         <div class="form-actions"><button class="primary" id="doTransfer">Registrar traspaso</button></div>
         <div id="transferList" class="section-gap"></div>
-      </details>
-      <details class="panel section-gap" id="assetFormDetails">
-        <summary>Añadir activo</summary>
-        <div class="form-grid section-gap">
-          <div><label for="aName">Nombre</label><div class="name-ico"><button type="button" class="icon-opt" id="aIconBtn" aria-label="Elegir icono" title="Elegir icono"></button><input id="aName" placeholder="Ej. Amundi Index MSCI World"></div></div>
-          <div><label>Tipo</label><select id="aType"><option>Cuenta</option><option>Cuenta corriente</option><option>Depósito</option><option>SIALP</option><option>Fondo</option><option>Cripto</option><option>Oro</option><option>Efectivo</option><option>Otro</option><option>Deuda</option></select></div>
-          <div><label>Valor actual (€)</label><input id="aValue" type="number" min="0" step="0.01" placeholder="Manual / inicial"></div>
-          <div id="aDebtNote" class="inline-note" hidden style="grid-column:1/-1">Deuda: escribe en «Valor actual» lo que queda por pagar (por ejemplo, cuotas pendientes más el pago final). Restará del patrimonio neto y no cuenta como inversión.</div>
-          <div id="aCurrentNote" class="inline-note" hidden style="grid-column:1/-1">Cuenta corriente: el valor que pongas es el <b>saldo real de hoy</b>. A partir de ahora la app lo moverá sola con cada ingreso, gasto e inversión que registres en esta cuenta. Cuando mires el banco, usa «Actualizar manualmente» para fijar el saldo real como nueva referencia. Puedes tener varias (por ejemplo, Santander y Revolut) y elegir cuál es la cuenta por defecto de los movimientos.</div>
-          <div><label>Capital aportado (€)</label><input id="aInvested" type="number" min="0" step="0.01" placeholder="Opcional"></div>
-          <div><label>Participaciones / títulos</label><input id="aUnits" type="number" min="0" step="0.000001" placeholder="Opcional"></div>
-          <div><label>ISIN</label><input id="aIsin" placeholder="Opcional, para cotización automática"></div>
-          <div style="display:flex;align-items:end"><button class="primary" id="addAsset">Añadir activo</button></div>
-        </div>
       </details>
     </section>
 
@@ -2015,12 +2077,14 @@ function layoutDashboardCards(){
  document.querySelectorAll("#page-dashboard .summary-grid .metric-value").forEach(amount=>{
    amount.style.fontSize="";
    const available=amount.clientWidth;
-   if(!mobile||!available)return;
+   if(!available)return;
    range.selectNodeContents(amount);
-   const width=range.getBoundingClientRect().width;
-   if(width>available){
+   // Las cifras tabulares pueden cambiar de ancho por escalones al reducir el tamaño.
+   for(let attempt=0;attempt<2;attempt++){
+     const width=range.getBoundingClientRect().width;
+     if(width<=available)break;
      const size=parseFloat(getComputedStyle(amount).fontSize);
-     amount.style.fontSize=`${Math.floor(size*available/width*10)/10}px`;
+     amount.style.fontSize=`${Math.floor(size*(available-1)/width*10)/10}px`;
    }
  });
 }
@@ -2107,7 +2171,7 @@ function renderCategoryList(){
  const query=normText(el("categorySearch").value.trim()),type=el("categoryFilterType").value;
  const sorted=state.categories.filter(c=>(!type||c.type===type)&&normText(c.name).includes(query))
    .sort((a,b)=>a.type.localeCompare(b.type)||a.name.localeCompare(b.name,"es"));
- el("categoryList").innerHTML=sorted.length?sorted.map(c=>`<span class="chip"><button type="button" class="chip-ico" data-iconcat="${c.id}" aria-label="Cambiar icono de ${escapeHtml(c.name)}" title="Cambiar icono">${catIconSvg(c)}</button><span class="pill ${c.type}">${c.type}</span><span class="category-name">${escapeHtml(c.name)}</span><button type="button" data-rencat="${c.id}" aria-label="Renombrar ${escapeHtml(c.name)}" title="Renombrar"><svg class="ico" aria-hidden="true"><use href="#i-pencil"/></svg></button><button type="button" data-delcat="${c.id}" aria-label="Eliminar ${escapeHtml(c.name)}" title="Eliminar"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button></span>`).join(""):`<span class="muted">${state.categories.length?"No hay categorías que coincidan con los filtros.":"No hay categorías."}</span>`;
+ el("categoryList").innerHTML=sorted.length?sorted.map(c=>`<span class="chip"><button type="button" class="chip-ico" data-iconcat="${c.id}" aria-label="Cambiar icono de ${escapeHtml(c.name)}" title="Cambiar icono">${catIconSvg(c)}</button><span class="category-name">${escapeHtml(c.name)}</span><span class="pill ${c.type}">${c.type}</span><button type="button" data-rencat="${c.id}" aria-label="Renombrar ${escapeHtml(c.name)}" title="Renombrar"><svg class="ico" aria-hidden="true"><use href="#i-pencil"/></svg></button><button type="button" data-delcat="${c.id}" aria-label="Eliminar ${escapeHtml(c.name)}" title="Eliminar"><svg class="ico" aria-hidden="true"><use href="#i-x"/></svg></button></span>`).join(""):`<span class="muted">${state.categories.length?"No hay categorías que coincidan con los filtros.":"No hay categorías."}</span>`;
  el("categoryList").querySelectorAll("[data-delcat]").forEach(b=>b.onclick=()=>deleteCategory(b.dataset.delcat));
  el("categoryList").querySelectorAll("[data-rencat]").forEach(b=>b.onclick=()=>renameCategory(b.dataset.rencat));
  el("categoryList").querySelectorAll("[data-iconcat]").forEach(b=>b.onclick=()=>chooseCategoryIcon(b.dataset.iconcat));
@@ -2225,13 +2289,15 @@ function movementAccountTag(m){if(!m.accountId)return "";const def=defaultAccoun
 function movementAccountLabel(m){return accountLabel(m)}
 function renderMovements(){
  const movs=movementSearchResults(),count=intFmt.format(movs.length);
+ const countLabel=movs.length===1?"movimiento visible":"movimientos visibles";
  el("visibleCount").textContent=count;
+ el("visibleCountLabel").textContent=countLabel;
  el("movementTable").innerHTML=movs.length?movs.map(m=>{const u=movementUnitsInfo(m);return `<tr><td>${formatDate(m.date)}</td><td><span class="pill ${m.type}">${m.type}</span></td><td><span class="cat-cell">${catIconSvg(getCat(m.categoryId))}${escapeHtml(getCat(m.categoryId)?.name||"Sin categoría")}</span></td><td>${escapeHtml(m.description)}</td><td class="muted mv-account">${escapeHtml(movementAccountLabel(m)||"—")}</td><td class="amount">${euro.format(m.amount)}${u?` <span class="badge"${u.estimated?` title="Aproximadas: importe ÷ última cotización de prices.json"`:""}>${u.text}</span>`:""}</td><td class="actions">${iconBtn("secondary",`data-edit="${m.id}"`,"i-pencil","Editar")}${iconBtn("danger",`data-del="${m.id}"`,"i-trash","Borrar")}</td></tr>`}).join(""):`<tr><td colspan="7" class="empty">No hay movimientos.</td></tr>`;
  el("movementTable").querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>editMovement(b.dataset.edit));
  el("movementTable").querySelectorAll("[data-del]").forEach(b=>b.onclick=()=>deleteMovement(b.dataset.del));
  // Lista táctil para móvil (agrupada por día; tocar abre la hoja de edición). El círculo lleva el icono de la categoría con el color del tipo; signo + texto: el tipo nunca se indica solo por color.
  const list=el("movementList"),LIMIT=300,shown=movs.slice(0,LIMIT);let html="",lastDate="";
- const countLabel=`<div class="movement-history-count"><b>${count}</b> ${movs.length===1?"movimiento visible":"movimientos visibles"}</div>`;
+ const historyCount=`<div class="movement-history-count"><b>${count}</b> ${countLabel}</div>`;
  const TYPE_UI={Gasto:{cls:"negative",k:"g",sign:"−"},Ingreso:{cls:"positive",k:"i",sign:"+"},"Inversión":{cls:"inv",k:"v",sign:""}};
  shown.forEach(m=>{
    if(m.date!==lastDate){
@@ -2247,7 +2313,7 @@ function renderMovements(){
  if(html)html+="</div>";
  if(!html)html=`<div class="empty-state"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg><p>${state.movements.length?"Ningún movimiento coincide con los filtros.":"Todavía no hay movimientos."}</p><button type="button" class="primary" data-empty-add>Añadir movimiento</button></div>`;
  if(movs.length>LIMIT)html+=`<div class="empty">Mostrando ${intFmt.format(LIMIT)} de ${intFmt.format(movs.length)}. Usa los filtros para acotar.</div>`;
- list.innerHTML=countLabel+html;
+ list.innerHTML=historyCount+html;
  list.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>{const m=state.movements.find(x=>x.id===b.dataset.id);if(m)openQuickSheet(m)});
  const emptyAdd=list.querySelector("[data-empty-add]");if(emptyAdd)emptyAdd.onclick=()=>openQuickSheet(null);
  const nFilters=["searchText","searchType","searchCategory","searchFrom","searchTo"].filter(id=>el(id).value).length;
@@ -2566,12 +2632,15 @@ function showAssetDetail(id){
  const gain=Number(asset.value)-Number(asset.invested||0),irr=assetAnnualizedReturn(asset),unit=assetUnitLabel(asset,true);
  const metric=(label,value,cls="")=>`<div><small>${label}</small><strong class="${cls}">${value}</strong></div>`;
  const changeClass=value=>value<0?"negative":"positive";
- const source=debt?["Pendiente de pagar. Resta del patrimonio neto."]:account
+ const source=debt?["Pendiente de pagar. Resta del patrimonio neto. Puedes registrar un pago con un traspaso hacia esta deuda."]:account
    ?[`Saldo calculado desde la referencia de ${euro.format(asset.refBalance||0)} del ${formatDate(asset.refDate)}, más los movimientos posteriores.`]
    :[
      price>0?`Cotización: ${euro.format(price)} por unidad`:"",
      [asset.priceSource?`Fuente: ${escapeHtml(asset.priceSource)}`:"",asset.updatedAt?formatDate(asset.updatedAt):""].filter(Boolean).join(" · ")
    ].filter(Boolean);
+ if(!account&&!debt&&irr===null&&!units&&assetInvestmentMovements(asset).length){
+   source.push("Las aportaciones registradas no cuadran con el capital aportado.");
+ }
  const eligible=movementAccounts().includes(asset),isDefault=eligible&&asset.id===defaultAccount()?.id;
  detail.dataset.assetId=id;
  detail.innerHTML=`<div class="sheet-handle" aria-hidden="true"></div>
@@ -2609,22 +2678,17 @@ function renderAssets(){
  const {nw:total,invested,gain,liquidity,invValue,debts}=portfolioTotals(),portfolioRef=latestPortfolioReference();
  el("assetSplit").textContent=state.assets.length?`${euro.format(liquidity)} en cuentas y otros · ${euro.format(invValue)} en fondos${debts>0?` − ${euro.format(debts)} de deudas`:""}`:"—";
  el("assetTotal").classList.toggle("negative",total<0);
- el("assetTotal").textContent=euro.format(total);el("assetInvested").textContent=euro.format(invested);el("assetGain").textContent=euro.format(gain);el("assetGain").classList.toggle("negative",gain<0);el("assetGain").classList.toggle("positive",gain>=0);el("assetTotalCount").textContent=state.assets.length;
+ el("assetTotal").textContent=euro.format(total);el("assetInvested").textContent=euro.format(invested);el("assetGain").textContent=euro.format(gain);el("assetGain").classList.toggle("negative",gain<0);el("assetGain").classList.toggle("positive",gain>=0);
  el("assetLastUpdate").textContent=portfolioRef?`Actualizado ${formatDateTime(portfolioRef)}`:(state.assets.length?"Pendiente de registrar actualización":"Sin patrimonio");
  el("assetCountSummary").textContent=`${intFmt.format(state.assets.length)} ${state.assets.length===1?"activo":"activos"}`;
  const grid=el("assetGrid"),detail=el("assetDetail");
- if(isMobile()){
-   renderAssetGroups(grid);
-   if(detail.open){
-     if(state.assets.some(a=>a.id===detail.dataset.assetId))showAssetDetail(detail.dataset.assetId);
-     else detail.close();
-   }
-   return;
+ renderAssetGroups(grid);
+ if(detail.open){
+   if(state.assets.some(a=>a.id===detail.dataset.assetId))showAssetDetail(detail.dataset.assetId);
+   else detail.close();
  }
- grid.innerHTML=state.assets.length?state.assets.map(a=>{const g=Number(a.value)-Number(a.invested||0),units=Number(a.units||0),price=Number(a.unitPrice||0),meta=units>0?`<div class="sub">${assetDisplayUnits(units,assetUnitLabel(a)==="BTC"?8:6)} ${assetUnitLabel(a,true)}${price>0?` · ${euro.format(price)} / ud.`:""}</div>`:"",irr=assetAnnualizedReturn(a),irrHtml=irr===null?`<div class="sub">Rentabilidad anualizada: —${assetInvestmentMovements(a).length&&!(Number(a.units)>0)?" (las aportaciones registradas no cuadran con el capital aportado)":""}</div>`:`<div class="sub ${irr<0?"negative":"positive"}">Rentabilidad anualizada: ${(irr*100).toFixed(2).replace(".",",")} %</div>`,priceInfo=isDebt(a)?`<div class="sub">Pendiente de pagar. Resta del patrimonio neto; actualízalo cuando cambie o usa un traspaso hacia la deuda para registrar un pago.</div>`:isCurrentAccount(a)?`<div class="sub">Saldo calculado: referencia ${euro.format(a.refBalance||0)} el ${formatDate(a.refDate)} más los movimientos posteriores</div>`:a.updatedAt?`<div class="sub">Cotización: ${formatDate(a.updatedAt)}${a.priceSource?` · ${escapeHtml(a.priceSource)}`:""}</div>`:"";return`<div class="asset-card"><div class="asset-head"><button type="button" class="badge badge-ico" data-iconasset="${a.id}" aria-label="Cambiar icono de ${escapeHtml(a.name)}" title="Cambiar icono">${assetIconSvg(a)}</button><button type="button" class="badge" data-typeasset="${a.id}" title="Cambiar tipo">${escapeHtml(a.type)}</button></div><h3>${escapeHtml(a.name)}</h3><div class="big${isDebt(a)?" negative":""}">${isDebt(a)?"−":""}${euro.format(a.value)}</div>${isCurrentAccount(a)||isDebt(a)?"":`<div class="sub">Aportado: ${euro.format(a.invested||0)}</div>${meta}<div class="sub ${g<0?"negative":"positive"}">Diferencia: ${euro.format(g)}</div>${irrHtml}`}${priceInfo}${movementAccounts().includes(a)?(a.id===defaultAccount()?.id?`<div class="sub"><b>Cuenta por defecto</b> de los nuevos movimientos</div>`:""):""}<div class="form-actions">${iconBtn("secondary",`data-editasset="${a.id}"`,"i-pencil","Editar activo")}${Number(a.units)>0&&assetMarketConfig(a)?`<button class="secondary small" data-adjunits="${a.id}">Ajustar ${assetUnitLabel(a,true)}</button>`:""}${movementAccounts().includes(a)&&a.id!==defaultAccount()?.id?`<button class="secondary small" data-defacc="${a.id}">Usar por defecto</button>`:""}${iconBtn("danger",`data-delasset="${a.id}"`,"i-trash","Borrar")}</div></div>`}).join(""):`<div class="empty" style="grid-column:1/-1">No has añadido activos.</div>`;
- bindAssetActions(grid);
 }
-function bindAssetActions(root,run=action=>action()){
+function bindAssetActions(root,run){
  root.querySelectorAll("[data-defacc]").forEach(b=>b.onclick=()=>{const a=state.assets.find(x=>x.id===b.dataset.defacc);if(!a)return;state.meta.defaultAccountId=a.id;saveState();renderAll();resetAccountSelect("mAccount");resetAccountSelect("rAccount");updateAccountHint();toast(`${a.name} es ahora la cuenta por defecto`)});
  root.querySelectorAll("[data-delasset]").forEach(b=>b.onclick=()=>run(async()=>{if(await uiConfirm("Desaparecerá del patrimonio; los movimientos no se tocan.",{title:"¿Eliminar este activo?",danger:true,confirmText:"Eliminar"})){state.assets=state.assets.filter(x=>x.id!==b.dataset.delasset);markDataUpdate("portfolio");saveState();renderAll()}}));
  root.querySelectorAll("[data-iconasset]").forEach(b=>b.onclick=()=>run(()=>chooseAssetIcon(b.dataset.iconasset)));
@@ -2814,14 +2878,11 @@ const charts={};
 const FONT="-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif";
 function mountChart(id,config){
  const canvas=el(id);
- if(isMobile()&&canvas.closest("#page-dashboard,#page-assets")){
-   const {x,y}=config.options.scales;
-   x.border={display:false};
-   y.border={display:false};
-   y.grid={color:tok("--border"),drawTicks:false};
-   y.ticks={...y.ticks,maxTicksLimit:5,padding:8};
-   if(config.type==="bar")config.data.datasets.forEach(dataset=>{dataset.borderRadius=6});
- }
+ const {x,y}=config.options.scales;
+ x.border={display:false};
+ y.border={display:false};
+ y.grid={color:tok("--border"),drawTicks:false};
+ y.ticks={...y.ticks,maxTicksLimit:5,padding:8};
  if(charts[id])charts[id].destroy();
  charts[id]=new Chart(canvas,config);
  return charts[id];
@@ -2848,7 +2909,7 @@ function drawMonthlyChart(){
  const sel=p.mode==="month"?labels.findIndex((_,i)=>ranges[i].from===monthRange(p.year,p.month).from):-1;
  // Resaltado: por defecto el mes elegido en el periodo; al pulsar una barra, solo esa barra (hasta cerrar su aviso o pulsar fuera).
  const shade=(color,i,dsi,hit)=>(hit?i===hit.index&&dsi===hit.datasetIndex:sel<0||i===sel)?color:withAlpha(color,0.35);
- const ds=(label,key,color,type)=>({label,data:rows.map(r=>r[key]),backgroundColor:rows.map((_,i)=>shade(color,i,DS_COLORS.indexOf(color),null)),borderRadius:3,_type:type,_color:color});
+ const ds=(label,key,color,type)=>({label,data:rows.map(r=>r[key]),backgroundColor:rows.map((_,i)=>shade(color,i,DS_COLORS.indexOf(color),null)),borderRadius:6,_type:type,_color:color});
  const highlight=(chart,hit)=>{chart.data.datasets.forEach((d,dsi)=>{d.backgroundColor=rows.map((_,i)=>shade(d._color,i,dsi,hit))});chart.update("none")};
  const DS_COLORS=[colors.Ingreso,colors.Gasto,colors["Inversión"]];
  mountChart("monthlyChart",{type:"bar",data:{labels,datasets:[ds("Ingresos","income",colors.Ingreso,"Ingreso"),ds("Gastos","expense",colors.Gasto,"Gasto"),ds("Inversiones","investment",colors["Inversión"],"Inversión")]},
@@ -2904,12 +2965,14 @@ function drawNetWorthChart(){
  }
  if(note)note.remove();box.style.display="";
  const first=series[0],last=series[series.length-1],delta=last.value-first.value;
+ const investmentColor=tok("--investment");
  el("subNetWorth").textContent=`${formatDate(first.date)} – ${formatDate(last.date)} · ${delta>=0?"+":""}${euro.format(delta)} desde el primer punto`;
  const labels=series.map(x=>series.length>180?`${months[Number(x.date.slice(5,7))-1].slice(0,3)} ${x.date.slice(2,4)}`:`${x.date.slice(8,10)}/${x.date.slice(5,7)}`);
+ Chart.defaults.color=tok("--muted");
  mountChart("netWorthChart",{type:"line",data:{labels,datasets:[
    {label:"Patrimonio total",data:series.map(x=>x.value),borderColor:tok("--chart-neutral"),backgroundColor:withAlpha(tok("--chart-neutral"),0.08),fill:true,tension:0.25,pointRadius:series.length>60?0:2,pointHoverRadius:6},
-   {label:"Fondos (valor)",data:series.map(x=>x.funds),borderColor:colors["Inversión"],backgroundColor:"transparent",tension:0.25,pointRadius:series.length>60?0:2,pointHoverRadius:6},
-   {label:"Fondos (aportado)",data:series.map(x=>x.invested),borderColor:colors["Inversión"],borderDash:[5,4],backgroundColor:"transparent",tension:0.25,pointRadius:0}]},
+   {label:"Fondos (valor)",data:series.map(x=>x.funds),borderColor:investmentColor,backgroundColor:"transparent",tension:0.25,pointRadius:series.length>60?0:2,pointHoverRadius:6},
+   {label:"Fondos (aportado)",data:series.map(x=>x.invested),borderColor:investmentColor,borderDash:[5,4],backgroundColor:"transparent",tension:0.25,pointRadius:0}]},
   options:{responsive:true,maintainAspectRatio:false,animation:{duration:250},interaction:{mode:"index",intersect:false},
    plugins:{legend:{labels:{usePointStyle:true,boxWidth:8,font:{family:FONT}}},tooltip:{callbacks:{title:items=>formatDate(series[items[0].dataIndex].date),label:c=>` ${c.dataset.label}: ${euro.format(c.parsed.y)}`}}},
    scales:{x:{grid:{display:false},ticks:{maxRotation:0,autoSkip:true,maxTicksLimit:8}},y:{ticks:{callback:axisMoney}}}}});
@@ -2998,7 +3061,7 @@ function closeQuickSheet(){
 // Deslizar hacia abajo desde el asa o la cabecera cierra la hoja (el botón × sigue disponible; el gesto no es el único camino).
 function enableSheetSwipe(){
  const sheet=el("quickSheet");let startY=null,dy=0;
- const start=e=>{startY=e.touches[0].clientY;dy=0;sheet.classList.add("dragging")};
+ const start=e=>{if(!isMobile())return;startY=e.touches[0].clientY;dy=0;sheet.classList.add("dragging")};
  const move=e=>{if(startY===null)return;dy=Math.max(0,e.touches[0].clientY-startY);sheet.style.transform=`translate(-50%,${dy}px)`};
  const end=()=>{if(startY===null)return;startY=null;sheet.classList.remove("dragging");if(dy>60)closeQuickSheet();else sheet.style.transform=""};
  [el("sheetHandle"),el("sheetHead")].forEach(n=>{n.addEventListener("touchstart",start,{passive:true});n.addEventListener("touchmove",move,{passive:true});n.addEventListener("touchend",end);n.addEventListener("touchcancel",end)});
@@ -3049,7 +3112,7 @@ function showPage(name,scrollBehavior="smooth"){
  document.querySelectorAll("[data-page]").forEach(b=>{
    const inNav=!!b.closest(".mobile-nav"),active=b.dataset.page===name||(inNav&&b.dataset.page===navName);
    b.classList.toggle("active",active);
-   if(inNav){if(active)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")}
+   if(b.closest("nav")){if(active)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current")}
  });
  window.scrollTo({top:0,behavior:scrollBehavior});
  if(name==="dashboard"){layoutDashboardCards();setTimeout(renderCharts,20)}
@@ -3098,7 +3161,7 @@ function renderAll(){
 document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>{
  const page=b.dataset.page;
  const mobileTab=b.closest(".mobile-nav");
- if(mobileTab&&currentPage===page){
+ if(b.closest("nav")&&currentPage===page){
    const behavior=window.matchMedia("(prefers-reduced-motion: reduce)").matches?"auto":"smooth";
    requestAnimationFrame(()=>document.scrollingElement.scrollTo({top:0,behavior}));
    return;
@@ -3149,33 +3212,21 @@ el("toggleFilters").onclick=()=>{
 };
 el("monthlyToggle").onclick=()=>{monthlyShowAll=!monthlyShowAll;drawMonthlyChart()};
 // Si el sistema cambia entre claro y oscuro con la app abierta, se repintan los gráficos con los colores del nuevo tema.
-window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{if(el("page-dashboard").classList.contains("active"))renderCharts()});
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change",()=>{
+ if(currentPage==="dashboard")renderCharts();
+ if(currentPage==="assets")drawNetWorthChart();
+});
 const assetForm=el("assetFormDetails"),assetFormButton=el("openAssetForm");
 function setAssetFormOpen(open){
  assetForm.open=open;
  assetFormButton.setAttribute("aria-expanded",String(open));
  assetFormButton.textContent=open?"Cerrar formulario":"Añadir activo";
 }
-function layoutAssetForms(mobile){
- const transfer=el("transferDetails"),detail=el("assetDetail");
- if(mobile){
-   el("assetOverviewActions").after(assetForm);
- }else{
-   if(detail.open)detail.close();
-   detail.after(transfer);
-   transfer.after(assetForm);
- }
- transfer.querySelector("summary").textContent=mobile?"Traspasar entre cuentas":"Traspaso entre cuentas";
- setAssetFormOpen(!mobile);
-}
 assetFormButton.onclick=()=>setAssetFormOpen(!assetForm.open);
-layoutAssetForms(isMobile());
 el("aType").onchange=()=>{el("aCurrentNote").hidden=el("aType").value!=="Cuenta corriente";el("aDebtNote").hidden=el("aType").value!=="Deuda";renderNewAssetIcon()};
 window.addEventListener("resize",layoutDashboardCards);
 document.fonts?.ready.then(layoutDashboardCards);
-window.matchMedia("(max-width:760px)").addEventListener("change",({matches})=>{
- layoutAssetForms(matches);
- renderAssets();
+window.matchMedia("(max-width:760px)").addEventListener("change",()=>{
  if(currentPage==="dashboard")renderCharts();
  if(currentPage==="assets")drawNetWorthChart();
 });
