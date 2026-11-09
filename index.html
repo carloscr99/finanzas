@@ -192,7 +192,7 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 .more-item .caret{margin-left:auto;color:var(--muted)}.more-item.danger-item{color:var(--danger)}
 .spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--border-strong);border-top-color:var(--investment);border-radius:50%;vertical-align:-3px;margin-right:8px;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-.auth-logo{width:72px;height:72px;border-radius:18px;margin-bottom:12px}
+.auth-logo{display:block;width:72px;height:72px;border-radius:18px;margin:0 auto 17px}
 /* Diálogos (SweetAlert2) con la tipografía y los tokens de la app */
 .swal2-popup{font-family:inherit!important;border-radius:var(--radius)!important;box-shadow:var(--shadow)!important}
 .swal2-title{font-size:20px!important;font-weight:700!important}.swal2-html-container{font-size:15px!important;line-height:1.5!important}
@@ -237,14 +237,36 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 .sidebar{display:flex;flex-direction:column}
 .user-box{margin-top:auto;padding:12px 10px 0;border-top:1px solid #334155;font-size:12px;color:#94a3b8;word-break:break-all}
 .user-box button{margin-top:8px;width:100%;background:#1e293b;color:#fff;border:1px solid #334155;border-radius:10px;padding:8px;font-weight:700}
-.auth-screen{min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;padding:24px;background:var(--bg)}
-.auth-card{background:var(--panel);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow);padding:32px;max-width:420px;width:100%;text-align:center}
-.auth-card h1{margin:0 0 6px;font-size:26px}.auth-card p{color:var(--muted);margin:0 0 20px}
-.auth-card button{width:100%}
-.auth-status{margin-top:14px;font-size:13px;color:var(--muted);min-height:18px}
+.auth-screen{
+ min-height:100vh;min-height:100dvh;display:flex;align-items:center;justify-content:center;
+ padding:24px max(18px,env(safe-area-inset-right)) 24px max(18px,env(safe-area-inset-left));
+ background:radial-gradient(ellipse at 16% 8%,var(--investment-soft),transparent 58%),var(--bg);
+}
+.auth-card{
+ width:100%;max-width:420px;padding:27px clamp(16px,5vw,28px) 22px;text-align:center;
+ border:1px solid var(--border-strong);border-radius:27px;box-shadow:var(--shadow);
+ background:linear-gradient(155deg,var(--soft),var(--panel) 74%);
+}
+.auth-card h1{margin:0;font-size:29px;letter-spacing:-.035em}
+.auth-card p{margin:4px 0 0;color:var(--muted);font-size:14px}
+.auth-stage{position:relative;display:grid;align-content:center;min-height:116px;margin-top:14px}
+.auth-options{display:grid;justify-items:center;gap:8px}
+.auth-note{display:block;color:var(--muted);font-size:12px}
+.auth-card button{width:100%;min-height:44px;border-radius:15px}
+.auth-card #loginGoogle{max-width:320px;background:#f1f5f9;color:#142137;border-color:#cbd5e1}
+.auth-status{font-size:13px;color:var(--muted);overflow-wrap:anywhere}
+.auth-status:not(:empty){margin-top:10px}
 .auth-status.error{color:var(--expense)}
+.auth-card.is-busy .auth-options{visibility:hidden}
+.auth-card.is-busy .auth-status{
+ position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+ gap:8px;margin:0;color:var(--text);font-size:14px;font-weight:600;
+}
+.auth-card.is-busy .spinner{width:25px;height:25px;margin:0;border-width:3px}
+.auth-card.is-busy .auth-note{font-weight:400}
 .gis-button{display:flex;justify-content:center;min-height:44px}
-.auth-card button.auth-alt{width:auto;margin-top:16px;background:none;border:0;box-shadow:none;color:var(--muted);font-size:13px;text-decoration:underline;padding:4px 8px;cursor:pointer}
+.gis-button{width:100%}
+.auth-card button.auth-alt{width:auto;min-height:36px;background:none;border:0;box-shadow:none;color:var(--muted);font-size:12px;text-decoration:underline;padding:4px 8px}
 
 @media(min-width:1101px){
  #returnRank .cs-table{table-layout:fixed}
@@ -678,15 +700,20 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
   <symbol id="c-spotify" viewBox="0 0 24 24"><path fill="currentColor" stroke="none" d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></symbol>
 </svg>
 <div id="authScreen" class="auth-screen">
-  <div class="auth-card">
-    <img class="auth-logo" src="icon-192.png" alt="" width="72" height="72">
+  <div class="auth-card is-busy">
+    <img class="auth-logo" src="icon-192.png?v=12" alt="" width="72" height="72">
     <h1>Mis Finanzas</h1>
-    <p>Control personal de ingresos, gastos e inversiones.</p>
-    <div class="gis-button" id="gisButton" hidden></div>
-    <button class="primary" id="loginGoogle" hidden>Entrar con Google</button>
-    <div class="auth-status" id="authStatus" aria-live="polite"><span class="spinner" aria-hidden="true"></span>Comprobando sesión…</div>
+    <p>Tu dinero, de un vistazo.</p>
+    <div class="auth-stage">
+      <div class="auth-options">
+        <div class="gis-button" id="gisButton" hidden></div>
+        <button type="button" class="primary" id="loginGoogle" hidden>Entrar con Google</button>
+        <span class="auth-note" id="authAccessNote" hidden>Accede a tus movimientos y patrimonio</span>
+        <button type="button" class="auth-alt" id="loginFallback" hidden>¿No se abre? Entrar con la ventana de Google</button>
+      </div>
+      <div class="auth-status" id="authStatus" role="status"><span class="spinner" aria-hidden="true"></span><span>Comprobando sesión…</span></div>
+    </div>
     <button class="secondary" id="authRetry" hidden style="margin-top:12px">Reintentar</button>
-    <button class="auth-alt" id="loginFallback" hidden>¿No se abre? Entrar con la ventana de Google</button>
   </div>
 </div>
 <div class="app" hidden>
@@ -1348,7 +1375,8 @@ const allowKey=uid=>"allow:"+uid;
 function showAuthScreen(show){el("authScreen").hidden=!show;document.querySelector(".app").hidden=show;document.querySelector(".mobile-nav").hidden=show;el("fabAdd").hidden=show;if(show)closeQuickSheet();else syncBackTrap()}
 function setAuthStatus(msg,isError=false,busy=false){
  const n=el("authStatus");authBusy=busy;
- n.innerHTML=(busy?'<span class="spinner" aria-hidden="true"></span>':"")+escapeHtml(msg||"");
+ n.closest(".auth-card").classList.toggle("is-busy",busy);
+ n.innerHTML=busy?`<span class="spinner" aria-hidden="true"></span><span>${escapeHtml(msg)}</span>${pendingUser?'<span class="auth-note">Preparando tu Dashboard</span>':""}`:escapeHtml(msg||"");
  n.classList.toggle("error",!!isError);
 }
 // Devuelve "yes" (está en la lista), "no" (no está o Firestore lo deniega) o "unknown" (sin conexión u otro error temporal).
@@ -1368,8 +1396,7 @@ function renderGisButton(){
  try{
    google.accounts.id.initialize({client_id:GIS_CLIENT_ID,callback:onGisCredential,ux_mode:"popup",auto_select:false,itp_support:true,use_fedcm_for_prompt:true});
    const box=el("gisButton");box.hidden=false;
-   const dark=window.matchMedia("(prefers-color-scheme: dark)").matches;
-   google.accounts.id.renderButton(box,{type:"standard",theme:dark?"filled_black":"outline",size:"large",text:"signin_with",shape:"pill",logo_alignment:"left",locale:"es",width:Math.min(320,Math.max(200,box.clientWidth||320))});
+   google.accounts.id.renderButton(box,{type:"standard",theme:"outline",size:"large",text:"signin_with",shape:"pill",logo_alignment:"left",locale:"es",width:Math.min(320,Math.max(200,box.clientWidth||320))});
    gisRendered=true;
  }catch(err){console.warn("No se pudo mostrar el botón de Google; se usa la ventana emergente",err);gisRendered=false}
 }
@@ -1380,6 +1407,7 @@ async function onGisCredential(resp){
 }
 // Muestra el botón oficial si está disponible; si no, el de la ventana emergente. El enlace de reserva siempre acompaña al oficial.
 function showLoginButtons(show){
+ el("authAccessNote").hidden=!show;
  if(!show){el("gisButton").hidden=true;el("loginGoogle").hidden=true;el("loginFallback").hidden=true;return}
  renderGisButton();
  const useGis=gisRendered;
