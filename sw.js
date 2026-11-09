@@ -2,18 +2,19 @@
 // y también sin conexión. Los datos (Firestore), el login (Google) y las cotizaciones (prices.json) nunca pasan por aquí.
 //
 // Sube la versión de CACHE cada vez que cambie la lista PRECACHE (por ejemplo al actualizar Chart.js o Firebase).
-const CACHE = "finanzas-v8";
+const CACHE = "finanzas-v9";
 const PRECACHE = [
   "./",
   "./index.html",
   "./firebase-config.js",
   "./push-config.js",
-  "./manifest.webmanifest?v=8",
+  "./manifest.webmanifest?v=9",
   "./icon-192.png",
-  "./icon-192.png?v=8",
-  "./icon-512.png?v=8",
+  "./icon-192.png?v=9",
+  "./icon-512.png?v=9",
+  "./icon-maskable.png?v=9",
   "./badge-96.png",
-  "./apple-touch-icon.png?v=8",
+  "./apple-touch-icon.png?v=9",
   "https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.5.1/chart.umd.min.js",
   "https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.14.5/sweetalert2.all.min.js",
   "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js",
@@ -44,7 +45,7 @@ self.addEventListener("fetch", event => {
   if (req.method !== "GET") return;
   const url = new URL(req.url);
   const sameOrigin = url.origin === self.location.origin;
-  const isShellFile = sameOrigin && /\/(index\.html|firebase-config\.js|push-config\.js|manifest\.webmanifest|icon-192\.png|icon-512\.png|badge-96\.png|apple-touch-icon\.png)$/.test(url.pathname);
+  const isShellFile = sameOrigin && /\/(index\.html|firebase-config\.js|push-config\.js|manifest\.webmanifest|icon-192\.png|icon-512\.png|icon-maskable\.png|badge-96\.png|apple-touch-icon\.png)$/.test(url.pathname);
   const isNavigation = req.mode === "navigate";
   const isCdn = CACHE_FIRST_HOSTS.includes(url.hostname) && /firebasejs\/|chart\.umd|sweetalert2/.test(url.pathname);
 
