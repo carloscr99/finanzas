@@ -26,9 +26,16 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
+          cache: "npm"
+
+      # firebase-admin hace falta para leer de Firestore los ISIN de los activos que aún no están en prices.json.
+      - name: Instalar dependencias
+        run: npm ci
 
       - name: Obtener precios y actualizar prices.json
         run: node scripts/update-prices.mjs
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
 
       - name: Subir el cambio si hay precios nuevos
         id: commit
