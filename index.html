@@ -508,6 +508,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  #addMovementBtn{margin-top:10px;width:100%}
  #quickSheet{bottom:var(--movement-keyboard-offset,0px);max-height:min(92dvh,var(--movement-visible-height,92dvh))}
  .movement-editor-fields,.movement-editor-investment,.movement-editor-actions{grid-template-columns:minmax(0,1fr)}
+ .movement-editor-fields{padding-block:10px}
  .movement-editor-fields :is(input,select),#qsCategoryToggle,.movement-category-option{font-size:16px}
  .movement-editor-actions button{min-height:48px}
  #page-dashboard .chart-head h2{font-size:18px}
@@ -3032,7 +3033,7 @@ let toastTimer=null;
 function toast(msg){const t=el("toast");t.textContent=msg;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.hidden=true},2200)}
 function parseAmount(s){let t=String(s||"").trim().replace(/[\s€]/g,"");if(t.includes(".")&&t.includes(","))t=t.replace(/\./g,"").replace(",",".");else if(t.includes(","))t=t.replace(",",".");return t?Number(t):NaN}
 
-const qs={editId:null,lastType:"Gasto",lastCategory:{}};
+const qs={editId:null};
 function categoryUsage(type){const c=new Map();state.movements.forEach(m=>{if(m.type===type)c.set(m.categoryId,(c.get(m.categoryId)||0)+1)});return c}
 function qsCategories(){const type=el("qsType").value,usage=categoryUsage(type);return state.categories.filter(c=>c.type===type).sort((a,b)=>(usage.get(b.id)||0)-(usage.get(a.id)||0)||a.name.localeCompare(b.name,"es"))}
 function setQsCategoryOptionsOpen(open){
@@ -3086,7 +3087,7 @@ function syncQuickDateButtons(){
    b.setAttribute("aria-pressed",String(date===addDaysISO(today,Number(b.dataset.day))));
  });
 }
-function openQuickSheet(movement){
+function fillQuickMovementForm(movement){
  qs.editId=movement?.id||null;
  el("qsTitle").textContent=movement?"Editar movimiento":"Nuevo movimiento";
  el("qsDelete").hidden=!movement;el("qsSaveMore").hidden=!!movement;el("qsSave").textContent=movement?"Guardar cambios":"Guardar movimiento";
@@ -3095,13 +3096,17 @@ function openQuickSheet(movement){
  el("qsDate").value=movement?movement.date:todayISO();
  syncQuickDateButtons();
  el("qsUnits").value=movement?.units?String(movement.units).replace(".",","):"";
- const type=movement?movement.type:qs.lastType;
+ const type=movement?.type||"Gasto";
  el("qsType").value=type;
- renderQsCategories(movement?.categoryId||qs.lastCategory[type]);
+ el("qsAsset").replaceChildren();
+ renderQsCategories(movement?.categoryId);
  if(movement?.assetId&&[...el("qsAsset").options].some(option=>option.value===movement.assetId)){el("qsAsset").value=movement.assetId;updateUnitsHint("qsAmount","qsAsset","qsUnits","qsUnitsHint")}
  renderAccountSelect("qsAccount","qsAccountWrap",movement?(movementAccountId(movement)||NO_ACCOUNT):(defaultAccount()?.id||NO_ACCOUNT));
  updateQuickAccountHint();
  updateDescSuggestions();
+}
+function openQuickSheet(movement){
+ fillQuickMovementForm(movement);
  const sheet=el("quickSheet"),backdrop=el("sheetBackdrop");
  clearTimeout(sheetCloseTimer);sheet.style.transform="";sheet.classList.remove("dragging");
  sheetOpener=document.activeElement;
@@ -3113,13 +3118,25 @@ function openQuickSheet(movement){
  (isMobile()?el("qsClose"):el("qsAmount")).focus({preventScroll:true});
  syncBackTrap();
 }
-let sheetCloseTimer=null,sheetOpener=null;
+let sheetCloseTimer=null,sheetOpener=null,editorScrollFrame=0;
+function keepMovementFieldVisible(){
+ if(!isMobile()||!sheetIsOpen())return;
+ cancelAnimationFrame(editorScrollFrame);
+ editorScrollFrame=requestAnimationFrame(()=>{
+   const field=document.activeElement,fields=el("quickSheet").querySelector(".movement-editor-fields");
+   if(!sheetIsOpen()||!field?.matches("input:not([type=hidden]),select")||!fields.contains(field))return;
+   const bounds=fields.getBoundingClientRect(),input=field.getBoundingClientRect(),gap=8;
+   if(input.bottom>bounds.bottom-gap)fields.scrollTop+=input.bottom-bounds.bottom+gap;
+   else if(input.top<bounds.top+gap)fields.scrollTop+=input.top-bounds.top-gap;
+ });
+}
 function resizeMovementEditor(){
  const viewport=window.visualViewport,sheet=el("quickSheet");
  if(!viewport||!isMobile()||sheet.hidden)return;
  const bottom=Math.max(0,window.innerHeight-viewport.height-viewport.offsetTop);
  sheet.style.setProperty("--movement-keyboard-offset",`${bottom}px`);
  sheet.style.setProperty("--movement-visible-height",`${Math.max(0,viewport.height-8)}px`);
+ keepMovementFieldVisible();
 }
 function closeQuickSheet(){
  const sheet=el("quickSheet"),backdrop=el("sheetBackdrop");
@@ -3147,10 +3164,14 @@ function quickSave(keepOpen){
  const wasEdit=!!qs.editId;
  const err=persistMovement({date,type,categoryId,description,amount,usesUnits,assetId,units,accountId},qs.editId);
  if(err)return uiError(err);
- qs.lastType=type;qs.lastCategory[type]=categoryId;
  toast(wasEdit?"Cambios guardados":`${type} guardado: ${euro.format(amount)}`);
- if(keepOpen){qs.editId=null;el("qsAmount").value="";el("qsDesc").value="";el("qsUnits").value="";resetAccountSelect("qsAccount");updateQuickAccountHint();updateQsInvest(false);el("qsTitle").textContent="Nuevo movimiento";el("qsDelete").hidden=true;el("qsSaveMore").hidden=false;el("qsSave").textContent="Guardar movimiento";el("qsAmount").focus()}
- else closeQuickSheet();
+ if(!keepOpen)closeQuickSheet();
+ fillQuickMovementForm(null);
+ if(keepOpen){
+   el("quickSheet").querySelector(".movement-editor-fields").scrollTop=0;
+   el("qsAmount").focus({preventScroll:true});
+   keepMovementFieldVisible();
+ }
 }
 async function quickDelete(){
  const id=qs.editId;
@@ -3283,7 +3304,7 @@ el("bulkToggle").onclick=()=>toggleBulkPanel(el("bulkPanel").hidden);el("bulkCan
 [el("navAdd"),el("fabAdd"),el("addMovementBtn")].forEach(b=>b.onclick=()=>openQuickSheet(null));
 el("qsClose").onclick=closeQuickSheet;el("sheetBackdrop").onclick=closeQuickSheet;
 el("qsSave").onclick=()=>quickSave(false);el("qsSaveMore").onclick=()=>quickSave(true);el("qsDelete").onclick=quickDelete;
-el("qsType").onchange=()=>{renderQsCategories(qs.lastCategory[el("qsType").value]);updateQuickAccountHint()};
+el("qsType").onchange=()=>{renderQsCategories();updateQuickAccountHint()};
 el("qsCategoryToggle").onclick=()=>{
  const open=el("qsCategoryOptions").hidden;
  setQsCategoryOptionsOpen(open);
@@ -3318,6 +3339,7 @@ el("qsDesc").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault
 el("qsAmount").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();el("qsDesc").focus()}});
 ["qsAmount","qsUnits"].forEach(id=>el(id).addEventListener("input",()=>updateUnitsHint("qsAmount","qsAsset","qsUnits","qsUnitsHint")));el("qsAsset").addEventListener("change",()=>updateUnitsHint("qsAmount","qsAsset","qsUnits","qsUnitsHint"));
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&sheetIsOpen()&&!window.Swal?.isVisible())closeQuickSheet()});
+el("quickSheet").addEventListener("focusin",keepMovementFieldVisible);
 window.visualViewport?.addEventListener("resize",resizeMovementEditor);
 window.visualViewport?.addEventListener("scroll",resizeMovementEditor);
 el("periodPrev").onclick=()=>shiftPeriod(-1);el("periodNext").onclick=()=>shiftPeriod(1);
