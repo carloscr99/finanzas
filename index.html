@@ -48,7 +48,7 @@ button{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:tran
 :focus-visible{outline:2px solid var(--ring);outline-offset:2px}
 .ico{width:24px;height:24px;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
 .ico.sm{width:20px;height:20px}
-.metric-value,.big-amount,.mitem .amt,td.amount,.movement-count b{font-variant-numeric:tabular-nums}
+.metric-value,#qsAmount,.mitem .amt,td.amount,.movement-count b{font-variant-numeric:tabular-nums}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{transition-duration:0s!important;animation-duration:0s!important;scroll-behavior:auto!important}}
 .app{display:grid;grid-template-columns:216px minmax(0,1fr);gap:24px;max-width:1680px;min-height:100dvh;margin:auto;padding:20px}
 .sidebar{
@@ -154,7 +154,6 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 .sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--border-strong);margin:0 auto 12px;touch-action:none}
 .sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;touch-action:none}.sheet-head h2{margin:0}
 .icon-btn{border:0;background:var(--btn2-bg);width:40px;height:40px;border-radius:50%;color:var(--btn2-fg);display:inline-flex;align-items:center;justify-content:center}
-.big-amount{font-size:34px;font-weight:800;text-align:right;min-height:60px}
 #sumTypeToggle{display:flex;width:100%}#sumTypeToggle button{flex:1;padding:9px 6px}
 .chip .chip-ico{color:var(--text);background:var(--panel);border:1px solid var(--border)}.chip .chip-ico .ico{width:18px;height:18px}
 .cat-cell{display:inline-flex;align-items:center;gap:8px}.cat-cell .ico{width:18px;height:18px;color:var(--muted)}
@@ -170,8 +169,24 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 }
 .movement-editor-fields{min-height:0;overflow:auto;overscroll-behavior:contain;align-items:end;padding:3px}
 .movement-editor-wide{grid-column:1/-1}
-.movement-editor-fields :is(input,select){min-height:46px;border-radius:12px}
-#quickSheet .big-amount{min-height:46px;border-radius:12px;background:var(--soft);font-size:26px;text-align:left}
+.movement-editor-fields :is(input,select),#qsCategoryToggle{height:46px;border-radius:12px}
+.movement-editor-category{min-width:0}
+.movement-editor-category-label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
+#qsCategoryToggle{
+ display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;padding:0 12px;
+ border:1px solid var(--border);background:var(--input-bg);color:var(--text);text-align:left;
+}
+#qsCategoryToggle[aria-expanded="true"] > .ico{transform:rotate(-90deg)}
+#qsCategoryToggle > .ico{transform:rotate(90deg)}
+#qsCategoryToggle:disabled{opacity:.65}
+#qsCategoryValue,.movement-category-option{display:flex;align-items:center;gap:8px;min-width:0}
+#qsCategoryValue span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#qsCategoryOptions{max-height:180px;overflow:auto;margin-top:5px;padding:4px;border:1px solid var(--border);border-radius:12px;background:var(--input-bg)}
+.movement-category-option{
+ width:100%;min-height:44px;padding:7px 8px;border:0;border-radius:8px;
+ background:transparent;color:var(--text);text-align:left;overflow-wrap:anywhere;
+}
+.movement-category-option:is(:hover,[aria-pressed="true"]){background:var(--soft)}
 .movement-editor-investment{min-width:0;margin:0;padding:8px 12px 12px;border:1px solid var(--border);border-radius:14px}
 .movement-editor-investment legend{padding-inline:4px;color:var(--investment);font-size:13px;font-weight:650}
 .movement-editor-investment .chart-hint{margin:0}
@@ -334,7 +349,6 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .searchbar.collapsed{display:none}
  .table-wrap.desktop-only{display:none!important}
  .toast{bottom:calc(var(--nav-h) + 24px + env(safe-area-inset-bottom))}
- .big-amount{font-size:36px}
  .mitem b{font-size:16px}
 }
 .dashboard-period{position:relative;flex:none;max-width:100%}
@@ -491,11 +505,10 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .mobile-nav button.nav-add{width:46px;height:46px;min-height:46px;margin:auto}
  .sheet{border-radius:30px 30px 0 0;border:1px solid var(--border);border-bottom:0}
  .sheet-head{margin-bottom:14px}
- .sheet .big-amount{border-radius:18px;background:var(--soft)}
  #addMovementBtn{margin-top:10px;width:100%}
  #quickSheet{bottom:var(--movement-keyboard-offset,0px);max-height:min(92dvh,var(--movement-visible-height,92dvh))}
  .movement-editor-fields,.movement-editor-investment,.movement-editor-actions{grid-template-columns:minmax(0,1fr)}
- .movement-editor-fields :is(input,select){font-size:16px}
+ .movement-editor-fields :is(input,select),#qsCategoryToggle,.movement-category-option{font-size:16px}
  .movement-editor-actions button{min-height:48px}
  #page-dashboard .chart-head h2{font-size:18px}
  #dataFreshness{display:grid;align-content:start;gap:5px;padding:14px;border-radius:22px;font-size:11px;line-height:1.4;overflow-wrap:anywhere}
@@ -663,8 +676,6 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
    border:1px solid var(--border);border-radius:26px;transform:translate(-50%,calc(-50% + 12px));
  }
  #quickSheet.open{transform:translate(-50%,-50%)}
- #quickSheet :is(#qsAmount,#qsType){height:46px}
- #quickSheet #qsAmount{padding-block:6px;line-height:1.2}
  :is(#assetDetail,#quickSheet) .sheet-handle{display:none}
  .fab{background:var(--action-blue);color:#fff}
  #categoryList{display:grid;gap:0;padding-top:6px;border-top:1px solid var(--border)}
@@ -1159,7 +1170,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
   <div class="movement-editor-fields">
     <div>
       <label for="qsAmount">Importe (€)</label>
-      <input id="qsAmount" class="big-amount" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off">
+      <input id="qsAmount" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off">
     </div>
     <div>
       <label for="qsType">Tipo</label>
@@ -1169,9 +1180,13 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
       <label for="qsDesc">Concepto</label>
       <input id="qsDesc" list="qsDescList" placeholder="Ej. Supermercado" autocomplete="off"><datalist id="qsDescList"></datalist>
     </div>
-    <div class="movement-editor-wide">
-      <label for="qsCategory">Categoría</label>
-      <select id="qsCategory"></select>
+    <div class="movement-editor-wide movement-editor-category" id="qsCategoryPicker">
+      <span class="movement-editor-category-label" id="qsCategoryLabel">Categoría</span>
+      <input type="hidden" id="qsCategory">
+      <button type="button" id="qsCategoryToggle" aria-labelledby="qsCategoryLabel qsCategoryValue" aria-expanded="false" aria-controls="qsCategoryOptions">
+        <span id="qsCategoryValue"></span><svg class="ico sm" aria-hidden="true"><use href="#i-caret-right"/></svg>
+      </button>
+      <div id="qsCategoryOptions" role="group" aria-labelledby="qsCategoryLabel" hidden></div>
     </div>
     <fieldset class="movement-editor-wide movement-editor-investment" id="qsInvest" hidden>
       <legend>Datos de la inversión</legend>
@@ -3020,11 +3035,36 @@ function parseAmount(s){let t=String(s||"").trim().replace(/[\s€]/g,"");if(t.i
 const qs={editId:null,lastType:"Gasto",lastCategory:{}};
 function categoryUsage(type){const c=new Map();state.movements.forEach(m=>{if(m.type===type)c.set(m.categoryId,(c.get(m.categoryId)||0)+1)});return c}
 function qsCategories(){const type=el("qsType").value,usage=categoryUsage(type);return state.categories.filter(c=>c.type===type).sort((a,b)=>(usage.get(b.id)||0)-(usage.get(a.id)||0)||a.name.localeCompare(b.name,"es"))}
+function setQsCategoryOptionsOpen(open){
+ el("qsCategoryToggle").setAttribute("aria-expanded",String(open));
+ el("qsCategoryOptions").hidden=!open;
+}
+function selectQsCategory(category){
+ el("qsCategory").value=category?.id||"";
+ el("qsCategoryValue").innerHTML=category
+   ?`${catIconSvg(category)}<span>${escapeHtml(category.name)}</span>`
+   :"<span>Crea una categoría de este tipo</span>";
+}
 function renderQsCategories(selectedId){
- const select=el("qsCategory"),cats=qsCategories();
- select.replaceChildren(...cats.map(c=>new Option(c.name,c.id)));
- if(!cats.length)select.add(new Option("Crea una categoría de este tipo",""));
- if(cats.some(c=>c.id===selectedId))select.value=selectedId;
+ const categories=qsCategories(),selected=categories.find(c=>c.id===selectedId)||categories[0];
+ const options=el("qsCategoryOptions");
+ setQsCategoryOptionsOpen(false);
+ selectQsCategory(selected);
+ el("qsCategoryToggle").disabled=!selected;
+ options.replaceChildren();
+ for(const category of categories){
+   const option=document.createElement("button");
+   option.type="button";
+   option.className="movement-category-option";
+   option.setAttribute("aria-pressed",String(category===selected));
+   option.innerHTML=`${catIconSvg(category)}<span>${escapeHtml(category.name)}</span>`;
+   option.onclick=()=>{
+     if(el("qsCategory").value!==category.id)renderQsCategories(category.id);
+     else setQsCategoryOptionsOpen(false);
+     el("qsCategoryToggle").focus({preventScroll:true});
+   };
+   options.append(option);
+ }
  updateQsInvest(true);
 }
 function updateQsInvest(reset){
@@ -3244,7 +3284,30 @@ el("bulkToggle").onclick=()=>toggleBulkPanel(el("bulkPanel").hidden);el("bulkCan
 el("qsClose").onclick=closeQuickSheet;el("sheetBackdrop").onclick=closeQuickSheet;
 el("qsSave").onclick=()=>quickSave(false);el("qsSaveMore").onclick=()=>quickSave(true);el("qsDelete").onclick=quickDelete;
 el("qsType").onchange=()=>{renderQsCategories(qs.lastCategory[el("qsType").value]);updateQuickAccountHint()};
-el("qsCategory").onchange=()=>updateQsInvest(true);
+el("qsCategoryToggle").onclick=()=>{
+ const open=el("qsCategoryOptions").hidden;
+ setQsCategoryOptionsOpen(open);
+ if(open)el("qsCategoryOptions").querySelector('[aria-pressed="true"]')?.focus();
+};
+el("qsCategoryPicker").addEventListener("keydown",event=>{
+ if(el("qsCategoryOptions").hidden)return;
+ if(event.key==="Escape"){
+   event.preventDefault();
+   event.stopPropagation();
+   setQsCategoryOptionsOpen(false);
+   el("qsCategoryToggle").focus();
+ }
+ if(event.key==="ArrowDown"||event.key==="ArrowUp"){
+   const options=[...el("qsCategoryOptions").querySelectorAll("button")];
+   const index=options.indexOf(document.activeElement);
+   const next=index+(event.key==="ArrowDown"?1:-1);
+   event.preventDefault();
+   options[Math.max(0,Math.min(next,options.length-1))]?.focus();
+ }
+});
+document.addEventListener("click",event=>{
+ if(!el("qsCategoryOptions").hidden&&!el("qsCategoryPicker").contains(event.target))setQsCategoryOptionsOpen(false);
+});
 el("qsAccount").onchange=updateQuickAccountHint;
 el("qsDate").addEventListener("change",syncQuickDateButtons);
 el("quickSheet").querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{
