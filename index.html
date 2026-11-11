@@ -469,21 +469,19 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .mobile-nav{
    inset:auto 8px max(4px, calc(env(safe-area-inset-bottom) - 10px));
    height:calc(var(--nav-h) + 6px);padding:4px;
-   grid-template-columns:minmax(46px,.75fr) minmax(0,1.42fr) minmax(46px,.8fr) minmax(0,1.36fr) minmax(46px,.75fr);
+   grid-template-columns:minmax(52px,.85fr) minmax(0,1.42fr) minmax(46px,.8fr) minmax(0,1.36fr) minmax(52px,.85fr);
    border:1px solid var(--border-strong);border-radius:28px;
    background:var(--nav-bg);box-shadow:0 6px 24px rgba(15,23,42,.18);
    -webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);
  }
  .mobile-nav button{font-size:11px;min-width:0}
  @media(max-width:340px){.mobile-nav button{font-size:10px}}
- .mobile-nav button[data-page]{position:relative;isolation:isolate;border-radius:23px}
- .mobile-nav button[data-page].active{color:var(--text)}
- .mobile-nav button[data-page].active::before{
-   content:"";position:absolute;z-index:-1;inset:0;border-radius:inherit;
+ .mobile-nav button[data-page]{border-radius:23px}
+ .mobile-nav button[data-page].active{
+   color:var(--text);
    background:color-mix(in srgb,var(--text) 8%,transparent);
    box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--text) 7%,transparent);
  }
- .mobile-nav button:is([data-page="dashboard"],[data-page="more"]).active::before{inset:4px 0;border-radius:17px}
  @media(prefers-color-scheme:dark){
    .mobile-nav button[data-page].active{color:#fff}
  }
@@ -606,7 +604,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  #budgetRank .mitem:last-child{border-bottom:0}
  @media(prefers-reduced-transparency:reduce){
    .mobile-nav{background:var(--panel);-webkit-backdrop-filter:none;backdrop-filter:none}
-   .mobile-nav button[data-page].active::before{background:var(--investment-soft);box-shadow:none}
+   .mobile-nav button[data-page].active{background:var(--investment-soft);box-shadow:none}
  }
 }
 @media(min-width:761px){
