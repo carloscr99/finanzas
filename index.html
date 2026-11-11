@@ -483,7 +483,9 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  #quickSheet #qsDelete:active{background:var(--expense-soft)}
  #quickSheet .movement-delete-label{display:inline}
  #page-dashboard .chart-head h2{font-size:18px}
- #dataFreshness{display:grid;gap:4px}
+ #dataFreshness{display:grid;align-content:start;gap:5px;padding:14px;border-radius:22px;font-size:11px;line-height:1.4;overflow-wrap:anywhere}
+ #dataFreshness b{font-size:12px}
+ @media(max-width:390px){#dataFreshness{padding-inline:10px}}
  #dataFreshness .freshness-separator{display:none}
  #movementFilters{padding:0;border:0;background:none;box-shadow:none}
  .movement-filter-controls{
@@ -605,6 +607,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
    position:absolute;z-index:5;inset:calc(100% + 8px) 0 auto auto;width:min(320px,calc(100vw - 32px));
  }
  #dashboardFinancialSummary{grid-template-columns:repeat(3,minmax(0,1fr))}
+ #dataFreshness{grid-column:1/-1}
  #page-dashboard #netWorth{font-size:clamp(32px,3.4vw,44px)}
  @media(max-width:900px){
    #dashboardFinancialSummary{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -874,8 +877,8 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         <div class="card"><div class="metric-label">Ahorro acumulado</div><div class="metric-value" id="cumulativeSavings">0 €</div><div class="metric-sub">Ingresos − gastos de todo el histórico. Las inversiones no se restan: no son gasto, es dinero que sigue siendo tuyo en fondos y cuentas de ahorro.</div></div>
         <div class="card"><div class="metric-label">Rentabilidad fondos</div><div class="metric-value" id="portfolioReturn">0 €</div><div class="metric-sub" id="portfolioReturnPct">0,0 % sobre lo aportado</div><div class="metric-sub">Solo fondos con ISIN y cripto</div></div>
         <div class="card"><div class="metric-label">Colchón de liquidez</div><div class="metric-value" id="cushionMonths">—</div><div class="metric-sub" id="cushionCash">—</div><div class="metric-sub" id="cushionSpend">—</div></div>
+        <div class="inline-note" id="dataFreshness">Últimas actualizaciones: sin datos todavía.</div>
       </div>
-      <div class="inline-note section-gap" id="dataFreshness">Últimas actualizaciones: sin datos todavía.</div>
 
       <div class="grid-2 section-gap">
         <div class="panel">
