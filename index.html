@@ -117,7 +117,7 @@ button.icon-btn{display:inline-flex;align-items:center;justify-content:center;pa
 .form-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .form-actions button{width:auto}
 .searchbar{display:grid;grid-template-columns:2fr repeat(4,1fr);gap:10px;margin-bottom:14px}
-.searchbar :is(input,select),#newMovementPanel .form-grid :is(input,select),#qsDate{height:46px}
+.searchbar :is(input,select),#qsDate{height:46px}
 .table-wrap{overflow:auto}
 table{width:100%;border-collapse:collapse;font-size:14px}
 th,td{padding:11px 10px;border-bottom:1px solid var(--border);text-align:left;vertical-align:middle}
@@ -153,21 +153,33 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 .sheet.dragging{transition:none}
 .sheet-handle{width:36px;height:4px;border-radius:2px;background:var(--border-strong);margin:0 auto 12px;touch-action:none}
 .sheet-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;touch-action:none}.sheet-head h2{margin:0}
-.movement-delete-label{display:none}
 .icon-btn{border:0;background:var(--btn2-bg);width:40px;height:40px;border-radius:50%;color:var(--btn2-fg);display:inline-flex;align-items:center;justify-content:center}
 .big-amount{font-size:34px;font-weight:800;text-align:right;min-height:60px}
 #sumTypeToggle{display:flex;width:100%}#sumTypeToggle button{flex:1;padding:9px 6px}
-.seg-full{display:flex;width:100%;margin-bottom:12px}.seg-full button{flex:1;padding:10px 6px}
-.chip-btn{border:1px solid var(--border);background:var(--soft);border-radius:999px;padding:8px 12px;min-height:40px;font-size:13px;font-weight:600;color:var(--text);transition:background-color .12s,color .12s}
-.chip-btn{display:inline-flex;align-items:center;gap:6px}.chip-btn .ico{width:16px;height:16px}
 .chip .chip-ico{color:var(--text);background:var(--panel);border:1px solid var(--border)}.chip .chip-ico .ico{width:18px;height:18px}
 .cat-cell{display:inline-flex;align-items:center;gap:8px}.cat-cell .ico{width:18px;height:18px;color:var(--muted)}
 .icon-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(48px,1fr));gap:8px;margin-top:4px}
 .icon-pick-html{max-height:min(62vh,500px);overflow-y:auto!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;padding-top:0!important}.icon-pick-html #icoQ{font-size:16px;position:sticky;top:0;z-index:1;box-shadow:0 0 0 6px var(--panel)}.icon-scroll{margin-top:12px;padding:2px}.icon-sec{font-size:12px;font-weight:600;color:var(--muted);text-align:left;margin:10px 0 6px;text-transform:uppercase;letter-spacing:.04em}.icon-sec:first-child{margin-top:0}.icon-note{font-size:12px;color:var(--muted);text-align:left;margin:10px 0 0}
 .name-ico{display:flex;gap:8px;align-items:stretch}.name-ico .icon-opt{width:48px;height:auto;min-height:44px;flex:none}.name-ico input{flex:1;min-width:0}
 .icon-opt{display:flex;align-items:center;justify-content:center;height:48px;border-radius:12px;border:1px solid var(--border);background:var(--soft);color:var(--text);cursor:pointer}.icon-opt.active{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
-.chip-btn.active,.date-row button[aria-pressed="true"]{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
-.sheet label{margin-top:12px}.sheet .chips{gap:8px}
+.date-row button[aria-pressed="true"]{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
+#quickSheet{display:flex;flex-direction:column;overflow:hidden}
+#quickSheet :is(.sheet-head,.sheet-handle,.movement-editor-actions){flex-shrink:0}
+.movement-editor-fields,.movement-editor-investment,.movement-editor-actions{
+ display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
+}
+.movement-editor-fields{min-height:0;overflow:auto;overscroll-behavior:contain;align-items:end;padding:3px}
+.movement-editor-wide{grid-column:1/-1}
+.movement-editor-fields :is(input,select){min-height:46px;border-radius:12px}
+#quickSheet .big-amount{min-height:46px;border-radius:12px;background:var(--soft);font-size:26px;text-align:left}
+.movement-editor-investment{min-width:0;margin:0;padding:8px 12px 12px;border:1px solid var(--border);border-radius:14px}
+.movement-editor-investment legend{padding-inline:4px;color:var(--investment);font-size:13px;font-weight:650}
+.movement-editor-investment .chart-hint{margin:0}
+.movement-editor-actions{gap:8px;padding-top:12px}
+.movement-editor-actions button{min-height:44px;border-radius:14px}
+.movement-editor-actions:has(#qsSaveMore[hidden]){grid-template-columns:minmax(0,1fr)}
+#quickSheet #qsDelete{justify-self:center;min-height:38px;border:0;background:transparent;color:var(--expense);font-size:14px}
+#quickSheet #qsDelete:hover,#quickSheet #qsDelete:active{background:var(--expense-soft)}
 .date-row{display:flex;gap:8px;align-items:center}.date-row input{flex:1}.date-row button.secondary{min-height:46px;min-width:56px;flex:none}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:90px;background:var(--toast-bg);color:var(--toast-fg);padding:10px 16px;border-radius:999px;font-size:14px;z-index:80;box-shadow:var(--shadow);white-space:nowrap}
 .mlist{flex-direction:column}
@@ -323,9 +335,6 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .table-wrap.desktop-only{display:none!important}
  .toast{bottom:calc(var(--nav-h) + 24px + env(safe-area-inset-bottom))}
  .big-amount{font-size:36px}
- .sheet .chip-btn{min-height:44px}
- .sheet .form-actions{flex-direction:column}.sheet .form-actions button{width:100%;min-height:48px}
- .sheet label{font-size:14px}
  .mitem b{font-size:16px}
 }
 .dashboard-period{position:relative;flex:none;max-width:100%}
@@ -483,14 +492,11 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .sheet{border-radius:30px 30px 0 0;border:1px solid var(--border);border-bottom:0}
  .sheet-head{margin-bottom:14px}
  .sheet .big-amount{border-radius:18px;background:var(--soft)}
- .sheet .form-actions button{border-radius:16px}
- #quickSheet #qsSave{min-height:50px}
- #quickSheet #qsDelete{
-   align-self:center;width:auto;margin-top:4px;padding:8px 16px;gap:8px;
-   border:0;background:transparent;color:var(--expense);font-size:14px;
- }
- #quickSheet #qsDelete:active{background:var(--expense-soft)}
- #quickSheet .movement-delete-label{display:inline}
+ #addMovementBtn{margin-top:10px;width:100%}
+ #quickSheet{bottom:var(--movement-keyboard-offset,0px);max-height:min(92dvh,var(--movement-visible-height,92dvh))}
+ .movement-editor-fields,.movement-editor-investment,.movement-editor-actions{grid-template-columns:minmax(0,1fr)}
+ .movement-editor-fields :is(input,select){font-size:16px}
+ .movement-editor-actions button{min-height:48px}
  #page-dashboard .chart-head h2{font-size:18px}
  #dataFreshness{display:grid;align-content:start;gap:5px;padding:14px;border-radius:22px;font-size:11px;line-height:1.4;overflow-wrap:anywhere}
  #dataFreshness b{font-size:12px}
@@ -638,7 +644,6 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .movement-list-tools{justify-content:space-between}
  .movement-count{font-size:15px;color:var(--muted)}
  .movement-count b{color:var(--text);font-weight:750}
- #mAccountWrap{grid-column:span 2}
  #movementTable td:first-child,#movementTable td.amount{white-space:nowrap}
  #movementTable td.amount .badge{display:block;width:max-content;margin:3px 0 0 auto}
  #movementTable .mv-account{min-width:95px;overflow-wrap:anywhere}
@@ -659,8 +664,6 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  }
  #quickSheet.open{transform:translate(-50%,-50%)}
  :is(#assetDetail,#quickSheet) .sheet-handle{display:none}
- #quickSheet .big-amount{border-radius:18px;background:var(--soft)}
- #quickSheet .form-actions button{border-radius:14px;min-height:44px}
  .fab{background:var(--action-blue);color:#fff}
  #categoryList{display:grid;gap:0;padding-top:6px;border-top:1px solid var(--border)}
  #categoryList .chip{
@@ -920,31 +923,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
     </section>
 
     <section id="page-movements" class="page">
-      <div class="page-head"><div><h1>Movimientos</h1><p>Añade, busca, edita y filtra tus operaciones.</p></div></div>
-      <button class="primary mobile-only" id="mobileAddBtn" style="width:100%;margin-bottom:14px">+ Añadir movimiento</button>
-      <div class="panel desktop-only" id="newMovementPanel">
-        <h2>Nuevo movimiento</h2>
-        <div class="form-grid">
-          <div><label for="mDate">Fecha</label><input id="mDate" type="date"></div>
-          <div><label>Tipo</label><select id="mType"><option>Gasto</option><option>Ingreso</option><option>Inversión</option></select></div>
-          <div><label>Categoría</label><select id="mCategory"></select></div>
-          <div><label>Concepto</label><input id="mDescription" placeholder="Ej. Supermercado"></div>
-          <div><label>Importe (€)</label><input id="mAmount" type="number" min="0" step="0.01" placeholder="0,00"></div>
-          <div id="mAccountWrap" hidden><label>Cuenta</label><select id="mAccount"></select></div>
-        </div>
-        <div class="inline-note" id="mAccountHint" hidden style="margin-top:10px"></div>
-        <div id="investmentFields" class="panel section-gap" style="display:none;background:var(--soft);box-shadow:none">
-          <h3>Datos de la inversión</h3>
-          <div class="grid-2">
-            <div><label>Activo del patrimonio</label><select id="mAsset"></select></div>
-            <div><label>Participaciones / títulos comprados</label><input id="mUnits" type="number" min="0" step="0.000001" placeholder="Vacío = se estiman"></div>
-          </div>
-          <div class="inline-note" id="mUnitsHint" style="margin-top:8px"></div>
-          <div class="inline-note section-gap">El importe del movimiento se sumará al capital aportado y las participaciones al activo seleccionado. El valor actual se recalcula con la última cotización disponible.</div>
-        </div>
-        <div class="form-actions"><button class="primary" id="saveMovement">Guardar movimiento</button><button class="secondary" id="cancelEdit" style="display:none">Cancelar</button></div>
-      </div>
-
+      <div class="page-head"><div><h1>Movimientos</h1><p>Añade, busca, edita y filtra tus operaciones.</p></div><button type="button" class="primary" id="addMovementBtn">Nuevo movimiento</button></div>
       <div class="panel section-gap" id="movementFilters">
         <div class="movement-filter-controls">
           <div class="chart-head">
@@ -1175,23 +1154,42 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 <section class="sheet" id="quickSheet" hidden role="dialog" aria-modal="true" aria-labelledby="qsTitle">
   <div class="sheet-handle" id="sheetHandle"></div>
   <div class="sheet-head" id="sheetHead"><h2 id="qsTitle">Nuevo movimiento</h2><button type="button" class="icon-btn" id="qsClose" aria-label="Cerrar"><svg class="ico sm" aria-hidden="true"><use href="#i-x"/></svg></button></div>
-  <label>Importe (€)</label><input id="qsAmount" class="big-amount" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off">
-  <div class="seg seg-full" id="qsType" style="margin-top:12px"><button type="button" data-type="Gasto" class="active">Gasto</button><button type="button" data-type="Ingreso">Ingreso</button><button type="button" data-type="Inversión">Inversión</button></div>
-  <label>Categoría</label><div class="chips" id="qsCats"></div>
-  <div id="qsAccountWrap" hidden><label>Cuenta</label><select id="qsAccount"></select></div>
-  <div id="qsInvest" hidden>
-    <label>Activo del patrimonio</label><select id="qsAsset"></select>
-    <label>Participaciones / títulos comprados</label><input id="qsUnits" type="text" inputmode="decimal" placeholder="Vacío = se estiman" autocomplete="off">
-    <div class="inline-note" id="qsUnitsHint" style="margin-top:6px"></div>
+  <div class="movement-editor-fields">
+    <div>
+      <label for="qsAmount">Importe (€)</label>
+      <input id="qsAmount" class="big-amount" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off">
+    </div>
+    <div>
+      <label for="qsType">Tipo</label>
+      <select id="qsType"><option>Gasto</option><option>Ingreso</option><option>Inversión</option></select>
+    </div>
+    <div class="movement-editor-wide">
+      <label for="qsDesc">Concepto</label>
+      <input id="qsDesc" list="qsDescList" placeholder="Ej. Supermercado" autocomplete="off"><datalist id="qsDescList"></datalist>
+    </div>
+    <div class="movement-editor-wide">
+      <label for="qsCategory">Categoría</label>
+      <select id="qsCategory"></select>
+    </div>
+    <fieldset class="movement-editor-wide movement-editor-investment" id="qsInvest" hidden>
+      <legend>Datos de la inversión</legend>
+      <div><label for="qsAsset">Activo del patrimonio</label><select id="qsAsset"></select></div>
+      <div><label for="qsUnits">Participaciones / títulos</label><input id="qsUnits" type="text" inputmode="decimal" placeholder="Vacío = se estiman" autocomplete="off"></div>
+      <div class="chart-hint movement-editor-wide" id="qsUnitsHint"></div>
+    </fieldset>
+    <div class="movement-editor-wide" id="qsAccountWrap" hidden>
+      <label for="qsAccount">Cuenta</label><select id="qsAccount" aria-describedby="qsAccountHint"></select>
+      <div class="chart-hint" id="qsAccountHint"></div>
+    </div>
+    <div class="movement-editor-wide">
+      <label for="qsDate">Fecha</label>
+      <div class="date-row"><input id="qsDate" type="date"><button type="button" class="secondary" data-day="0">Hoy</button><button type="button" class="secondary" data-day="-1">Ayer</button></div>
+    </div>
   </div>
-  <label>Concepto</label><input id="qsDesc" list="qsDescList" placeholder="Ej. Supermercado" autocomplete="off"><datalist id="qsDescList"></datalist>
-  <label for="qsDate">Fecha</label><div class="date-row"><input id="qsDate" type="date"><button type="button" class="secondary" data-day="0">Hoy</button><button type="button" class="secondary" data-day="-1">Ayer</button></div>
-  <div class="form-actions" style="margin-top:16px">
-    <button type="button" class="primary" id="qsSave">Guardar</button>
+  <div class="movement-editor-actions">
+    <button type="button" class="primary" id="qsSave">Guardar movimiento</button>
     <button type="button" class="secondary" id="qsSaveMore">Guardar y añadir otro</button>
-    <button type="button" class="danger icon-btn" id="qsDelete" hidden aria-label="Eliminar movimiento" title="Eliminar movimiento">
-      <svg class="ico" aria-hidden="true"><use href="#i-trash"/></svg><span class="movement-delete-label">Eliminar movimiento</span>
-    </button>
+    <button type="button" class="danger" id="qsDelete" hidden>Eliminar movimiento</button>
   </div>
 </section>
 <div class="toast" id="toast" hidden></div>
@@ -1235,7 +1233,6 @@ const colors={Ingreso:"#16803b",Gasto:"#c73737","Inversión":"#2563eb"}; // se r
 function tok(name){return getComputedStyle(document.documentElement).getPropertyValue(name).trim()}
 const el=id=>document.getElementById(id);
 let state=defaultState();
-let editingId=null;
 let priceUpdateInProgress=false;
 const PRICE_FEED_URL="./prices.json"; // mismo repositorio que la web (GitHub Pages)
 // Cotizaciones: cualquier activo con ISIN se busca en prices.json por su ISIN; Bitcoin por la clave "BTC".
@@ -1424,7 +1421,7 @@ function applyRemoteSnapshots(){
  const {state:incoming,needsMigration}=assembleState(mainData,yearDocs);
  if(stateSignature(incoming)===stateSignature(state))return;
  rememberWritten(mainData,yearDocs);
- state=incoming;editingId=null;updateYearOptions();renderAll();
+ state=incoming;updateYearOptions();renderAll();
  if(needsMigration)saveState(); // otra versión de la web ha escrito movimientos en el principal: se pasan a los años
 }
 // Formato antiguo (reglas sin publicar): el documento principal lleva todo, como en la versión anterior.
@@ -1432,7 +1429,7 @@ function applyLegacySnapshot(snap){
  if(!snap.exists()||snap.metadata.hasPendingWrites||remoteSaveTimer)return;
  const incoming=normalizeState(snap.data());
  if(stateSignature(incoming)===stateSignature(state))return;
- state=incoming;editingId=null;updateYearOptions();renderAll();
+ state=incoming;updateYearOptions();renderAll();
 }
 async function startApp(user){
  if(unsubscribeMain){unsubscribeMain();unsubscribeMain=null} // por si se reintenta tras un error
@@ -1478,7 +1475,7 @@ function stopApp(){
  if(remoteSaveTimer)flushRemoteSave();
  if(unsubscribeMain){unsubscribeMain();unsubscribeMain=null}
  if(unsubscribeYears){unsubscribeYears();unsubscribeYears=null}
- userDocRef=null;yearsColRef=null;currentUser=null;lastMainSnap=null;lastYearsSnap=null;written={main:null,years:new Map()};legacyWrites=false;state=defaultState();editingId=null;
+ userDocRef=null;yearsColRef=null;currentUser=null;lastMainSnap=null;lastYearsSnap=null;written={main:null,years:new Map()};legacyWrites=false;state=defaultState();
  showAuthScreen(true);
 }
 
@@ -1859,7 +1856,7 @@ function investmentAssetForCategory(categoryId,compatible){
  const linked=compatible.filter(a=>linkedIds.has(a.id));
  return linked.length===1?linked[0]:null;
 }
-function investmentCategoryUsesUnits(type=el("mType").value,categoryId=el("mCategory").value,compatible=state.assets.filter(isInvestmentAsset)){
+function investmentCategoryUsesUnits(type,categoryId,compatible=state.assets.filter(isInvestmentAsset)){
  if(type!=="Inversión"||!categoryId)return false;
  if(investmentAssetForCategory(categoryId,compatible))return true;
  // Las categorías de fondos, ETF, cripto y oro pueden requerir un activo aunque no haya una coincidencia clara.
@@ -1879,14 +1876,6 @@ function updateUnitsHint(amountEl,assetEl,unitsEl,hintEl){
  const est=estimateUnits(amount,a);
  h.textContent=!a?"":est==null?(Number(a.unitPrice)>0?"Escribe el importe para ver la estimación.":"El activo aún no tiene cotización: indica las participaciones.")
   :`Vacío = se estiman ≈ ${assetDisplayUnits(est)} part. (${euro.format(amount)} ÷ ${euro.format(a.unitPrice)}); se ajustan solas al llegar la cotización del día.`;
-}
-function updateInvestmentFields(reset=false){
- const categoryId=el("mCategory").value,compatible=state.assets.filter(isInvestmentAsset);
- const show=investmentCategoryUsesUnits(el("mType").value,categoryId,compatible);
- el("investmentFields").style.display=show?"block":"none";
- if(!show){el("mUnits").value="";return}
- renderInvestmentAssetSelect("mAsset",categoryId,compatible,reset);
- updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint");
 }
 function applyInvestmentMovementToAsset(m,sign){
  if(m?.type!=="Inversión"||!m.assetId)return;const a=state.assets.find(x=>x.id===m.assetId);if(!a)return;
@@ -1935,9 +1924,9 @@ function renderAccountSelect(selId,wrapId,selected){
  sel.value=want&&[...sel.options].some(o=>o.value===want)?want:fallback;
 }
 function resetAccountSelect(selId){const sel=el(selId);if(sel.options.length)sel.value=defaultAccount()?.id||NO_ACCOUNT}
-function updateAccountHint(){
- const h=el("mAccountHint"),sel=el("mAccount");if(el("mAccountWrap").hidden){h.hidden=true;return}
- const a=state.assets.find(x=>x.id===sel.value),type=el("mType").value;h.hidden=false;
+function updateQuickAccountHint(){
+ const h=el("qsAccountHint"),sel=el("qsAccount");if(el("qsAccountWrap").hidden)return
+ const a=state.assets.find(x=>x.id===sel.value),type=el("qsType").value;
  h.textContent=!a?"El movimiento no toca ningún saldo del patrimonio.":isCurrentAccount(a)?`${a.name}: el saldo calculado se mueve solo con este movimiento.`:type==="Ingreso"?`${a.name}: el importe se suma al saldo (no cuenta como aportado).`:`${a.name}: el importe se resta del saldo y de lo aportado.`;
 }
 function movementNet(m){const v=Number(m.amount)||0;return m.type==="Ingreso"?v:-v}
@@ -2206,12 +2195,6 @@ function renderFreshness(){
      updates.map(([label,date])=>`<span class="freshness-item"><span>${label}<span class="freshness-colon">: </span></span><span class="freshness-date">${formatDateTime(date)}</span></span>`).join(separator);
  }
 }
-function updateMovementCategories(){
- const type=el("mType").value,previous=el("mCategory").value,cats=state.categories.filter(c=>c.type===type).sort((a,b)=>a.name.localeCompare(b.name,"es"));
- el("mCategory").innerHTML=cats.length?cats.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join(""):`<option value="">Sin categorías</option>`;
- if(cats.some(c=>c.id===previous))el("mCategory").value=previous;
- updateInvestmentFields(el("mCategory").value!==previous);
-}
 function updateRecurringCategories(){
  const type=el("rType").value,cats=state.categories.filter(c=>c.type===type).sort((a,b)=>a.name.localeCompare(b.name,"es")),cur=el("rCategory").value;
  el("rCategory").innerHTML=cats.length?cats.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join(""):`<option value="">Sin categorías</option>`;
@@ -2270,11 +2253,12 @@ function persistMovement(d,id){
    const i=state.movements.findIndex(m=>m.id===id);
    if(i>=0){
      const prev=state.movements[i];applyMovementEffects(prev,-1);
+     if(prev.unitsEstimated&&prev.assetId===assetId&&prev.amount===amount&&prev.date===date&&Number(prev.units)===units)estimated=true;
      const next={...prev,date,type,categoryId,description,amount};
      if(accountId)next.accountId=accountId;
      if(usesUnits){next.assetId=assetId;next.units=units;if(estimated)next.unitsEstimated=true;else delete next.unitsEstimated}else{const wasLinked=!!prev.assetId;delete next.assetId;delete next.units;if(wasLinked)linkSavingsAccount(next)}
      state.movements[i]=next;applyMovementEffects(next,1);
-   }
+   }else return "Este movimiento ya no está disponible.";
  }else{
    const m={id:uuid(),date,type,categoryId,description,amount,createdAt:nowISO()};
    if(accountId)m.accountId=accountId;
@@ -2285,24 +2269,10 @@ function persistMovement(d,id){
  saveState();updateYearOptions();renderAll();if(usesUnits)updateMarketPrices(false);
  return null;
 }
-function saveMovement(){
- const type=el("mType").value,usesUnits=type==="Inversión"&&investmentCategoryUsesUnits();
- const err=persistMovement({date:el("mDate").value,type,categoryId:el("mCategory").value,description:el("mDescription").value.trim(),amount:Number(el("mAmount").value),usesUnits,assetId:usesUnits?el("mAsset").value:"",units:usesUnits?Number(el("mUnits").value):0,accountId:el("mAccountWrap").hidden?"":el("mAccount").value},editingId);
- if(err)return uiError(err);
- const wasEdit=!!editingId;
- editingId=null;el("cancelEdit").style.display="none";el("saveMovement").textContent="Guardar movimiento";el("mDescription").value="";el("mAmount").value="";el("mUnits").value="";resetAccountSelect("mAccount");updateAccountHint();
- toast(wasEdit?"Cambios guardados":"Movimiento guardado");
-}
 function editMovement(id){
- const m=state.movements.find(x=>x.id===id);if(!m)return;
- if(isMobile()){openQuickSheet(m);return}
- editingId=id;showPage("movements");
- el("mDate").value=m.date;el("mType").value=m.type;updateMovementCategories();el("mCategory").value=m.categoryId;updateInvestmentFields(true);if(m.assetId)el("mAsset").value=m.assetId;el("mUnits").value=m.units||"";el("mDescription").value=m.description;el("mAmount").value=m.amount;
- updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint");
- renderAccountSelect("mAccount","mAccountWrap",movementAccountId(m)||NO_ACCOUNT);updateAccountHint();
- el("saveMovement").textContent="Guardar cambios";el("cancelEdit").style.display="inline-block";window.scrollTo({top:0,behavior:"smooth"});
+ const movement=state.movements.find(m=>m.id===id);
+ if(movement)openQuickSheet(movement);
 }
-function cancelEdit(){editingId=null;el("cancelEdit").style.display="none";el("saveMovement").textContent="Guardar movimiento";el("mDate").value=todayISO();el("mType").value="Gasto";updateMovementCategories();el("mDescription").value="";el("mAmount").value="";el("mUnits").value="";resetAccountSelect("mAccount");updateAccountHint()}
 function deleteMovementById(id){const m=state.movements.find(x=>x.id===id);if(m)applyMovementEffects(m,-1);state.movements=state.movements.filter(x=>x.id!==id);markDataUpdate(m?.type==="Inversión"||accountAffectsPortfolio(m?.accountId)?"movement+portfolio":"movement");saveState();renderAll()}
 async function deleteMovement(id){if(!(await uiConfirm("Esta acción no se puede deshacer.",{title:"¿Eliminar este movimiento?",danger:true,confirmText:"Eliminar"})))return;deleteMovementById(id);toast("Movimiento eliminado")}
 // Orden: fecha descendente y, dentro del mismo día, hora de creación descendente.
@@ -2367,7 +2337,7 @@ function renderMovements(){
  if(!html)html=`<div class="empty-state"><svg class="ico" aria-hidden="true"><use href="#i-list"/></svg><p>${state.movements.length?"Ningún movimiento coincide con los filtros.":"Todavía no hay movimientos."}</p><button type="button" class="primary" data-empty-add>Añadir movimiento</button></div>`;
  if(movs.length>LIMIT)html+=`<div class="empty">Mostrando ${intFmt.format(LIMIT)} de ${intFmt.format(movs.length)}. Usa los filtros para acotar.</div>`;
  list.innerHTML=historyCount+html;
- list.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>{const m=state.movements.find(x=>x.id===b.dataset.id);if(m)openQuickSheet(m)});
+ list.querySelectorAll("[data-id]").forEach(b=>b.onclick=()=>editMovement(b.dataset.id));
  const emptyAdd=list.querySelector("[data-empty-add]");if(emptyAdd)emptyAdd.onclick=()=>openQuickSheet(null);
  const nFilters=["searchText","searchType","searchCategory","searchFrom","searchTo"].filter(id=>el(id).value).length;
  el("toggleFilters").textContent=nFilters?`Filtros (${nFilters})`:"Filtros";
@@ -2742,7 +2712,7 @@ function renderAssets(){
  }
 }
 function bindAssetActions(root,run){
- root.querySelectorAll("[data-defacc]").forEach(b=>b.onclick=()=>{const a=state.assets.find(x=>x.id===b.dataset.defacc);if(!a)return;state.meta.defaultAccountId=a.id;saveState();renderAll();resetAccountSelect("mAccount");resetAccountSelect("rAccount");updateAccountHint();toast(`${a.name} es ahora la cuenta por defecto`)});
+ root.querySelectorAll("[data-defacc]").forEach(b=>b.onclick=()=>{const a=state.assets.find(x=>x.id===b.dataset.defacc);if(!a)return;state.meta.defaultAccountId=a.id;saveState();renderAll();resetAccountSelect("rAccount");toast(`${a.name} es ahora la cuenta por defecto`)});
  root.querySelectorAll("[data-delasset]").forEach(b=>b.onclick=()=>run(async()=>{if(await uiConfirm("Desaparecerá del patrimonio; los movimientos no se tocan.",{title:"¿Eliminar este activo?",danger:true,confirmText:"Eliminar"})){state.assets=state.assets.filter(x=>x.id!==b.dataset.delasset);markDataUpdate("portfolio");saveState();renderAll()}}));
  root.querySelectorAll("[data-iconasset]").forEach(b=>b.onclick=()=>run(()=>chooseAssetIcon(b.dataset.iconasset)));
  // Cambiar el tipo de un activo. La cuenta corriente queda fuera porque su saldo se calcula a partir de los movimientos.
@@ -3045,28 +3015,24 @@ let toastTimer=null;
 function toast(msg){const t=el("toast");t.textContent=msg;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.hidden=true},2200)}
 function parseAmount(s){let t=String(s||"").trim().replace(/[\s€]/g,"");if(t.includes(".")&&t.includes(","))t=t.replace(/\./g,"").replace(",",".");else if(t.includes(","))t=t.replace(",",".");return t?Number(t):NaN}
 
-const qs={type:"Gasto",categoryId:"",editId:null,showAll:false,lastType:"Gasto",lastCategory:{}};
+const qs={editId:null,lastType:"Gasto",lastCategory:{}};
 function categoryUsage(type){const c=new Map();state.movements.forEach(m=>{if(m.type===type)c.set(m.categoryId,(c.get(m.categoryId)||0)+1)});return c}
-function qsCategories(){const usage=categoryUsage(qs.type);return state.categories.filter(c=>c.type===qs.type).sort((a,b)=>(usage.get(b.id)||0)-(usage.get(a.id)||0)||a.name.localeCompare(b.name,"es"))}
-function qsUsesUnits(){return investmentCategoryUsesUnits(qs.type,qs.categoryId)}
-function renderQsCats(reset=false){
- const cats=qsCategories(),MAX=6;
- if(!cats.some(c=>c.id===qs.categoryId))qs.categoryId=cats[0]?.id||"";
- const mustShow=cats.findIndex(c=>c.id===qs.categoryId)>=MAX;
- const shown=qs.showAll||mustShow?cats:cats.slice(0,MAX);
- el("qsCats").innerHTML=(shown.map(c=>`<button type="button" class="chip-btn${c.id===qs.categoryId?" active":""}" data-cat="${c.id}">${catIconSvg(c)}${escapeHtml(c.name)}</button>`).join("")||`<span class="muted">No hay categorías de este tipo. Créalas en Categorías.</span>`)+(shown.length<cats.length?`<button type="button" class="chip-btn" data-more="1">Más… (${cats.length-shown.length})</button>`:"");
- el("qsCats").querySelectorAll("[data-cat]").forEach(b=>b.onclick=()=>{const changed=qs.categoryId!==b.dataset.cat;qs.categoryId=b.dataset.cat;renderQsCats(changed)});
- const more=el("qsCats").querySelector("[data-more]");if(more)more.onclick=()=>{qs.showAll=true;renderQsCats()};
- updateQsInvest(reset);
+function qsCategories(){const type=el("qsType").value,usage=categoryUsage(type);return state.categories.filter(c=>c.type===type).sort((a,b)=>(usage.get(b.id)||0)-(usage.get(a.id)||0)||a.name.localeCompare(b.name,"es"))}
+function renderQsCategories(selectedId){
+ const select=el("qsCategory"),cats=qsCategories();
+ select.replaceChildren(...cats.map(c=>new Option(c.name,c.id)));
+ if(!cats.length)select.add(new Option("Crea una categoría de este tipo",""));
+ if(cats.some(c=>c.id===selectedId))select.value=selectedId;
+ updateQsInvest(true);
 }
 function updateQsInvest(reset){
- const compatible=state.assets.filter(isInvestmentAsset);
- const show=investmentCategoryUsesUnits(qs.type,qs.categoryId,compatible);
- el("qsInvest").hidden=!show;if(!show)return;
- renderInvestmentAssetSelect("qsAsset",qs.categoryId,compatible,reset);
+ const categoryId=el("qsCategory").value,compatible=state.assets.filter(isInvestmentAsset);
+ const show=investmentCategoryUsesUnits(el("qsType").value,categoryId,compatible);
+ el("qsInvest").hidden=!show;
+ if(!show)return;
+ renderInvestmentAssetSelect("qsAsset",categoryId,compatible,reset);
  updateUnitsHint("qsAmount","qsAsset","qsUnits","qsUnitsHint");
 }
-function setQsType(type){qs.type=type;qs.showAll=false;el("qsType").querySelectorAll("button").forEach(b=>b.classList.toggle("active",b.dataset.type===type));renderQsCats(true)}
 function updateDescSuggestions(){
  const seen=new Set(),out=[];
  [...state.movements].sort((a,b)=>b.date.localeCompare(a.date)).forEach(m=>{const d=(m.description||"").trim();if(d&&!seen.has(d.toLowerCase())){seen.add(d.toLowerCase());out.push(d)}});
@@ -3079,34 +3045,48 @@ function syncQuickDateButtons(){
  });
 }
 function openQuickSheet(movement){
- qs.editId=movement?movement.id:null;qs.showAll=false;
+ qs.editId=movement?.id||null;
  el("qsTitle").textContent=movement?"Editar movimiento":"Nuevo movimiento";
- el("qsDelete").hidden=!movement;el("qsSaveMore").hidden=!!movement;el("qsSave").textContent=movement?"Guardar cambios":"Guardar";
+ el("qsDelete").hidden=!movement;el("qsSaveMore").hidden=!!movement;el("qsSave").textContent=movement?"Guardar cambios":"Guardar movimiento";
  el("qsAmount").value=movement?String(movement.amount).replace(".",","):"";
  el("qsDesc").value=movement?movement.description:"";
  el("qsDate").value=movement?movement.date:todayISO();
  syncQuickDateButtons();
  el("qsUnits").value=movement?.units?String(movement.units).replace(".",","):"";
  const type=movement?movement.type:qs.lastType;
- qs.categoryId=movement?movement.categoryId:(qs.lastCategory[type]||"");
- setQsType(type);
- if(movement?.assetId){el("qsAsset").value=movement.assetId;updateUnitsHint("qsAmount","qsAsset","qsUnits","qsUnitsHint")}
+ el("qsType").value=type;
+ renderQsCategories(movement?.categoryId||qs.lastCategory[type]);
+ if(movement?.assetId&&[...el("qsAsset").options].some(option=>option.value===movement.assetId)){el("qsAsset").value=movement.assetId;updateUnitsHint("qsAmount","qsAsset","qsUnits","qsUnitsHint")}
  renderAccountSelect("qsAccount","qsAccountWrap",movement?(movementAccountId(movement)||NO_ACCOUNT):(defaultAccount()?.id||NO_ACCOUNT));
+ updateQuickAccountHint();
  updateDescSuggestions();
  const sheet=el("quickSheet"),backdrop=el("sheetBackdrop");
  clearTimeout(sheetCloseTimer);sheet.style.transform="";sheet.classList.remove("dragging");
+ sheetOpener=document.activeElement;
  backdrop.hidden=false;sheet.hidden=false;document.body.style.overflow="hidden";
+ sheet.querySelector(".movement-editor-fields").scrollTop=0;
+ resizeMovementEditor();
  void sheet.offsetHeight; // fuerza el reflow para que la transición de entrada se ejecute desde display:none
  backdrop.classList.add("open");sheet.classList.add("open");
- setTimeout(()=>el("qsAmount").focus(),220);
+ (isMobile()?el("qsClose"):el("qsAmount")).focus({preventScroll:true});
  syncBackTrap();
 }
-let sheetCloseTimer=null;
+let sheetCloseTimer=null,sheetOpener=null;
+function resizeMovementEditor(){
+ const viewport=window.visualViewport,sheet=el("quickSheet");
+ if(!viewport||!isMobile()||sheet.hidden)return;
+ const bottom=Math.max(0,window.innerHeight-viewport.height-viewport.offsetTop);
+ sheet.style.setProperty("--movement-keyboard-offset",`${bottom}px`);
+ sheet.style.setProperty("--movement-visible-height",`${Math.max(0,viewport.height-8)}px`);
+}
 function closeQuickSheet(){
  const sheet=el("quickSheet"),backdrop=el("sheetBackdrop");
  qs.editId=null;document.body.style.overflow="";
  if(sheet.hidden)return;
  sheet.classList.remove("open","dragging");backdrop.classList.remove("open");sheet.style.transform="";
+ if(sheet.contains(document.activeElement))document.activeElement.blur();
+ sheetOpener?.focus({preventScroll:true});
+ sheetOpener=null;
  clearTimeout(sheetCloseTimer);
  sheetCloseTimer=setTimeout(()=>{sheet.hidden=true;backdrop.hidden=true},160); // espera la animación de salida (más corta que la de entrada)
  syncBackTrap();
@@ -3120,17 +3100,23 @@ function enableSheetSwipe(){
  [el("sheetHandle"),el("sheetHead")].forEach(n=>{n.addEventListener("touchstart",start,{passive:true});n.addEventListener("touchmove",move,{passive:true});n.addEventListener("touchend",end);n.addEventListener("touchcancel",end)});
 }
 function quickSave(keepOpen){
- const amount=parseAmount(el("qsAmount").value),description=el("qsDesc").value.trim(),date=el("qsDate").value,type=qs.type,categoryId=qs.categoryId;
- const usesUnits=qsUsesUnits(),assetId=usesUnits?el("qsAsset").value:"",units=usesUnits?parseAmount(el("qsUnits").value):0,accountId=el("qsAccountWrap").hidden?"":el("qsAccount").value;
+ const amount=parseAmount(el("qsAmount").value),description=el("qsDesc").value.trim(),date=el("qsDate").value,type=el("qsType").value,categoryId=el("qsCategory").value;
+ const usesUnits=investmentCategoryUsesUnits(type,categoryId),assetId=usesUnits?el("qsAsset").value:"",units=usesUnits?parseAmount(el("qsUnits").value):0,accountId=el("qsAccountWrap").hidden?"":el("qsAccount").value;
  const wasEdit=!!qs.editId;
  const err=persistMovement({date,type,categoryId,description,amount,usesUnits,assetId,units,accountId},qs.editId);
  if(err)return uiError(err);
  qs.lastType=type;qs.lastCategory[type]=categoryId;
  toast(wasEdit?"Cambios guardados":`${type} guardado: ${euro.format(amount)}`);
- if(keepOpen){qs.editId=null;el("qsAmount").value="";el("qsDesc").value="";el("qsUnits").value="";resetAccountSelect("qsAccount");el("qsTitle").textContent="Nuevo movimiento";el("qsDelete").hidden=true;el("qsSaveMore").hidden=false;el("qsSave").textContent="Guardar";el("qsAmount").focus()}
+ if(keepOpen){qs.editId=null;el("qsAmount").value="";el("qsDesc").value="";el("qsUnits").value="";resetAccountSelect("qsAccount");updateQuickAccountHint();updateQsInvest(false);el("qsTitle").textContent="Nuevo movimiento";el("qsDelete").hidden=true;el("qsSaveMore").hidden=false;el("qsSave").textContent="Guardar movimiento";el("qsAmount").focus()}
  else closeQuickSheet();
 }
-async function quickDelete(){if(!qs.editId)return;if(!(await uiConfirm("Esta acción no se puede deshacer.",{title:"¿Eliminar este movimiento?",danger:true,confirmText:"Eliminar"})))return;deleteMovementById(qs.editId);closeQuickSheet();toast("Movimiento eliminado")}
+async function quickDelete(){
+ const id=qs.editId;
+ if(!id||!(await uiConfirm("Esta acción no se puede deshacer.",{title:"¿Eliminar este movimiento?",danger:true,confirmText:"Eliminar"})))return;
+ deleteMovementById(id);
+ if(qs.editId===id)closeQuickSheet();
+ toast("Movimiento eliminado");
+}
 
 function syncDashboardPeriod(){
  const p=selectedPeriod();
@@ -3204,7 +3190,7 @@ function importData(file){
 async function clearAll(){if(!(await uiConfirm("Se borrarán movimientos, categorías, recurrentes y patrimonio de tu cuenta. Exporta antes una copia.",{title:"¿Borrar todos los datos?",danger:true,confirmText:"Borrar todo"})))return;state=defaultState();saveState();setupPeriodSelectors();renderAll()}
 function renderAll(){
  refreshDerivedAssets();renderTransferForm();
- renderCategoryList();updateMovementCategories();updateRecurringCategories();renderSearchCategories();renderAccountSelect("mAccount","mAccountWrap");renderAccountSelect("rAccount","rAccountWrap");updateAccountHint();
+ renderCategoryList();updateRecurringCategories();renderSearchCategories();renderAccountSelect("rAccount","rAccountWrap");
  renderSummary();renderMovements();renderRecurring();renderAssets();renderCategorySummary();renderPatrimonyRank();renderReturnRank();renderBudgets();renderBudgetTable();renderFreshness();renderDataSize();syncDashboardPeriod();
  if(el("page-dashboard").classList.contains("active"))renderCharts();
  if(el("page-assets").classList.contains("active"))drawNetWorthChart();
@@ -3220,8 +3206,8 @@ document.querySelectorAll("[data-page]").forEach(b=>b.onclick=()=>{
  }
  showPage(page,mobileTab?"instant":"smooth");
 });
-el("mDate").value=todayISO();el("rStartDate").value=todayISO();setupPeriodSelectors();updatePeriodControls();
-el("mType").onchange=()=>{updateMovementCategories();updateAccountHint()};el("mAccount").onchange=updateAccountHint;["mAmount","mUnits"].forEach(id=>el(id).addEventListener("input",()=>updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint")));el("mAsset").onchange=()=>updateUnitsHint("mAmount","mAsset","mUnits","mUnitsHint");el("mCategory").onchange=()=>updateInvestmentFields(true);el("rType").onchange=updateRecurringCategories;
+el("rStartDate").value=todayISO();setupPeriodSelectors();updatePeriodControls();
+el("rType").onchange=updateRecurringCategories;
 el("categorySearch").addEventListener("input",renderCategoryList);
 el("categoryFilterType").addEventListener("change",renderCategoryList);
 el("clearCategoryFilters").onclick=()=>{
@@ -3232,7 +3218,7 @@ el("clearCategoryFilters").onclick=()=>{
 el("addCategory").onclick=addCategory;el("cIconBtn").onclick=chooseNewCatIcon;el("aIconBtn").onclick=chooseNewAssetIcon;el("aName").addEventListener("input",renderNewAssetIcon);renderNewAssetIcon();el("cName").addEventListener("input",renderNewCatIcon);el("cType").addEventListener("change",renderNewCatIcon);renderNewCatIcon();
 el("bpPrev").onclick=()=>shiftBudgetMonth(-1);el("bpNext").onclick=()=>shiftBudgetMonth(1);el("bpToday").onclick=()=>{const n=new Date();bp.y=n.getFullYear();bp.m=n.getMonth()+1;renderBudgets()};
 el("budgetFillAvg").onclick=async()=>{if(!(await uiConfirm("Se sustituirán los presupuestos actuales por la propuesta calculada con tu histórico. Las categorías sin propuesta se quedan como están.",{title:"¿Rellenar con la propuesta?",confirmText:"Rellenar"})))return;const n=fillBudgetsFromProposal();saveState();renderAll();toast(`${n} presupuestos rellenados`)};
-el("budgetClearAll").onclick=async()=>{if(!(await uiConfirm("Se quitarán todos los presupuestos. Los movimientos no cambian.",{title:"¿Quitar presupuestos?",danger:true,confirmText:"Quitar"})))return;state.budgets={};saveState();renderAll();toast("Presupuestos eliminados")};el("saveMovement").onclick=saveMovement;el("cancelEdit").onclick=cancelEdit;
+el("budgetClearAll").onclick=async()=>{if(!(await uiConfirm("Se quitarán todos los presupuestos. Los movimientos no cambian.",{title:"¿Quitar presupuestos?",danger:true,confirmText:"Quitar"})))return;state.budgets={};saveState();renderAll();toast("Presupuestos eliminados")};
 el("addRecurring").onclick=addRecurring;el("cancelRecurringEdit").onclick=cancelRecurringEdit;el("doTransfer").onclick=doTransfer;el("generateRecurring").onclick=()=>generateRecurring(true);el("addAsset").onclick=addAsset;el("refreshPrices").onclick=()=>updateMarketPrices(true);
 const dashboardPeriod=el("dashboardPeriod");
 document.addEventListener("click",event=>{
@@ -3252,10 +3238,12 @@ el("sumTypeToggle").querySelectorAll("[data-sumtype]").forEach(b=>b.onclick=()=>
 el("clearFilters").onclick=clearMovementFilters;
 el("bulkToggle").onclick=()=>toggleBulkPanel(el("bulkPanel").hidden);el("bulkCancel").onclick=()=>toggleBulkPanel(false);el("bulkType").onchange=updateBulkCategories;el("bulkApply").onclick=bulkRecategorize;
 // Hoja rápida de alta, barra inferior con "+", filtro de periodo y filtros plegables
-[el("navAdd"),el("fabAdd"),el("mobileAddBtn")].forEach(b=>b.onclick=()=>openQuickSheet(null));
+[el("navAdd"),el("fabAdd"),el("addMovementBtn")].forEach(b=>b.onclick=()=>openQuickSheet(null));
 el("qsClose").onclick=closeQuickSheet;el("sheetBackdrop").onclick=closeQuickSheet;
 el("qsSave").onclick=()=>quickSave(false);el("qsSaveMore").onclick=()=>quickSave(true);el("qsDelete").onclick=quickDelete;
-el("qsType").querySelectorAll("[data-type]").forEach(b=>b.onclick=()=>setQsType(b.dataset.type));
+el("qsType").onchange=()=>{renderQsCategories(qs.lastCategory[el("qsType").value]);updateQuickAccountHint()};
+el("qsCategory").onchange=()=>updateQsInvest(true);
+el("qsAccount").onchange=updateQuickAccountHint;
 el("qsDate").addEventListener("change",syncQuickDateButtons);
 el("quickSheet").querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{
  el("qsDate").value=addDaysISO(todayISO(),Number(b.dataset.day));
@@ -3264,7 +3252,9 @@ el("quickSheet").querySelectorAll("[data-day]").forEach(b=>b.onclick=()=>{
 el("qsDesc").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();quickSave(false)}});
 el("qsAmount").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();el("qsDesc").focus()}});
 ["qsAmount","qsUnits"].forEach(id=>el(id).addEventListener("input",()=>updateUnitsHint("qsAmount","qsAsset","qsUnits","qsUnitsHint")));el("qsAsset").addEventListener("change",()=>updateUnitsHint("qsAmount","qsAsset","qsUnits","qsUnitsHint"));
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!el("quickSheet").hidden)closeQuickSheet()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&sheetIsOpen()&&!window.Swal?.isVisible())closeQuickSheet()});
+window.visualViewport?.addEventListener("resize",resizeMovementEditor);
+window.visualViewport?.addEventListener("scroll",resizeMovementEditor);
 el("periodPrev").onclick=()=>shiftPeriod(-1);el("periodNext").onclick=()=>shiftPeriod(1);
 el("toggleFilters").onclick=()=>{
  const collapsed=el("searchbar").classList.toggle("collapsed");
