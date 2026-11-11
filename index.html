@@ -367,6 +367,10 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 .dashboard-period-fields select:disabled{opacity:.65}
 .dashboard-section-title{grid-column:1/-1;margin:0;color:var(--muted);font-size:13px;font-weight:650;letter-spacing:.025em}
 #dashboardNetWorthCard{grid-column:1/-1;background:var(--soft)}
+.dashboard-net-worth-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
+#dashboardNetWorthCard .dashboard-net-worth-head .metric-label{margin:0}
+#dashboardNetWorthToggle{width:44px;height:44px;flex:none;background:transparent;color:var(--muted)}
+#dashboardNetWorthToggle:hover,#dashboardNetWorthToggle:active{background:var(--btn2-bg);color:var(--text)}
 @media(max-width:760px){
  #page-dashboard .page-head{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:8px;position:relative}
  #page-dashboard .page-head > div{grid-column:1/-1}
@@ -723,6 +727,8 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
   <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="M12 19V5"/><path d="m5 12 7-7 7 7"/></symbol>
   <symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14"/><path d="m19 12-7 7-7-7"/></symbol>
   <symbol id="i-trend" viewBox="0 0 24 24"><path d="m22 7-8.5 8.5-5-5L2 17"/><path d="M16 7h6v6"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6-10-6-10-6z"/><circle cx="12" cy="12" r="2.5"/></symbol>
+  <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="m3 3 18 18M10 6.2a11 11 0 0 1 2-.2c6.5 0 10 6 10 6a14 14 0 0 1-2.7 3.2M6.4 6.4A16 16 0 0 0 2 12s3.5 6 10 6a11 11 0 0 0 5.4-1.4"/></symbol>
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></symbol>
   <symbol id="i-funnel" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54z"/></symbol>
   <symbol id="i-pencil" viewBox="0 0 24 24"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></symbol>
@@ -899,7 +905,19 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 
       <div class="summary-grid" id="dashboardFinancialSummary">
         <h2 class="dashboard-section-title">Situación financiera</h2>
-        <div class="card" id="dashboardNetWorthCard"><div class="metric-label">Patrimonio neto</div><div class="metric-value" id="netWorth">0 €</div><div class="metric-sub desktop-only">Valor total de tus activos menos deudas</div><div class="metric-sub" id="assetCount">0 activos</div><div class="metric-sub" id="currentAccountNote" hidden></div><div class="metric-sub" id="portfolioUpdateDashboard">Sin actualizar</div></div>
+        <div class="card" id="dashboardNetWorthCard">
+          <div class="dashboard-net-worth-head">
+            <div class="metric-label">Patrimonio neto</div>
+            <button type="button" class="icon-btn" id="dashboardNetWorthToggle" aria-label="Ocultar importes de Patrimonio neto">
+              <svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg>
+            </button>
+          </div>
+          <div class="metric-value" id="netWorth">—</div>
+          <div class="metric-sub desktop-only">Valor total de tus activos menos deudas</div>
+          <div class="metric-sub" id="assetCount">0 activos</div>
+          <div class="metric-sub" id="currentAccountNote" hidden></div>
+          <div class="metric-sub" id="portfolioUpdateDashboard">Sin actualizar</div>
+        </div>
         <div class="card"><div class="metric-label">Ahorro acumulado</div><div class="metric-value" id="cumulativeSavings">0 €</div><div class="metric-sub">Ingresos menos gastos</div><details class="metric-detail"><summary>Cómo se calcula</summary>Se suma todo el histórico. Las inversiones no se restan porque siguen formando parte de tu ahorro.</details></div>
         <div class="card"><div class="metric-label">Rentabilidad fondos</div><div class="metric-value" id="portfolioReturn">0 €</div><div class="metric-sub" id="portfolioReturnPct">0,0 % sobre lo aportado</div><div class="metric-sub">Fondos con ISIN y cripto</div></div>
         <div class="card"><div class="metric-label">Colchón de liquidez</div><div class="metric-value" id="cushionMonths">—</div><div class="metric-sub" id="cushionCash">—</div><details class="metric-detail"><summary>Ver gasto medio</summary><div id="cushionSpend">—</div><div>El saldo disponible incluye cuentas y efectivo, excepto depósitos y SIALP.</div></details></div>
@@ -1250,6 +1268,9 @@ const months=["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto",
 const colors={Ingreso:"#16803b",Gasto:"#c73737","Inversión":"#2563eb"}; // se refresca desde los tokens CSS en renderCharts (modo claro/oscuro)
 function tok(name){return getComputedStyle(document.documentElement).getPropertyValue(name).trim()}
 const el=id=>document.getElementById(id);
+const DASHBOARD_BALANCES_KEY="finanzas.dashboardBalancesHidden";
+let dashboardBalancesHidden=false;
+try{dashboardBalancesHidden=localStorage.getItem(DASHBOARD_BALANCES_KEY)==="1"}catch{}
 let state=defaultState();
 let priceUpdateInProgress=false;
 const PRICE_FEED_URL="./prices.json"; // mismo repositorio que la web (GitHub Pages)
@@ -2148,6 +2169,23 @@ function layoutDashboardCards(){
    }
  });
 }
+function renderDashboardNetWorth({nw,debts,gross}){
+ const hidden=dashboardBalancesHidden,mask="•••••• €";
+ const value=el("netWorth"),account=el("currentAccountNote"),toggle=el("dashboardNetWorthToggle");
+ value.textContent=hidden?mask:euro.format(nw);
+ value.classList.toggle("negative",!hidden&&nw<0);
+ const count=state.assets.length;
+ el("assetCount").textContent=!hidden&&debts>0
+   ?`${euro.format(gross)} en activos − ${euro.format(debts)} de deudas`
+   :`${count} activo${count===1?"":"s"}`;
+ const cc=defaultAccount();
+ account.hidden=!cc;
+ account.textContent=cc?`${cc.name}: ${hidden?mask:euro.format(cc.value||0)}`:"";
+ const label=hidden?"Mostrar importes de Patrimonio neto":"Ocultar importes de Patrimonio neto";
+ toggle.setAttribute("aria-label",label);
+ toggle.title=label;
+ toggle.querySelector("use").setAttribute("href",hidden?"#i-eye-off":"#i-eye");
+}
 function renderSummary(){
  const s=calcSummary(periodMovements());
  el("sumIncome").textContent=euro.format(s.income);el("sumExpense").textContent=euro.format(s.expense);
@@ -2166,13 +2204,12 @@ function renderSummary(){
  }else{
    ["cmpIncome","cmpExpense","cmpInvestment"].forEach(id=>el(id).textContent="Compara en la vista mensual");
  }
- const {nw,invested,gain:portfolioGain}=portfolioTotals(),portfolioPct=invested?portfolioGain/invested*100:0;
+ const totals=portfolioTotals();
+ const {invested,gain:portfolioGain}=totals,portfolioPct=invested?portfolioGain/invested*100:0;
  el("portfolioReturn").textContent=`${portfolioGain>=0?"+":""}${euro.format(portfolioGain)}`;
  el("portfolioReturn").classList.toggle("negative",portfolioGain<0);el("portfolioReturn").classList.toggle("positive",portfolioGain>=0);
  el("portfolioReturnPct").textContent=invested?`${portfolioPct>=0?"+":""}${portfolioPct.toFixed(1).replace(".",",")} % sobre lo aportado`:"Sin capital aportado";
- const tot=portfolioTotals();el("netWorth").textContent=euro.format(nw);el("netWorth").classList.toggle("negative",nw<0);
- el("assetCount").textContent=tot.debts>0?`${euro.format(tot.gross)} en activos − ${euro.format(tot.debts)} de deudas`:`${state.assets.length} activo${state.assets.length===1?"":"s"}`;
- const cc=defaultAccount();el("currentAccountNote").hidden=!cc;if(cc)el("currentAccountNote").textContent=`${cc.name}: ${euro.format(cc.value||0)}`;
+ renderDashboardNetWorth(totals);
  const portfolioRef=latestPortfolioReference();
  el("portfolioUpdateDashboard").textContent=portfolioRef?`Actualizado ${formatDateTime(portfolioRef)}`:(state.assets.length?"Pendiente de registrar actualización":"Sin patrimonio");
  const all=calcSummary(state.movements);el("cumulativeSavings").textContent=euro.format(all.income-all.expense);
@@ -3342,6 +3379,12 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape"&&sheetIsOpen()&&!win
 el("quickSheet").addEventListener("focusin",keepMovementFieldVisible);
 window.visualViewport?.addEventListener("resize",resizeMovementEditor);
 window.visualViewport?.addEventListener("scroll",resizeMovementEditor);
+el("dashboardNetWorthToggle").onclick=()=>{
+ dashboardBalancesHidden=!dashboardBalancesHidden;
+ try{localStorage.setItem(DASHBOARD_BALANCES_KEY,dashboardBalancesHidden?"1":"0")}catch{}
+ renderDashboardNetWorth(portfolioTotals());
+ layoutDashboardCards();
+};
 el("periodPrev").onclick=()=>shiftPeriod(-1);el("periodNext").onclick=()=>shiftPeriod(1);
 el("toggleFilters").onclick=()=>{
  const collapsed=el("searchbar").classList.toggle("collapsed");
