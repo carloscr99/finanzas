@@ -291,7 +291,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 @media(max-width:760px){
  .app{display:block;padding:0}.sidebar{display:none}
  .content{padding:calc(12px + env(safe-area-inset-top)) 16px 16px}
- .page-head{display:block;margin-bottom:14px}.page-head h1{font-size:22px}.page-head p{font-size:13px}
+ .page-head{display:block;margin-bottom:14px}.page-head h1{font-size:29px;line-height:1.2;letter-spacing:-.035em}.page-head p{font-size:13px}
  .grid-2,.grid-3,.grid-4,.summary-grid{grid-template-columns:minmax(0,1fr)}
  .grid-2,.grid-3,.grid-4,.summary-grid{gap:12px}
  .form-grid,.form-grid-4,.searchbar{grid-template-columns:minmax(0,1fr)}
@@ -312,9 +312,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .panel,.card{border-radius:var(--radius)}
  .mobile-only:not([hidden]){display:block!important}.desktop-only{display:none!important}
  .seg.mobile-only:not([hidden]){display:inline-flex!important}
- .period-compact.mobile-only:not([hidden]),.mlist.mobile-only:not([hidden]){display:flex!important}
- #periodCompact{flex-direction:column;align-items:stretch;gap:10px} /* móvil: Mes/Año/Todo y el selector de periodo, uno encima del otro y a todo el ancho */
- #periodCompact .seg{display:flex!important}#periodCompact .seg button{flex:1;padding:9px 6px}#periodCompact .period-nav b{flex:1}
+ .mlist.mobile-only:not([hidden]){display:flex!important}
  .summary-grid,.grid-3{grid-template-columns:repeat(2,minmax(0,1fr))}
  .card{padding:14px}.metric-label{font-size:12px}.metric-value{font-size:22px}.metric-sub{font-size:11px}
  #page-dashboard .summary-grid .metric-value{font-size:25px;white-space:nowrap}
@@ -329,6 +327,36 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .sheet .form-actions{flex-direction:column}.sheet .form-actions button{width:100%;min-height:48px}
  .sheet label{font-size:14px}
  .mitem b{font-size:16px}
+}
+.dashboard-period{position:relative;flex:none;max-width:100%}
+.dashboard-period summary{
+  display:flex;align-items:center;gap:8px;min-height:42px;padding:8px 12px;list-style:none;
+  border:1px solid var(--border);border-radius:12px;background:var(--panel);color:var(--text);cursor:pointer;font-weight:600;
+}
+.dashboard-period summary::-webkit-details-marker{display:none}
+.dashboard-period summary .ico{transform:rotate(90deg)}
+.dashboard-period[open] summary .ico{transform:rotate(-90deg)}
+.dashboard-period-fields{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:14px;
+  border:1px solid var(--border);border-radius:16px;background:var(--panel);box-shadow:var(--shadow);
+}
+.dashboard-period-fields > :is(:first-child,button){grid-column:1/-1}
+.dashboard-period-fields select:disabled{opacity:.65}
+.dashboard-section-title{grid-column:1/-1;margin:0;color:var(--muted);font-size:13px;font-weight:650;letter-spacing:.025em}
+#dashboardNetWorthCard{grid-column:1/-1;background:var(--soft)}
+@media(max-width:760px){
+ #page-dashboard .page-head{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:8px;position:relative}
+ #page-dashboard .page-head > div{grid-column:1/-1}
+ #page-dashboard .dashboard-period{position:static;min-width:0}
+ .dashboard-period summary{justify-content:center;min-height:44px;text-align:center}
+ .dashboard-period-fields{position:absolute;z-index:5;inset:calc(100% + 8px) 0 auto}
+ .dashboard-period-fields select{font-size:16px}
+ button.dashboard-period-step{padding:0;min-height:44px;font-size:20px}
+ .dashboard-period-step:disabled{opacity:.5}
+ .summary-grid .metric-label{margin-bottom:4px}
+ .summary-grid .metric-value{line-height:1.2}
+ .summary-grid .metric-sub{margin-top:5px;line-height:1.4}
+ #page-dashboard #netWorth{font-size:clamp(26px,8vw,34px)}
 }
 /* Superficies compartidas por el diseño de escritorio y el de móvil. */
 .page :is(.panel,.card){border-radius:22px;box-shadow:none}
@@ -372,7 +400,6 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 }
 .asset-liquidity #transferDetails .form-grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}
 @media(max-width:760px){
- #page-assets .page-head h1{font-size:32px;letter-spacing:-.035em}
  #assetSplit,#page-assets > .summary-grid > .card:not(#assetNetWorthCard) .metric-sub{display:none}
  .asset-liquidity #transferDetails .form-grid-4{grid-template-columns:minmax(0,1fr)}
 }
@@ -424,12 +451,13 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .mobile-nav{
    inset:auto 8px max(4px, calc(env(safe-area-inset-bottom) - 10px));
    height:calc(var(--nav-h) + 6px);padding:4px;
-   grid-template-columns:minmax(0,.8fr) minmax(0,1.35fr) minmax(46px,.8fr) minmax(0,1.3fr) minmax(0,.75fr);
+   grid-template-columns:minmax(0,.75fr) minmax(0,1.42fr) minmax(46px,.8fr) minmax(0,1.36fr) minmax(0,.69fr);
    border:1px solid var(--border-strong);border-radius:28px;
    background:var(--nav-bg);box-shadow:0 6px 24px rgba(15,23,42,.18);
    -webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);
  }
- .mobile-nav button{font-size:10px;min-width:0}
+ .mobile-nav button{font-size:11px;min-width:0}
+ @media(max-width:340px){.mobile-nav button{font-size:10px}}
  .mobile-nav button[data-page]{border-radius:23px}
  .mobile-nav button[data-page].active{
    color:var(--text);
@@ -573,27 +601,10 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  #page-dashboard.active{display:grid;gap:16px}
  #page-dashboard > :is(.page-head,.summary-grid,.section-gap){margin-block:0}
  #page-dashboard .page-head{align-items:center}
- .dashboard-period{position:relative;flex:none;max-width:100%}
- .dashboard-period summary{
-   display:flex;align-items:center;gap:8px;min-height:42px;padding:8px 12px;list-style:none;
-   border:1px solid var(--border);border-radius:12px;background:var(--panel);color:var(--text);cursor:pointer;font-weight:600;
- }
- .dashboard-period summary::-webkit-details-marker{display:none}
- .dashboard-period summary .ico{transform:rotate(90deg)}
- .dashboard-period[open] summary .ico{transform:rotate(-90deg)}
  .dashboard-period-fields{
    position:absolute;z-index:5;inset:calc(100% + 8px) 0 auto auto;width:min(320px,calc(100vw - 32px));
-   display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:14px;
-   border:1px solid var(--border);border-radius:16px;background:var(--panel);box-shadow:var(--shadow);
  }
- .dashboard-period-fields > :is(:first-child,button){grid-column:1/-1}
- .dashboard-period-fields select:disabled{opacity:.65}
- .dashboard-section-title{grid-column:1/-1;margin:0;color:var(--muted);font-size:13px;font-weight:650;letter-spacing:.025em}
  #dashboardFinancialSummary{grid-template-columns:repeat(3,minmax(0,1fr))}
- #dashboardNetWorthCard{grid-column:1/-1;grid-row:2;background:var(--soft)}
- #dashboardSavingsCard{order:1}
- #dashboardReturnCard{order:2}
- #dashboardCushionCard{order:3}
  #page-dashboard #netWorth{font-size:clamp(32px,3.4vw,44px)}
  @media(max-width:900px){
    #dashboardFinancialSummary{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -829,7 +840,8 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
     <section id="page-dashboard" class="page active">
       <div class="page-head">
         <div><h1>Dashboard</h1><p>Resumen de tus finanzas, ahorro e inversiones.</p></div>
-        <details class="dashboard-period desktop-only" id="dashboardPeriod">
+        <button type="button" class="secondary mobile-only dashboard-period-step" id="periodPrev" aria-label="Periodo anterior">‹</button>
+        <details class="dashboard-period" id="dashboardPeriod">
           <summary><span id="dashboardPeriodLabel">Periodo</span><svg class="ico sm" aria-hidden="true"><use href="#i-caret-right"/></svg></summary>
           <div class="dashboard-period-fields">
             <div>
@@ -845,17 +857,11 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
             <button type="button" class="secondary" id="goCurrent">Periodo actual</button>
           </div>
         </details>
-      </div>
-
-      <div class="panel mobile-only">
-        <div class="period-compact mobile-only" id="periodCompact">
-          <div class="seg" id="periodModeSeg"><button data-mode="month" class="active">Mes</button><button data-mode="year">Año</button><button data-mode="all">Todo</button></div>
-          <div class="period-nav"><button class="secondary" id="periodPrev" aria-label="Periodo anterior">‹</button><b id="periodLabelText"></b><button class="secondary" id="periodNext" aria-label="Periodo siguiente">›</button></div>
-        </div>
+        <button type="button" class="secondary mobile-only dashboard-period-step" id="periodNext" aria-label="Periodo siguiente">›</button>
       </div>
 
       <div class="summary-grid section-gap">
-        <h2 class="dashboard-section-title desktop-only">Movimientos del periodo</h2>
+        <h2 class="dashboard-section-title">Movimientos del periodo</h2>
         <div class="card income"><div class="metric-label">Ingresos</div><div class="metric-value" id="sumIncome">0 €</div><div class="metric-sub" id="cmpIncome">—</div></div>
         <div class="card expense"><div class="metric-label">Gastos</div><div class="metric-value" id="sumExpense">0 €</div><div class="metric-sub" id="cmpExpense">—</div></div>
         <div class="card investment"><div class="metric-label">Inversiones</div><div class="metric-value" id="sumInvestment">0 €</div><div class="metric-sub" id="cmpInvestment">—</div></div>
@@ -863,11 +869,11 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
       </div>
 
       <div class="summary-grid" id="dashboardFinancialSummary">
-        <h2 class="dashboard-section-title desktop-only">Situación financiera</h2>
-        <div class="card" id="dashboardReturnCard"><div class="metric-label">Rentabilidad fondos</div><div class="metric-value" id="portfolioReturn">0 €</div><div class="metric-sub" id="portfolioReturnPct">0,0 % sobre lo aportado</div><div class="metric-sub">Solo fondos con ISIN y cripto</div></div>
+        <h2 class="dashboard-section-title">Situación financiera</h2>
         <div class="card" id="dashboardNetWorthCard"><div class="metric-label">Patrimonio neto</div><div class="metric-value" id="netWorth">0 €</div><div class="metric-sub desktop-only">Valor total de tus activos menos deudas</div><div class="metric-sub" id="assetCount">0 activos</div><div class="metric-sub" id="currentAccountNote" hidden></div><div class="metric-sub" id="portfolioUpdateDashboard">Sin actualizar</div></div>
-        <div class="card" id="dashboardSavingsCard"><div class="metric-label">Ahorro acumulado</div><div class="metric-value" id="cumulativeSavings">0 €</div><div class="metric-sub">Ingresos − gastos de todo el histórico. Las inversiones no se restan: no son gasto, es dinero que sigue siendo tuyo en fondos y cuentas de ahorro.</div></div>
-        <div class="card" id="dashboardCushionCard"><div class="metric-label">Colchón de liquidez</div><div class="metric-value" id="cushionMonths">—</div><div class="metric-sub" id="cushionCash">—</div><div class="metric-sub" id="cushionSpend">—</div></div>
+        <div class="card"><div class="metric-label">Ahorro acumulado</div><div class="metric-value" id="cumulativeSavings">0 €</div><div class="metric-sub">Ingresos − gastos de todo el histórico. Las inversiones no se restan: no son gasto, es dinero que sigue siendo tuyo en fondos y cuentas de ahorro.</div></div>
+        <div class="card"><div class="metric-label">Rentabilidad fondos</div><div class="metric-value" id="portfolioReturn">0 €</div><div class="metric-sub" id="portfolioReturnPct">0,0 % sobre lo aportado</div><div class="metric-sub">Solo fondos con ISIN y cripto</div></div>
+        <div class="card"><div class="metric-label">Colchón de liquidez</div><div class="metric-value" id="cushionMonths">—</div><div class="metric-sub" id="cushionCash">—</div><div class="metric-sub" id="cushionSpend">—</div></div>
       </div>
       <div class="inline-note section-gap" id="dataFreshness">Últimas actualizaciones: sin datos todavía.</div>
 
@@ -2100,7 +2106,7 @@ function pctChange(cur,prev){
 function layoutDashboardCards(){
  const range=document.createRange(),mobile=isMobile();
  document.querySelectorAll("#page-dashboard .summary-grid").forEach(grid=>{
-   const labels=[...grid.querySelectorAll(".metric-label")];
+   const labels=[...grid.querySelectorAll(".card:not(#dashboardNetWorthCard) .metric-label")];
    labels.forEach(label=>label.style.minHeight="");
    if(!mobile)return;
    for(let i=0;i+1<labels.length;i+=2){
@@ -3114,11 +3120,9 @@ function quickSave(keepOpen){
 }
 async function quickDelete(){if(!qs.editId)return;if(!(await uiConfirm("Esta acción no se puede deshacer.",{title:"¿Eliminar este movimiento?",danger:true,confirmText:"Eliminar"})))return;deleteMovementById(qs.editId);closeQuickSheet();toast("Movimiento eliminado")}
 
-function syncPeriodCompact(){
+function syncDashboardPeriod(){
  const p=selectedPeriod();
- el("periodModeSeg").querySelectorAll("button").forEach(b=>b.classList.toggle("active",b.dataset.mode===p.mode));
- el("periodLabelText").textContent=p.mode==="month"?`${months[p.month-1]} ${p.year}`:p.mode==="year"?String(p.year):"Todo el histórico";
- el("dashboardPeriodLabel").textContent=el("periodLabelText").textContent;
+ el("dashboardPeriodLabel").textContent=p.mode==="month"?`${months[p.month-1]} ${p.year}`:p.mode==="year"?String(p.year):"Todo el histórico";
  el("periodPrev").disabled=el("periodNext").disabled=p.mode==="all";
 }
 function ensureYearOption(y){const sel=el("yearFilter");if(![...sel.options].some(o=>Number(o.value)===y)){const o=document.createElement("option");o.value=y;o.textContent=y;sel.appendChild(o);[...sel.options].sort((a,b)=>Number(b.value)-Number(a.value)).forEach(o=>sel.appendChild(o))}}
@@ -3189,7 +3193,7 @@ async function clearAll(){if(!(await uiConfirm("Se borrarán movimientos, catego
 function renderAll(){
  refreshDerivedAssets();renderTransferForm();
  renderCategoryList();updateMovementCategories();updateRecurringCategories();renderSearchCategories();renderAccountSelect("mAccount","mAccountWrap");renderAccountSelect("rAccount","rAccountWrap");updateAccountHint();
- renderSummary();renderMovements();renderRecurring();renderAssets();renderCategorySummary();renderPatrimonyRank();renderReturnRank();renderBudgets();renderBudgetTable();renderFreshness();renderDataSize();syncPeriodCompact();
+ renderSummary();renderMovements();renderRecurring();renderAssets();renderCategorySummary();renderPatrimonyRank();renderReturnRank();renderBudgets();renderBudgetTable();renderFreshness();renderDataSize();syncDashboardPeriod();
  if(el("page-dashboard").classList.contains("active"))renderCharts();
  if(el("page-assets").classList.contains("active"))drawNetWorthChart();
 }
@@ -3235,7 +3239,7 @@ el("pushEnable").onclick=enablePush;el("pushDisable").onclick=disablePush;el("pu
 el("sumTypeToggle").querySelectorAll("[data-sumtype]").forEach(b=>b.onclick=()=>{sumType=b.dataset.sumtype;renderCategorySummary()});
 el("clearFilters").onclick=clearMovementFilters;
 el("bulkToggle").onclick=()=>toggleBulkPanel(el("bulkPanel").hidden);el("bulkCancel").onclick=()=>toggleBulkPanel(false);el("bulkType").onchange=updateBulkCategories;el("bulkApply").onclick=bulkRecategorize;
-// Hoja rápida de alta, barra inferior con "+", selector compacto, filtros plegables y cambios de tamaño
+// Hoja rápida de alta, barra inferior con "+", filtro de periodo y filtros plegables
 [el("navAdd"),el("fabAdd"),el("mobileAddBtn")].forEach(b=>b.onclick=()=>openQuickSheet(null));
 el("qsClose").onclick=closeQuickSheet;el("sheetBackdrop").onclick=closeQuickSheet;
 el("qsSave").onclick=()=>quickSave(false);el("qsSaveMore").onclick=()=>quickSave(true);el("qsDelete").onclick=quickDelete;
@@ -3249,7 +3253,6 @@ el("qsDesc").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault
 el("qsAmount").addEventListener("keydown",e=>{if(e.key==="Enter"){e.preventDefault();el("qsDesc").focus()}});
 ["qsAmount","qsUnits"].forEach(id=>el(id).addEventListener("input",()=>updateUnitsHint("qsAmount","qsAsset","qsUnits","qsUnitsHint")));el("qsAsset").addEventListener("change",()=>updateUnitsHint("qsAmount","qsAsset","qsUnits","qsUnitsHint"));
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!el("quickSheet").hidden)closeQuickSheet()});
-el("periodModeSeg").querySelectorAll("[data-mode]").forEach(b=>b.onclick=()=>{el("periodMode").value=b.dataset.mode;updatePeriodControls();renderAll()});
 el("periodPrev").onclick=()=>shiftPeriod(-1);el("periodNext").onclick=()=>shiftPeriod(1);
 el("toggleFilters").onclick=()=>{
  const collapsed=el("searchbar").classList.toggle("collapsed");
