@@ -369,8 +369,9 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 #dashboardNetWorthCard{grid-column:1/-1;background:var(--soft)}
 .dashboard-net-worth-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
 #dashboardNetWorthCard .dashboard-net-worth-head .metric-label{margin:0}
-#dashboardNetWorthToggle{width:44px;height:44px;flex:none;background:transparent;color:var(--muted)}
-#dashboardNetWorthToggle:hover,#dashboardNetWorthToggle:active{background:var(--btn2-bg);color:var(--text)}
+#dashboardNetWorthToggle{width:44px;height:44px;flex:none;background:var(--btn2-bg);color:var(--muted)}
+#dashboardNetWorthToggle:hover,#dashboardNetWorthToggle:active{color:var(--text)}
+#netWorth.is-masked{color:var(--muted);font-weight:650}
 @media(max-width:760px){
  #page-dashboard .page-head{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:8px;position:relative}
  #page-dashboard .page-head > div{grid-column:1/-1}
@@ -2170,9 +2171,10 @@ function layoutDashboardCards(){
  });
 }
 function renderDashboardNetWorth({nw,debts,gross}){
- const hidden=dashboardBalancesHidden,mask="•••••• €";
+ const hidden=dashboardBalancesHidden,mask="••••";
  const value=el("netWorth"),account=el("currentAccountNote"),toggle=el("dashboardNetWorthToggle");
  value.textContent=hidden?mask:euro.format(nw);
+ value.classList.toggle("is-masked",hidden);
  value.classList.toggle("negative",!hidden&&nw<0);
  const count=state.assets.length;
  el("assetCount").textContent=!hidden&&debts>0
