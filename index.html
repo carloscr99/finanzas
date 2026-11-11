@@ -663,6 +663,8 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
    border:1px solid var(--border);border-radius:26px;transform:translate(-50%,calc(-50% + 12px));
  }
  #quickSheet.open{transform:translate(-50%,-50%)}
+ #quickSheet :is(#qsAmount,#qsType){height:46px}
+ #quickSheet #qsAmount{padding-block:6px;line-height:1.2}
  :is(#assetDetail,#quickSheet) .sheet-handle{display:none}
  .fab{background:var(--action-blue);color:#fff}
  #categoryList{display:grid;gap:0;padding-top:6px;border-top:1px solid var(--border)}
@@ -1155,7 +1157,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
   <div class="sheet-handle" id="sheetHandle"></div>
   <div class="sheet-head" id="sheetHead"><h2 id="qsTitle">Nuevo movimiento</h2><button type="button" class="icon-btn" id="qsClose" aria-label="Cerrar"><svg class="ico sm" aria-hidden="true"><use href="#i-x"/></svg></button></div>
   <div class="movement-editor-fields">
-    <div class="movement-editor-wide">
+    <div>
       <label for="qsAmount">Importe (€)</label>
       <input id="qsAmount" class="big-amount" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off">
     </div>
