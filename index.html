@@ -361,6 +361,15 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 /* Superficies compartidas por el diseño de escritorio y el de móvil. */
 .page :is(.panel,.card){border-radius:22px;box-shadow:none}
 #page-dashboard .metric-label{font-weight:600}
+#page-dashboard .metric-detail{margin-top:6px;color:var(--muted);font-size:12px;line-height:1.4}
+#page-dashboard .metric-detail summary{width:fit-content;min-height:28px;align-content:center;cursor:pointer;color:var(--text);font-weight:600}
+@media(max-width:760px){
+ #page-dashboard .metric-detail{font-size:11px}
+ #dataFreshness .freshness-item{display:grid;gap:1px}
+ #dataFreshness .freshness-date{color:var(--text);font-variant-numeric:tabular-nums}
+ #dataFreshness .freshness-colon{display:none}
+ #page-dashboard #cushionMonths{font-size:clamp(18px,5.5vw,22px)}
+}
 #page-dashboard .chart-head h2{letter-spacing:-.02em}
 #dataFreshness{padding:12px 14px;border-radius:16px;background:var(--panel);font-size:12px}
 #dataFreshness b{color:var(--text);font-size:13px}
@@ -874,9 +883,9 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
       <div class="summary-grid" id="dashboardFinancialSummary">
         <h2 class="dashboard-section-title">Situación financiera</h2>
         <div class="card" id="dashboardNetWorthCard"><div class="metric-label">Patrimonio neto</div><div class="metric-value" id="netWorth">0 €</div><div class="metric-sub desktop-only">Valor total de tus activos menos deudas</div><div class="metric-sub" id="assetCount">0 activos</div><div class="metric-sub" id="currentAccountNote" hidden></div><div class="metric-sub" id="portfolioUpdateDashboard">Sin actualizar</div></div>
-        <div class="card"><div class="metric-label">Ahorro acumulado</div><div class="metric-value" id="cumulativeSavings">0 €</div><div class="metric-sub">Ingresos − gastos de todo el histórico. Las inversiones no se restan: no son gasto, es dinero que sigue siendo tuyo en fondos y cuentas de ahorro.</div></div>
-        <div class="card"><div class="metric-label">Rentabilidad fondos</div><div class="metric-value" id="portfolioReturn">0 €</div><div class="metric-sub" id="portfolioReturnPct">0,0 % sobre lo aportado</div><div class="metric-sub">Solo fondos con ISIN y cripto</div></div>
-        <div class="card"><div class="metric-label">Colchón de liquidez</div><div class="metric-value" id="cushionMonths">—</div><div class="metric-sub" id="cushionCash">—</div><div class="metric-sub" id="cushionSpend">—</div></div>
+        <div class="card"><div class="metric-label">Ahorro acumulado</div><div class="metric-value" id="cumulativeSavings">0 €</div><div class="metric-sub">Ingresos menos gastos</div><details class="metric-detail"><summary>Cómo se calcula</summary>Se suma todo el histórico. Las inversiones no se restan porque siguen formando parte de tu ahorro.</details></div>
+        <div class="card"><div class="metric-label">Rentabilidad fondos</div><div class="metric-value" id="portfolioReturn">0 €</div><div class="metric-sub" id="portfolioReturnPct">0,0 % sobre lo aportado</div><div class="metric-sub">Fondos con ISIN y cripto</div></div>
+        <div class="card"><div class="metric-label">Colchón de liquidez</div><div class="metric-value" id="cushionMonths">—</div><div class="metric-sub" id="cushionCash">—</div><details class="metric-detail"><summary>Ver gasto medio</summary><div id="cushionSpend">—</div><div>El saldo disponible incluye cuentas y efectivo, excepto depósitos y SIALP.</div></details></div>
         <div class="inline-note" id="dataFreshness">Últimas actualizaciones: sin datos todavía.</div>
       </div>
 
@@ -2139,7 +2148,7 @@ function renderSummary(){
  el("sumBalance").classList.toggle("negative",s.balance<0);el("sumBalance").classList.toggle("positive",s.balance>=0);
  // Tasa de ahorro: lo que no se gasta de lo que entra. Las inversiones cuentan como ahorro, no como gasto.
  const rate=s.income?(s.income-s.expense)/s.income*100:null;
- el("savingsRate").textContent=rate===null?"Tasa de ahorro: sin ingresos":`Tasa de ahorro: ${rate.toFixed(1).replace(".",",")} % (lo invertido + lo que no has gastado)`;
+ el("savingsRate").textContent=rate===null?"Tasa de ahorro: sin ingresos":`${rate.toFixed(1).replace(".",",")} % de ahorro`;
 
  const p=selectedPeriod();
  if(p.mode==="month"){
@@ -2148,7 +2157,7 @@ function renderSummary(){
    el("cmpExpense").textContent=pctChange(s.expense,prev.expense);
    el("cmpInvestment").textContent=pctChange(s.investment,prev.investment);
  }else{
-   ["cmpIncome","cmpExpense","cmpInvestment"].forEach(id=>el(id).textContent="Comparación disponible en vista mensual");
+   ["cmpIncome","cmpExpense","cmpInvestment"].forEach(id=>el(id).textContent="Compara en la vista mensual");
  }
  const {nw,invested,gain:portfolioGain}=portfolioTotals(),portfolioPct=invested?portfolioGain/invested*100:0;
  el("portfolioReturn").textContent=`${portfolioGain>=0?"+":""}${euro.format(portfolioGain)}`;
@@ -2171,7 +2180,7 @@ function renderCushion(){
  const now=new Date();let y=now.getFullYear(),m=now.getMonth()+1,spent=0,months=0;
  for(let i=0;i<12;i++){({y,m}=prevMonth(y,m));const key=`${y}-${String(m).padStart(2,"0")}`;if(!first||key<first)break;spent+=calcSummary(monthMovements(y,m)).expense;months++}
  const avg=months?spent/months:0;
- el("cushionCash").textContent=`${euro.format(cash)} en cuentas y efectivo (sin depósitos ni SIALP)`;
+ el("cushionCash").textContent=`${euro.format(cash)} disponibles`;
  el("cushionSpend").textContent=avg?`Gasto medio: ${euro.format(avg)}/mes (${months} mes${months===1?"":"es"})`:"Sin meses completos de gasto";
  el("cushionMonths").textContent=avg?`${(cash/avg).toFixed(1).replace(".",",")} meses`:"—";
 }
@@ -2194,7 +2203,7 @@ function renderFreshness(){
    const updates=[["Movimientos",mov],["Patrimonio",port],["Cotizaciones",prices]];
    const separator='<span class="freshness-separator"> · </span>';
    node.innerHTML="<b>Últimas actualizaciones</b>"+separator+
-     updates.map(([label,date])=>`<span>${label}: ${formatDateTime(date)}</span>`).join(separator);
+     updates.map(([label,date])=>`<span class="freshness-item"><span>${label}<span class="freshness-colon">: </span></span><span class="freshness-date">${formatDateTime(date)}</span></span>`).join(separator);
  }
 }
 function updateMovementCategories(){
