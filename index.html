@@ -169,7 +169,17 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 }
 .movement-editor-fields{min-height:0;overflow:auto;overscroll-behavior:contain;align-items:end;padding:3px}
 .movement-editor-wide{grid-column:1/-1}
-.movement-editor-fields :is(input,select),#qsCategoryToggle{height:46px;border-radius:12px}
+.movement-editor-fields :is(input:not([type="radio"]),select),#qsCategoryToggle{height:46px;border-radius:12px}
+#qsAmount{height:48px;font-size:19px;font-weight:650;padding-block:6px}
+.movement-editor-type-label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
+#qsType{display:flex;height:48px;padding:3px;border-radius:12px}
+#qsType label{
+ position:relative;flex:1;min-width:0;margin:0;border-radius:8px;
+ display:grid;place-items:center;color:var(--muted);font-weight:600;cursor:pointer;
+}
+#qsType input{position:absolute;opacity:0;width:1px;height:1px;min-height:0;padding:0}
+#qsType label:has(input:checked){background:var(--primary);color:var(--on-primary)}
+#qsType label:has(input:focus-visible){outline:2px solid var(--ring);outline-offset:-2px}
 .movement-editor-category{min-width:0}
 .movement-editor-category-label{display:block;color:var(--muted);font-size:13px;margin-bottom:6px}
 #qsCategoryToggle{
@@ -1193,8 +1203,12 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
       <input id="qsAmount" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off">
     </div>
     <div>
-      <label for="qsType">Tipo</label>
-      <select id="qsType"><option>Gasto</option><option>Ingreso</option><option>Inversión</option></select>
+      <span class="movement-editor-type-label" id="qsTypeLabel">Tipo</span>
+      <div class="seg" id="qsType" role="radiogroup" aria-labelledby="qsTypeLabel">
+        <label><input type="radio" name="qsType" value="Gasto" checked>Gasto</label>
+        <label><input type="radio" name="qsType" value="Ingreso">Ingreso</label>
+        <label><input type="radio" name="qsType" value="Inversión">Inversión</label>
+      </div>
     </div>
     <div class="movement-editor-wide">
       <label for="qsDesc">Concepto</label>
@@ -1966,7 +1980,7 @@ function renderAccountSelect(selId,wrapId,selected){
 function resetAccountSelect(selId){const sel=el(selId);if(sel.options.length)sel.value=defaultAccount()?.id||NO_ACCOUNT}
 function updateQuickAccountHint(){
  const h=el("qsAccountHint"),sel=el("qsAccount");if(el("qsAccountWrap").hidden)return
- const a=state.assets.find(x=>x.id===sel.value),type=el("qsType").value;
+ const a=state.assets.find(x=>x.id===sel.value),type=quickMovementType();
  h.textContent=!a?"El movimiento no toca ningún saldo del patrimonio.":isCurrentAccount(a)?`${a.name}: el saldo calculado se mueve solo con este movimiento.`:type==="Ingreso"?`${a.name}: el importe se suma al saldo (no cuenta como aportado).`:`${a.name}: el importe se resta del saldo y de lo aportado.`;
 }
 function movementNet(m){const v=Number(m.amount)||0;return m.type==="Ingreso"?v:-v}
@@ -3073,8 +3087,9 @@ function toast(msg){const t=el("toast");t.textContent=msg;t.hidden=false;clearTi
 function parseAmount(s){let t=String(s||"").trim().replace(/[\s€]/g,"");if(t.includes(".")&&t.includes(","))t=t.replace(/\./g,"").replace(",",".");else if(t.includes(","))t=t.replace(",",".");return t?Number(t):NaN}
 
 const qs={editId:null};
+function quickMovementType(){return el("qsType").querySelector("input:checked").value}
 function categoryUsage(type){const c=new Map();state.movements.forEach(m=>{if(m.type===type)c.set(m.categoryId,(c.get(m.categoryId)||0)+1)});return c}
-function qsCategories(){const type=el("qsType").value,usage=categoryUsage(type);return state.categories.filter(c=>c.type===type).sort((a,b)=>(usage.get(b.id)||0)-(usage.get(a.id)||0)||a.name.localeCompare(b.name,"es"))}
+function qsCategories(){const type=quickMovementType(),usage=categoryUsage(type);return state.categories.filter(c=>c.type===type).sort((a,b)=>(usage.get(b.id)||0)-(usage.get(a.id)||0)||a.name.localeCompare(b.name,"es"))}
 function setQsCategoryOptionsOpen(open){
  el("qsCategoryToggle").setAttribute("aria-expanded",String(open));
  el("qsCategoryOptions").hidden=!open;
@@ -3109,7 +3124,7 @@ function renderQsCategories(selectedId){
 }
 function updateQsInvest(reset){
  const categoryId=el("qsCategory").value,compatible=state.assets.filter(isInvestmentAsset);
- const show=investmentCategoryUsesUnits(el("qsType").value,categoryId,compatible);
+ const show=investmentCategoryUsesUnits(quickMovementType(),categoryId,compatible);
  el("qsInvest").hidden=!show;
  if(!show)return;
  renderInvestmentAssetSelect("qsAsset",categoryId,compatible,reset);
@@ -3135,8 +3150,9 @@ function fillQuickMovementForm(movement){
  el("qsDate").value=movement?movement.date:todayISO();
  syncQuickDateButtons();
  el("qsUnits").value=movement?.units?String(movement.units).replace(".",","):"";
- const type=movement?.type||"Gasto";
- el("qsType").value=type;
+ const types=[...el("qsType").querySelectorAll("input")];
+ const selectedType=types.find(input=>input.value===movement?.type)||types[0];
+ selectedType.checked=true;
  el("qsAsset").replaceChildren();
  renderQsCategories(movement?.categoryId);
  if(movement?.assetId&&[...el("qsAsset").options].some(option=>option.value===movement.assetId)){el("qsAsset").value=movement.assetId;updateUnitsHint("qsAmount","qsAsset","qsUnits","qsUnitsHint")}
@@ -3154,7 +3170,7 @@ function openQuickSheet(movement){
  resizeMovementEditor();
  void sheet.offsetHeight; // fuerza el reflow para que la transición de entrada se ejecute desde display:none
  backdrop.classList.add("open");sheet.classList.add("open");
- (isMobile()?el("qsClose"):el("qsAmount")).focus({preventScroll:true});
+ el("qsAmount").focus({preventScroll:true});
  syncBackTrap();
 }
 let sheetCloseTimer=null,sheetOpener=null,editorScrollFrame=0;
@@ -3198,7 +3214,7 @@ function enableSheetSwipe(){
  [el("sheetHandle"),el("sheetHead")].forEach(n=>{n.addEventListener("touchstart",start,{passive:true});n.addEventListener("touchmove",move,{passive:true});n.addEventListener("touchend",end);n.addEventListener("touchcancel",end)});
 }
 function quickSave(keepOpen){
- const amount=parseAmount(el("qsAmount").value),description=el("qsDesc").value.trim(),date=el("qsDate").value,type=el("qsType").value,categoryId=el("qsCategory").value;
+ const amount=parseAmount(el("qsAmount").value),description=el("qsDesc").value.trim(),date=el("qsDate").value,type=quickMovementType(),categoryId=el("qsCategory").value;
  const usesUnits=investmentCategoryUsesUnits(type,categoryId),assetId=usesUnits?el("qsAsset").value:"",units=usesUnits?parseAmount(el("qsUnits").value):0,accountId=el("qsAccountWrap").hidden?"":el("qsAccount").value;
  const wasEdit=!!qs.editId;
  const err=persistMovement({date,type,categoryId,description,amount,usesUnits,assetId,units,accountId},qs.editId);
