@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-14T13:07:37.099Z",
+  "updatedAt": "2026-11-14T21:49:12.311Z",
   "currency": "EUR",
   "assets": {
     "LU0996182563": {
@@ -52,8 +52,8 @@
     },
     "IE00BFZMJT78": {
       "name": "Neuberger Berman Short Duration Euro Bond Fund EUR I Acc",
-      "price": 118.41,
-      "priceDate": "2026-11-12",
+      "price": 118.36,
+      "priceDate": "2026-11-13",
       "source": "Financial Times (markets.ft.com)",
       "history": {
         "2026-10-23": 117.45,
@@ -70,12 +70,13 @@
         "2026-11-09": 118.36,
         "2026-11-10": 118.5,
         "2026-11-11": 118.46,
-        "2026-11-12": 118.41
+        "2026-11-12": 118.41,
+        "2026-11-13": 118.36
       }
     },
     "BTC": {
       "name": "Bitcoin",
-      "price": 60572,
+      "price": 58514,
       "priceDate": "2026-11-14",
       "source": "CoinGecko",
       "history": {
@@ -100,13 +101,13 @@
         "2026-11-11": 66581,
         "2026-11-12": 64559,
         "2026-11-13": 61945,
-        "2026-11-14": 60572
+        "2026-11-14": 58514
       }
     },
     "IE00BYX5NX33": {
       "name": "Fidelity MSCI World Index Fund EUR P Acc",
       "price": 14.61,
-      "priceDate": "2026-11-12",
+      "priceDate": "2026-11-13",
       "source": "Financial Times (markets.ft.com)",
       "history": {
         "2026-10-23": 14.44,
@@ -123,7 +124,8 @@
         "2026-11-09": 14.37,
         "2026-11-10": 14.39,
         "2026-11-11": 14.62,
-        "2026-11-12": 14.61
+        "2026-11-12": 14.61,
+        "2026-11-13": 14.61
       }
     },
     "IE0031786696": {
