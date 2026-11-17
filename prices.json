@@ -1,11 +1,11 @@
 {
-  "updatedAt": "2026-11-17T01:18:27.279Z",
+  "updatedAt": "2026-11-17T15:38:33.411Z",
   "currency": "EUR",
   "assets": {
     "LU0996182563": {
       "name": "Amundi Index MSCI World AE-C",
-      "price": 439.45,
-      "priceDate": "2026-11-13",
+      "price": 433.48,
+      "priceDate": "2026-11-16",
       "source": "Financial Times (markets.ft.com)",
       "history": {
         "2026-10-21": 440.9,
@@ -24,13 +24,14 @@
         "2026-11-10": 432.98,
         "2026-11-11": 439.76,
         "2026-11-12": 439.78,
-        "2026-11-13": 439.45
+        "2026-11-13": 439.45,
+        "2026-11-16": 433.48
       }
     },
     "LU0996177134": {
       "name": "Amundi Index MSCI Emerging Markets AE-C",
-      "price": 239.47,
-      "priceDate": "2026-11-13",
+      "price": 233.32,
+      "priceDate": "2026-11-16",
       "source": "Financial Times (markets.ft.com)",
       "history": {
         "2026-10-21": 247.05,
@@ -49,13 +50,14 @@
         "2026-11-10": 238.19,
         "2026-11-11": 243.53,
         "2026-11-12": 239.36,
-        "2026-11-13": 239.47
+        "2026-11-13": 239.47,
+        "2026-11-16": 233.32
       }
     },
     "IE00BFZMJT78": {
       "name": "Neuberger Berman Short Duration Euro Bond Fund EUR I Acc",
-      "price": 118.36,
-      "priceDate": "2026-11-13",
+      "price": 118.31,
+      "priceDate": "2026-11-16",
       "source": "Financial Times (markets.ft.com)",
       "history": {
         "2026-10-23": 117.45,
@@ -73,12 +75,13 @@
         "2026-11-10": 118.5,
         "2026-11-11": 118.46,
         "2026-11-12": 118.41,
-        "2026-11-13": 118.36
+        "2026-11-13": 118.36,
+        "2026-11-16": 118.31
       }
     },
     "BTC": {
       "name": "Bitcoin",
-      "price": 58771,
+      "price": 58816,
       "priceDate": "2026-11-17",
       "source": "CoinGecko",
       "history": {
@@ -106,13 +109,13 @@
         "2026-11-14": 58514,
         "2026-11-15": 59092,
         "2026-11-16": 58946,
-        "2026-11-17": 58771
+        "2026-11-17": 58816
       }
     },
     "IE00BYX5NX33": {
       "name": "Fidelity MSCI World Index Fund EUR P Acc",
-      "price": 14.61,
-      "priceDate": "2026-11-13",
+      "price": 14.4,
+      "priceDate": "2026-11-16",
       "source": "Financial Times (markets.ft.com)",
       "history": {
         "2026-10-23": 14.44,
@@ -130,7 +133,8 @@
         "2026-11-10": 14.39,
         "2026-11-11": 14.62,
         "2026-11-12": 14.61,
-        "2026-11-13": 14.61
+        "2026-11-13": 14.61,
+        "2026-11-16": 14.4
       }
     },
     "IE0031786696": {
@@ -160,8 +164,8 @@
     "IE00B4ND3602": {
       "name": "iShares Physical Gold ETC",
       "symbol": "PPFB:GER:EUR",
-      "price": 67.96,
-      "priceDate": "2026-11-16",
+      "price": 68.23,
+      "priceDate": "2026-11-17",
       "source": "Financial Times (markets.ft.com)",
       "history": {
         "2026-10-23": 69.23,
@@ -180,7 +184,8 @@
         "2026-11-11": 69.96,
         "2026-11-12": 67.83,
         "2026-11-13": 68.28,
-        "2026-11-16": 67.96
+        "2026-11-16": 67.96,
+        "2026-11-17": 68.23
       }
     },
     "IE00BH65QP47": {
