@@ -76,7 +76,7 @@ button{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:tran
 .page{display:none}.page.active{display:block}
 .page-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px}
 .page-head h1{margin:0 0 4px;font-size:29px}.page-head p{margin:0;color:var(--muted)}
-.panel,.card{background:var(--panel);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow)}
+.panel,.card{min-width:0;background:var(--panel);border:1px solid var(--border);border-radius:18px;box-shadow:var(--shadow)}
 .panel{padding:18px}.card{padding:18px}
 .grid-2,.grid-3,.grid-4,.summary-grid{display:grid;gap:16px}
 .grid-2{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -669,7 +669,14 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  :is(#summaryRank,#patrimonyRank) .cs-table{min-width:550px}
  #movementFilters{padding:0;border:0;background:none}
  .movement-filter-controls{padding:18px;border:1px solid var(--border);border-radius:22px;background:var(--panel)}
- .movement-filter-controls .searchbar{margin-bottom:0}
+ .movement-filter-controls{container-type:inline-size}
+ .movement-filter-controls .searchbar{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:0}
+ .movement-filter-controls .searchbar > :first-child{grid-column:1/-1}
+ @container(min-width:900px){
+   .movement-filter-controls .searchbar{grid-template-columns:2fr repeat(4,minmax(0,1fr))}
+   .movement-filter-controls .searchbar > :first-child{grid-column:auto}
+ }
+ .page :is(.form-grid,.form-grid-4){grid-template-columns:repeat(auto-fit,minmax(min(100%,180px),1fr))}
  .movement-filter-controls #searchText{background:var(--soft)}
  .movement-list-tools{justify-content:space-between}
  .movement-count{font-size:15px;color:var(--muted)}
@@ -704,12 +711,23 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  #categoryList .category-name{overflow-wrap:anywhere;font-weight:600}
  .settings-group{padding:20px}
 }
-@media(min-width:761px) and (max-width:1020px){
+@media(min-width:761px) and (max-width:1200px){
  .app{grid-template-columns:180px minmax(0,1fr);gap:16px;padding:12px}
  .sidebar{top:12px;height:calc(100dvh - 24px)}
- #page-dashboard > .grid-2{grid-template-columns:minmax(0,1fr)}
+ .summary-grid,.grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .grid-2{grid-template-columns:minmax(0,1fr)}
+ #dashboardFinancialSummary{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .category-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .category-fields > :last-child{grid-column:1/-1}
+ #bulkPanel .grid-3{grid-template-columns:repeat(2,minmax(0,1fr))}
+ #bulkPanel .grid-3 > :last-child{grid-column:1/-1}
+ :is(#movementFilters,#page-recurring,#budgetsPanel) .table-wrap table{min-width:760px}
+ .page-head{flex-wrap:wrap}
+ input[type="date"]{display:flex;align-items:center;padding:0 10px;min-width:0}
+ input[type="date"]::-webkit-date-and-time-value{min-width:0;text-align:left}
+ input[type="date"]::-webkit-datetime-edit{min-width:0;padding-block:0}
 }
-@media(min-width:1101px){
+@media(min-width:1201px){
  #assetGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
  #assetGrid > :only-child{grid-column:1/-1}
  .settings-panel{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
@@ -967,7 +985,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
     </section>
 
     <section id="page-movements" class="page">
-      <div class="page-head"><div><h1>Movimientos</h1><p>Añade, busca, edita y filtra tus operaciones.</p></div><button type="button" class="primary" id="addMovementBtn">Nuevo movimiento</button></div>
+      <div class="page-head"><div><h1>Movimientos</h1><p>Añade, busca, edita y filtra tus operaciones.</p></div><button type="button" class="primary mobile-only" id="addMovementBtn">Nuevo movimiento</button></div>
       <div class="panel section-gap" id="movementFilters">
         <div class="movement-filter-controls">
           <div class="chart-head">
@@ -980,8 +998,8 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
           <div class="inline-note" id="filterNotice" hidden style="margin-bottom:12px"><span id="filterNoticeText"></span></div>
           <div class="searchbar collapsed" id="searchbar">
             <div><label for="searchText">Buscar</label><input id="searchText" type="search" placeholder="Concepto o categoría"></div>
-            <div><label>Tipo</label><select id="searchType"><option value="">Todos</option><option>Ingreso</option><option>Gasto</option><option>Inversión</option></select></div>
-            <div><label>Categoría</label><select id="searchCategory"><option value="">Todas</option></select></div>
+            <div><label for="searchType">Tipo</label><select id="searchType"><option value="">Todos</option><option>Ingreso</option><option>Gasto</option><option>Inversión</option></select></div>
+            <div><label for="searchCategory">Categoría</label><select id="searchCategory"><option value="">Todas</option></select></div>
             <div><label for="searchFrom">Desde</label><input id="searchFrom" type="date"></div>
             <div><label for="searchTo">Hasta</label><input id="searchTo" type="date"></div>
           </div>
