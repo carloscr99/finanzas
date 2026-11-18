@@ -85,7 +85,7 @@ button{cursor:pointer;touch-action:manipulation;-webkit-tap-highlight-color:tran
 .category-fields #cIconBtn{width:44px;border-radius:10px}
 .category-fields .name-ico select{flex:1;min-width:0}
 .category-fields #addCategory{width:100%}
-@media(min-width:761px){
+@media(min-width:1201px) and (any-hover:hover), (min-width:1367px){
  .category-fields{grid-template-columns:minmax(0,1fr) minmax(0,1fr) 160px;align-items:end}
  .category-fields :is(input,select,#clearCategoryFilters){min-height:44px}
  .category-fields #clearCategoryFilters{width:100%;font-size:inherit}
@@ -325,7 +325,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 @media(display-mode:standalone){
  html{overscroll-behavior-y:none}
 }
-@media(max-width:760px){
+@media(max-width:1200px), (max-width:1366px) and (any-hover:none){
  .app{display:block;padding:0}.sidebar{display:none}
  .content{padding:calc(12px + env(safe-area-inset-top)) 16px 16px}
  .page-head{display:block;margin-bottom:14px}.page-head h1{font-size:29px;line-height:1.2;letter-spacing:-.035em}.page-head p{font-size:13px}
@@ -382,7 +382,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 #dashboardNetWorthToggle{width:44px;height:44px;flex:none;background:var(--btn2-bg);color:var(--muted)}
 #dashboardNetWorthToggle:hover,#dashboardNetWorthToggle:active{color:var(--text)}
 #netWorth.is-masked{color:var(--muted);font-weight:650}
-@media(max-width:760px){
+@media(max-width:1200px), (max-width:1366px) and (any-hover:none){
  #page-dashboard .page-head{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:8px;position:relative}
  #page-dashboard .page-head > div{grid-column:1/-1}
  #page-dashboard .dashboard-period{position:static;min-width:0}
@@ -401,7 +401,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 #page-dashboard .metric-label{font-weight:600}
 #page-dashboard .metric-detail{margin-top:6px;color:var(--muted);font-size:12px;line-height:1.4}
 #page-dashboard .metric-detail summary{width:fit-content;min-height:28px;align-content:center;cursor:pointer;color:var(--text);font-weight:600}
-@media(max-width:760px){
+@media(max-width:1200px), (max-width:1366px) and (any-hover:none){
  #page-dashboard .metric-detail{font-size:11px}
  #dataFreshness .freshness-item{display:grid;gap:1px}
  #dataFreshness .freshness-date{color:var(--text);font-variant-numeric:tabular-nums}
@@ -446,7 +446,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  margin:8px 0 0;padding:12px 0 0;border:0;border-top:1px solid var(--border);border-radius:0;background:none;
 }
 .asset-liquidity #transferDetails .form-grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}
-@media(max-width:760px){
+@media(max-width:1200px), (max-width:1366px) and (any-hover:none){
  #assetSplit,#page-assets > .summary-grid > .card:not(#assetNetWorthCard) .metric-sub{display:none}
  .asset-liquidity #transferDetails .form-grid-4{grid-template-columns:minmax(0,1fr)}
 }
@@ -491,7 +491,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  #page-dashboard .summary-grid .card{padding-inline:10px}
  #page-dashboard .summary-grid .metric-value{font-size:clamp(21px,6.4vw,24px)}
 }
-@media(max-width:760px){
+@media(max-width:1200px), (max-width:1366px) and (any-hover:none){
  html{scroll-behavior:auto}
  body{font-family:system-ui,"Inter",sans-serif}
  .app{padding-bottom:calc(var(--nav-h) + 28px + env(safe-area-inset-bottom))}
@@ -520,7 +520,6 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  .mobile-nav button.nav-add{width:46px;height:46px;min-height:46px;margin:auto}
  .sheet{border-radius:30px 30px 0 0;border:1px solid var(--border);border-bottom:0}
  .sheet-head{margin-bottom:14px}
- #addMovementBtn{margin-top:10px;width:100%}
  #quickSheet{bottom:var(--movement-keyboard-offset,0px);max-height:min(92dvh,var(--movement-visible-height,92dvh))}
  .movement-editor-fields,.movement-editor-investment,.movement-editor-actions{grid-template-columns:minmax(0,1fr)}
  .movement-editor-fields{padding-block:10px}
@@ -637,7 +636,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
    .mobile-nav button[data-page].active{background:var(--investment-soft);box-shadow:none}
  }
 }
-@media(min-width:761px){
+@media(min-width:1201px) and (any-hover:hover), (min-width:1367px){
  .page-head h1{font-size:clamp(30px,3vw,38px);line-height:1.2;letter-spacing:-.035em}
  .page-head p{font-size:14px}
  .page :is(input:not([type="checkbox"]),select){border-radius:12px}
@@ -711,23 +710,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
  #categoryList .category-name{overflow-wrap:anywhere;font-weight:600}
  .settings-group{padding:20px}
 }
-@media(min-width:761px) and (max-width:1200px){
- .app{grid-template-columns:180px minmax(0,1fr);gap:16px;padding:12px}
- .sidebar{top:12px;height:calc(100dvh - 24px)}
- .summary-grid,.grid-4{grid-template-columns:repeat(2,minmax(0,1fr))}
- .grid-2{grid-template-columns:minmax(0,1fr)}
- #dashboardFinancialSummary{grid-template-columns:repeat(2,minmax(0,1fr))}
- .category-fields{grid-template-columns:repeat(2,minmax(0,1fr))}
- .category-fields > :last-child{grid-column:1/-1}
- #bulkPanel .grid-3{grid-template-columns:repeat(2,minmax(0,1fr))}
- #bulkPanel .grid-3 > :last-child{grid-column:1/-1}
- :is(#movementFilters,#page-recurring,#budgetsPanel) .table-wrap table{min-width:760px}
- .page-head{flex-wrap:wrap}
- input[type="date"]{display:flex;align-items:center;padding:0 10px;min-width:0}
- input[type="date"]::-webkit-date-and-time-value{min-width:0;text-align:left}
- input[type="date"]::-webkit-datetime-edit{min-width:0;padding-block:0}
-}
-@media(min-width:1201px){
+@media(min-width:1201px) and (any-hover:hover), (min-width:1367px){
  #assetGrid{grid-template-columns:repeat(2,minmax(0,1fr))}
  #assetGrid > :only-child{grid-column:1/-1}
  .settings-panel{grid-template-columns:repeat(2,minmax(0,1fr));align-items:start}
@@ -985,7 +968,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
     </section>
 
     <section id="page-movements" class="page">
-      <div class="page-head"><div><h1>Movimientos</h1><p>Añade, busca, edita y filtra tus operaciones.</p></div><button type="button" class="primary mobile-only" id="addMovementBtn">Nuevo movimiento</button></div>
+      <div class="page-head"><div><h1>Movimientos</h1><p>Añade, busca, edita y filtra tus operaciones.</p></div></div>
       <div class="panel section-gap" id="movementFilters">
         <div class="movement-filter-controls">
           <div class="chart-head">
@@ -3099,7 +3082,7 @@ function renderCharts(){
 }
 
 // ---------- Móvil: utilidades, hoja rápida de alta, selector compacto, listas de barras ----------
-function isMobile(){return window.matchMedia("(max-width:760px)").matches}
+function isMobile(){return window.matchMedia("(max-width:1200px), (max-width:1366px) and (any-hover:none)").matches}
 function isTouch(){return window.matchMedia("(hover: none)").matches}
 let toastTimer=null;
 function toast(msg){const t=el("toast");t.textContent=msg;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.hidden=true},2200)}
@@ -3375,7 +3358,7 @@ el("sumTypeToggle").querySelectorAll("[data-sumtype]").forEach(b=>b.onclick=()=>
 el("clearFilters").onclick=clearMovementFilters;
 el("bulkToggle").onclick=()=>toggleBulkPanel(el("bulkPanel").hidden);el("bulkCancel").onclick=()=>toggleBulkPanel(false);el("bulkType").onchange=updateBulkCategories;el("bulkApply").onclick=bulkRecategorize;
 // Hoja rápida de alta, barra inferior con "+", filtro de periodo y filtros plegables
-[el("navAdd"),el("fabAdd"),el("addMovementBtn")].forEach(b=>b.onclick=()=>openQuickSheet(null));
+[el("navAdd"),el("fabAdd")].forEach(b=>b.onclick=()=>openQuickSheet(null));
 el("qsClose").onclick=closeQuickSheet;el("sheetBackdrop").onclick=closeQuickSheet;
 el("qsSave").onclick=()=>quickSave(false);el("qsSaveMore").onclick=()=>quickSave(true);el("qsDelete").onclick=quickDelete;
 el("qsType").onchange=()=>{renderQsCategories();updateQuickAccountHint()};
@@ -3443,7 +3426,7 @@ assetFormButton.onclick=()=>setAssetFormOpen(!assetForm.open);
 el("aType").onchange=()=>{el("aCurrentNote").hidden=el("aType").value!=="Cuenta corriente";el("aDebtNote").hidden=el("aType").value!=="Deuda";renderNewAssetIcon()};
 window.addEventListener("resize",layoutDashboardCards);
 document.fonts?.ready.then(layoutDashboardCards);
-window.matchMedia("(max-width:760px)").addEventListener("change",()=>{
+window.matchMedia("(max-width:1200px), (max-width:1366px) and (any-hover:none)").addEventListener("change",()=>{
  if(currentPage==="dashboard")renderCharts();
  if(currentPage==="assets")drawNetWorthChart();
 });
