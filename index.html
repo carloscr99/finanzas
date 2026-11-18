@@ -1245,7 +1245,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
     <button type="button" class="danger" id="qsDelete" hidden>Eliminar movimiento</button>
   </div>
 </section>
-<div class="toast" id="toast" hidden></div>
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true" hidden></div>
 
 <nav class="mobile-nav" aria-label="Navegación principal" hidden>
   <button data-page="dashboard" class="active" aria-current="page"><span class="nav-ind"><svg class="ico" aria-hidden="true"><use href="#nav-home"/></svg></span><span class="nav-lbl">Inicio</span></button>
@@ -1377,6 +1377,30 @@ async function uiSelect(msg,options,def,opts={}){
 let currentUser=null,userDocRef=null,yearsColRef=null,unsubscribeMain=null,unsubscribeYears=null,remoteSaveTimer=null,appReady=false;
 let lastMainSnap=null,lastYearsSnap=null; // últimas instantáneas recibidas, para reconstruir el estado al cambiar cualquiera
 let written={main:null,years:new Map()}; // JSON de lo último escrito o leído por documento: solo se reescribe lo que cambia
+const pendingRemoteSaves=new Set();
+let remoteSaveFailed=false;
+function updateSaveNotification(){
+ if(remoteSaveFailed)toast("Error al guardar",true);
+ else if(remoteSaveTimer||pendingRemoteSaves.size)toast(navigator.onLine===false?"Pendiente de conexión":"Guardando…",true);
+ else toast("Guardado");
+}
+function trackRemoteSave(operation,onFailure){
+ const ref=userDocRef,token={};
+ pendingRemoteSaves.add(token);
+ updateSaveNotification();
+ Promise.resolve(operation).then(()=>{
+   if(userDocRef!==ref||!pendingRemoteSaves.delete(token))return;
+   updateSaveNotification();
+ },err=>{
+   if(userDocRef!==ref||!pendingRemoteSaves.delete(token))return;
+   remoteSaveFailed=true;
+   onFailure?.();
+   updateSaveNotification();
+   console.error("Error guardando en Firestore",err);
+   const hint=err.code==="permission-denied"?" Si acabas de actualizar la web, publica las reglas nuevas de firestore.rules en la consola de Firebase.":"";
+   uiAlert("No se han podido guardar los cambios en tu cuenta ("+(err.code||err.message)+")."+hint+" Exporta tus datos por seguridad.",{icon:"error",title:"Error al guardar"});
+ });
+}
 let legacyWrites=false; // true si las reglas de Firestore aún no permiten los documentos de año: se guarda todo en el principal, como antes
 const SCHEMA_VERSION=2;
 function cleanForFirestore(s){return JSON.parse(JSON.stringify(s))} // elimina undefined, que Firestore no admite
@@ -1417,13 +1441,15 @@ function saveState(){
  if(!userDocRef)return;
  recordNetWorthPoint();
  clearTimeout(remoteSaveTimer);
+ remoteSaveFailed=false;
  remoteSaveTimer=setTimeout(flushRemoteSave,300); // agrupa ráfagas de cambios en una sola escritura
+ updateSaveNotification();
 }
 function flushRemoteSave(){
  if(!remoteSaveTimer||!userDocRef)return;
  clearTimeout(remoteSaveTimer);remoteSaveTimer=null;
  if(legacyWrites){ // formato antiguo mientras no estén publicadas las reglas nuevas
-   setDoc(userDocRef,cleanForFirestore(state)).catch(err=>{console.error("Error guardando en Firestore",err);uiAlert("No se han podido guardar los cambios en tu cuenta ("+(err.code||err.message)+"). Exporta tus datos por seguridad.",{icon:"error",title:"Error al guardar"})});
+   trackRemoteSave(setDoc(userDocRef,cleanForFirestore(state)));
    return;
  }
  const {main,years}=splitState(state);
@@ -1433,14 +1459,17 @@ function flushRemoteSave(){
  const next=new Map();
  for(const [y,d] of years){const j=JSON.stringify(d);next.set(y,j);if(j!==written.years.get(y)){batch.set(doc(yearsColRef,y),d);ops++}}
  for(const y of written.years.keys())if(!years.has(y)){batch.delete(doc(yearsColRef,y));ops++} // un año que se ha quedado sin movimientos
- if(!ops)return;
+ if(!ops){updateSaveNotification();return}
  const before={main:written.main,years:new Map(written.years)};
- written={main:mainJson,years:next}; // se da por escrito al enviar; si falla, se vuelve atrás y el siguiente guardado lo reintenta
- batch.commit().catch(err=>{
-   written=before;
-   console.error("Error guardando en Firestore",err);
-   const hint=err.code==="permission-denied"?" Si acabas de actualizar la web, publica las reglas nuevas de firestore.rules en la consola de Firebase.":"";
-   uiAlert("No se han podido guardar los cambios en tu cuenta ("+(err.code||err.message)+")."+hint+" Exporta tus datos por seguridad.",{icon:"error",title:"Error al guardar"});
+ const submitted={main:mainJson,years:next};
+ written=submitted;
+ trackRemoteSave(batch.commit(),()=>{
+   if(written===submitted)written=before;
+   else{
+     // Un fallo antiguo no puede marcar como confirmado un envío posterior.
+     const years=new Set([...before.years.keys(),...submitted.years.keys(),...written.years.keys()]);
+     written={main:null,years:new Map([...years].map(year=>[year,null]))};
+   }
  });
 }
 function readLegacyLocalState(){
@@ -1472,7 +1501,7 @@ function rememberWritten(mainData,yearDocs){
 // Cambio llegado de otro dispositivo (o eco tardío): se reconstruye el estado con las últimas instantáneas de todo.
 function applyRemoteSnapshots(){
  if(!lastMainSnap||!lastYearsSnap||!lastMainSnap.exists())return;
- if(lastMainSnap.metadata.hasPendingWrites||lastYearsSnap.metadata.hasPendingWrites||remoteSaveTimer)return;
+ if(lastMainSnap.metadata.hasPendingWrites||lastYearsSnap.metadata.hasPendingWrites||remoteSaveTimer||pendingRemoteSaves.size||remoteSaveFailed)return;
  const mainData=lastMainSnap.data(),yearDocs=yearDocsMap(lastYearsSnap);
  const {state:incoming,needsMigration}=assembleState(mainData,yearDocs);
  if(stateSignature(incoming)===stateSignature(state))return;
@@ -1482,12 +1511,14 @@ function applyRemoteSnapshots(){
 }
 // Formato antiguo (reglas sin publicar): el documento principal lleva todo, como en la versión anterior.
 function applyLegacySnapshot(snap){
- if(!snap.exists()||snap.metadata.hasPendingWrites||remoteSaveTimer)return;
+ if(!snap.exists()||snap.metadata.hasPendingWrites||remoteSaveTimer||pendingRemoteSaves.size||remoteSaveFailed)return;
  const incoming=normalizeState(snap.data());
  if(stateSignature(incoming)===stateSignature(state))return;
  state=incoming;updateYearOptions();renderAll();
 }
 async function startApp(user){
+ clearTimeout(remoteSaveTimer);remoteSaveTimer=null;
+ pendingRemoteSaves.clear();remoteSaveFailed=false;
  if(unsubscribeMain){unsubscribeMain();unsubscribeMain=null} // por si se reintenta tras un error
  if(unsubscribeYears){unsubscribeYears();unsubscribeYears=null}
  currentUser=user;userDocRef=doc(db,"users",user.uid);yearsColRef=collection(userDocRef,"years");
@@ -1529,6 +1560,8 @@ async function startApp(user){
 function stopApp(){
  appReady=false;
  if(remoteSaveTimer)flushRemoteSave();
+ pendingRemoteSaves.clear();remoteSaveFailed=false;
+ clearTimeout(toastTimer);el("toast").hidden=true;
  if(unsubscribeMain){unsubscribeMain();unsubscribeMain=null}
  if(unsubscribeYears){unsubscribeYears();unsubscribeYears=null}
  userDocRef=null;yearsColRef=null;currentUser=null;lastMainSnap=null;lastYearsSnap=null;written={main:null,years:new Map()};legacyWrites=false;state=defaultState();
@@ -3085,7 +3118,18 @@ function renderCharts(){
 function isMobile(){return window.matchMedia("(max-width:1200px), (max-width:1366px) and (any-hover:none)").matches}
 function isTouch(){return window.matchMedia("(hover: none)").matches}
 let toastTimer=null;
-function toast(msg){const t=el("toast");t.textContent=msg;t.hidden=false;clearTimeout(toastTimer);toastTimer=setTimeout(()=>{t.hidden=true},2200)}
+function toast(msg,persistent=false){
+ const t=el("toast");
+ if(remoteSaveFailed){msg="Error al guardar";persistent=true}
+ else if(remoteSaveTimer||pendingRemoteSaves.size){
+   msg=navigator.onLine===false?"Pendiente de conexión":"Guardando…";
+   persistent=true;
+ }
+ t.hidden=false;
+ if(t.textContent!==msg)t.textContent=msg;
+ clearTimeout(toastTimer);
+ if(!persistent)toastTimer=setTimeout(()=>{t.hidden=true},2200);
+}
 function parseAmount(s){let t=String(s||"").trim().replace(/[\s€]/g,"");if(t.includes(".")&&t.includes(","))t=t.replace(/\./g,"").replace(",",".");else if(t.includes(","))t=t.replace(",",".");return t?Number(t):NaN}
 
 const qs={editId:null};
@@ -3435,6 +3479,9 @@ el("authRetry").onclick=()=>{if(pendingUser)enterApp(pendingUser)};
 enableSheetSwipe();
 document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="hidden")flushRemoteSave();else checkPendingRecurring()});
 setInterval(checkPendingRecurring,60000); // por si la app se queda abierta y cambia el día sin salir de ella
+for(const event of ["online","offline"])window.addEventListener(event,()=>{
+ if(remoteSaveTimer||pendingRemoteSaves.size)updateSaveNotification();
+});
 window.addEventListener("pagehide",flushRemoteSave);
 // Service worker: cachea la app (HTML, iconos y librerías de CDN) para abrir al instante y sin conexión cuando está instalada.
 if("serviceWorker" in navigator&&(location.protocol==="https:"||location.hostname==="localhost"))navigator.serviceWorker.register("./sw.js").catch(err=>console.warn("Service worker no registrado",err));

@@ -9,7 +9,7 @@
     "doc": "docs"
   },
   "scripts": {
-    "test": "node scripts/test-notifications.mjs && node scripts/test-service-worker.mjs",
+    "test": "node scripts/test-notifications.mjs && node scripts/test-service-worker.mjs && node scripts/test-save-status.mjs",
     "test:notifications": "node scripts/test-notifications.mjs",
     "notify": "node scripts/send-notifications.mjs",
     "notify:dry": "node scripts/send-notifications.mjs --dry-run --fixture scripts/fixtures/notifications.json"
