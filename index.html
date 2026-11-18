@@ -1378,11 +1378,12 @@ let currentUser=null,userDocRef=null,yearsColRef=null,unsubscribeMain=null,unsub
 let lastMainSnap=null,lastYearsSnap=null; // últimas instantáneas recibidas, para reconstruir el estado al cambiar cualquiera
 let written={main:null,years:new Map()}; // JSON de lo último escrito o leído por documento: solo se reescribe lo que cambia
 const pendingRemoteSaves=new Set();
-let remoteSaveFailed=false;
+let remoteSaveFailed=false,saveNotificationsEnabled=false;
 function updateSaveNotification(){
+ if(!saveNotificationsEnabled)return;
  if(remoteSaveFailed)toast("Error al guardar",true);
  else if(remoteSaveTimer||pendingRemoteSaves.size)toast(navigator.onLine===false?"Pendiente de conexión":"Guardando…",true);
- else toast("Guardado");
+ else{toast("Guardado");saveNotificationsEnabled=false}
 }
 function trackRemoteSave(operation,onFailure){
  const ref=userDocRef,token={};
@@ -1437,8 +1438,9 @@ function recordNetWorthPoint(){
  const i=h.findIndex(x=>x.date===date);if(i>=0)h[i]=point;else h.push(point);
  h.sort((a,b)=>a.date.localeCompare(b.date));state.meta.netWorthHistory=h.slice(-730);
 }
-function saveState(){
+function saveState({notify=false}={}){
  if(!userDocRef)return;
+ if(notify)saveNotificationsEnabled=true;
  recordNetWorthPoint();
  clearTimeout(remoteSaveTimer);
  remoteSaveFailed=false;
@@ -1518,7 +1520,7 @@ function applyLegacySnapshot(snap){
 }
 async function startApp(user){
  clearTimeout(remoteSaveTimer);remoteSaveTimer=null;
- pendingRemoteSaves.clear();remoteSaveFailed=false;
+ pendingRemoteSaves.clear();remoteSaveFailed=false;saveNotificationsEnabled=false;
  if(unsubscribeMain){unsubscribeMain();unsubscribeMain=null} // por si se reintenta tras un error
  if(unsubscribeYears){unsubscribeYears();unsubscribeYears=null}
  currentUser=user;userDocRef=doc(db,"users",user.uid);yearsColRef=collection(userDocRef,"years");
@@ -1560,7 +1562,7 @@ async function startApp(user){
 function stopApp(){
  appReady=false;
  if(remoteSaveTimer)flushRemoteSave();
- pendingRemoteSaves.clear();remoteSaveFailed=false;
+ pendingRemoteSaves.clear();remoteSaveFailed=false;saveNotificationsEnabled=false;
  clearTimeout(toastTimer);el("toast").hidden=true;
  if(unsubscribeMain){unsubscribeMain();unsubscribeMain=null}
  if(unsubscribeYears){unsubscribeYears();unsubscribeYears=null}
@@ -2372,7 +2374,7 @@ function persistMovement(d,id){
    state.movements.push(m);applyMovementEffects(m,1);
  }
  markDataUpdate(type==="Inversión"||accountAffectsPortfolio(accountId)?"movement+portfolio":"movement");
- saveState();updateYearOptions();renderAll();if(usesUnits)updateMarketPrices(false);
+ saveState({notify:true});updateYearOptions();renderAll();if(usesUnits)updateMarketPrices(false);
  return null;
 }
 function editMovement(id){
@@ -3120,8 +3122,8 @@ function isTouch(){return window.matchMedia("(hover: none)").matches}
 let toastTimer=null;
 function toast(msg,persistent=false){
  const t=el("toast");
- if(remoteSaveFailed){msg="Error al guardar";persistent=true}
- else if(remoteSaveTimer||pendingRemoteSaves.size){
+ if(saveNotificationsEnabled&&remoteSaveFailed){msg="Error al guardar";persistent=true}
+ else if(saveNotificationsEnabled&&(remoteSaveTimer||pendingRemoteSaves.size)){
    msg=navigator.onLine===false?"Pendiente de conexión":"Guardando…";
    persistent=true;
  }

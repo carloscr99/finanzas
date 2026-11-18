@@ -69,9 +69,43 @@ async function test(name, fn) {
   console.log(`ok ${++checks} - ${name}`);
 }
 
+await test("Los guardados automáticos al abrir no muestran avisos", async () => {
+  const a = app();
+  a.run("saveState()");
+  assert.equal(a.toast.hidden, true);
+  a.flush();
+  assert.equal(a.toast.hidden, true);
+  a.operations[0].resolve();
+  await settle();
+  assert.equal(a.toast.hidden, true);
+});
+
+await test("Un movimiento durante un guardado automático activa el aviso", async () => {
+  const a = app();
+  a.run("saveState()");
+  a.flush();
+  a.context.state.meta.changed = 1;
+  a.run("saveState({notify:true})");
+  assert.equal(a.toast.textContent, "Guardando…");
+  a.flush();
+  a.operations[0].resolve();
+  await settle();
+  assert.equal(a.toast.textContent, "Guardando…");
+  a.operations[1].resolve();
+  await settle();
+  assert.equal(a.toast.textContent, "Guardado");
+  a.context.state.meta.changed = 2;
+  a.run("saveState()");
+  a.flush();
+  a.operations[2].resolve();
+  await settle();
+  a.run('toast("Otra acción")');
+  assert.equal(a.toast.textContent, "Otra acción");
+});
+
 await test("Guardado espera la confirmación y sustituye los avisos prematuros", async () => {
   const a = app();
-  a.run('saveState();toast("Movimiento guardado");');
+  a.run('saveState({notify:true});toast("Movimiento guardado");');
   assert.equal(a.toast.textContent, "Guardando…");
   a.flush();
   assert.equal(a.toast.textContent, "Guardando…");
@@ -83,10 +117,10 @@ await test("Guardado espera la confirmación y sustituye los avisos prematuros",
 
 await test("Dos confirmaciones en orden inverso no adelantan Guardado", async () => {
   const a = app();
-  a.run("saveState()");
+  a.run("saveState({notify:true})");
   a.flush();
   a.context.state.meta.changed = 1;
-  a.run("saveState()");
+  a.run("saveState({notify:true})");
   a.flush();
   a.operations[1].resolve();
   await settle();
@@ -98,10 +132,10 @@ await test("Dos confirmaciones en orden inverso no adelantan Guardado", async ()
 
 await test("Una confirmación con cambios aún por enviar sigue mostrando Guardando", async () => {
   const a = app();
-  a.run("saveState()");
+  a.run("saveState({notify:true})");
   a.flush();
   a.context.state.meta.changed = 2;
-  a.run("saveState()");
+  a.run("saveState({notify:true})");
   a.operations[0].resolve();
   await settle();
   assert.equal(a.toast.textContent, "Guardando…");
@@ -114,7 +148,7 @@ await test("Una confirmación con cambios aún por enviar sigue mostrando Guarda
 await test("Sin conexión el aviso persiste y vuelve a Guardando al reconectar", async () => {
   const a = app();
   a.context.navigator.onLine = false;
-  a.run("saveState()");
+  a.run("saveState({notify:true})");
   a.flush();
   assert.equal(a.toast.textContent, "Pendiente de conexión");
   assert.ok(![...a.timers.values()].some(t => t.delay === 2200));
@@ -131,13 +165,13 @@ await test("Sin conexión el aviso persiste y vuelve a Guardando al reconectar",
 
 await test("Un error se muestra y el siguiente guardado puede recuperarse", async () => {
   const a = app();
-  a.run("saveState()");
+  a.run("saveState({notify:true})");
   a.flush();
   a.operations[0].reject({ code: "permission-denied" });
   await settle();
   assert.equal(a.toast.textContent, "Error al guardar");
   assert.equal(a.alerts.length, 1);
-  a.run("saveState()");
+  a.run("saveState({notify:true})");
   a.flush();
   a.operations[1].resolve();
   await settle();
@@ -146,17 +180,17 @@ await test("Un error se muestra y el siguiente guardado puede recuperarse", asyn
 
 await test("El fallo de un envío antiguo no permite un éxito engañoso", async () => {
   const a = app();
-  a.run("saveState()");
+  a.run("saveState({notify:true})");
   a.flush();
   a.context.state.meta.changed = 3;
-  a.run("saveState()");
+  a.run("saveState({notify:true})");
   a.flush();
   a.operations[0].reject({ code: "unavailable" });
   await settle();
   a.operations[1].resolve();
   await settle();
   assert.equal(a.toast.textContent, "Error al guardar");
-  a.run("saveState()");
+  a.run("saveState({notify:true})");
   a.flush();
   assert.ok(a.operations[2].writes.length > 0);
   a.operations[2].resolve();
@@ -166,7 +200,7 @@ await test("El fallo de un envío antiguo no permite un éxito engañoso", async
 
 await test("El formato antiguo también espera la confirmación", async () => {
   const a = app();
-  a.run("legacyWrites=true;saveState()");
+  a.run("legacyWrites=true;saveState({notify:true})");
   a.flush();
   assert.equal(a.toast.textContent, "Guardando…");
   a.operations[0].resolve();
@@ -176,11 +210,11 @@ await test("El formato antiguo también espera la confirmación", async () => {
 
 await test("Sin cambios reales no queda bloqueado en Guardando", async () => {
   const a = app();
-  a.run("saveState()");
+  a.run("saveState({notify:true})");
   a.flush();
   a.operations[0].resolve();
   await settle();
-  a.run("saveState()");
+  a.run("saveState({notify:true})");
   a.flush();
   assert.equal(a.operations.length, 1);
   assert.equal(a.toast.textContent, "Guardado");
@@ -188,7 +222,7 @@ await test("Sin cambios reales no queda bloqueado en Guardando", async () => {
 
 await test("La respuesta de otra sesión no muestra mensajes ni errores", async () => {
   const a = app();
-  a.run("saveState()");
+  a.run("saveState({notify:true})");
   a.flush();
   a.run('pendingRemoteSaves.clear();userDocRef={id:"other"};');
   a.operations[0].reject({ code: "permission-denied" });
