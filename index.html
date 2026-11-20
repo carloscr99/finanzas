@@ -191,7 +191,10 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 #qsCategoryToggle:disabled{opacity:.65}
 #qsCategoryValue,.movement-category-option{display:flex;align-items:center;gap:8px;min-width:0}
 #qsCategoryValue span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#qsCategoryOptions{max-height:180px;overflow:auto;margin-top:5px;padding:4px;border:1px solid var(--border);border-radius:12px;background:var(--input-bg)}
+#qsCategoryOptions{max-height:min(280px,45dvh);overflow:auto;margin-top:5px;padding:4px;border:1px solid var(--border);border-radius:12px;background:var(--input-bg)}
+.movement-category-search{position:sticky;top:0;z-index:1;padding:4px 4px 8px;background:var(--input-bg)}
+#qsCategoryEmpty{margin:0;padding:10px;color:var(--muted);font-size:13px}
+.movement-category-option[aria-pressed="true"]{font-weight:700}
 .movement-category-option{
  width:100%;min-height:44px;padding:7px 8px;border:0;border-radius:8px;
  background:transparent;color:var(--text);text-align:left;overflow-wrap:anywhere;
@@ -1232,7 +1235,14 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
       <button type="button" id="qsCategoryToggle" aria-labelledby="qsCategoryLabel qsCategoryValue" aria-expanded="false" aria-controls="qsCategoryOptions">
         <span id="qsCategoryValue"></span><svg class="ico sm" aria-hidden="true"><use href="#i-caret-right"/></svg>
       </button>
-      <div id="qsCategoryOptions" role="group" aria-labelledby="qsCategoryLabel" hidden></div>
+      <div id="qsCategoryOptions" role="group" aria-labelledby="qsCategoryLabel" hidden>
+        <div class="movement-category-search">
+          <label for="qsCategorySearch">Buscar categoría</label>
+          <input type="search" id="qsCategorySearch" placeholder="Nombre de la categoría" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" aria-controls="qsCategoryResults">
+        </div>
+        <div id="qsCategoryResults"></div>
+        <p id="qsCategoryEmpty" role="status" hidden>No hay categorías que coincidan.</p>
+      </div>
     </div>
     <fieldset class="movement-editor-wide movement-editor-investment" id="qsInvest" hidden>
       <legend>Datos de la inversión</legend>
@@ -3159,6 +3169,20 @@ function qsCategories(){const type=quickMovementType(),usage=categoryUsage(type)
 function setQsCategoryOptionsOpen(open){
  el("qsCategoryToggle").setAttribute("aria-expanded",String(open));
  el("qsCategoryOptions").hidden=!open;
+ if(open){
+   el("qsCategorySearch").value="";
+   filterQsCategoryOptions();
+   el("qsCategoryOptions").scrollTop=0;
+ }
+}
+function filterQsCategoryOptions(){
+ const query=normText(el("qsCategorySearch").value.trim());
+ let visible=0;
+ for(const option of el("qsCategoryResults").querySelectorAll("button")){
+   option.hidden=!option.dataset.search.includes(query);
+   if(!option.hidden)visible++;
+ }
+ el("qsCategoryEmpty").hidden=visible>0;
 }
 function selectQsCategory(category){
  el("qsCategory").value=category?.id||"";
@@ -3168,8 +3192,9 @@ function selectQsCategory(category){
 }
 function renderQsCategories(selectedId){
  const categories=qsCategories(),selected=categories.find(c=>c.id===selectedId)||categories[0];
- const options=el("qsCategoryOptions");
+ const options=el("qsCategoryResults");
  setQsCategoryOptionsOpen(false);
+ el("qsCategorySearch").value="";
  selectQsCategory(selected);
  el("qsCategoryToggle").disabled=!selected;
  options.replaceChildren();
@@ -3177,6 +3202,7 @@ function renderQsCategories(selectedId){
    const option=document.createElement("button");
    option.type="button";
    option.className="movement-category-option";
+   option.dataset.search=normText(category.name);
    option.setAttribute("aria-pressed",String(category===selected));
    option.innerHTML=`${catIconSvg(category)}<span>${escapeHtml(category.name)}</span>`;
    option.onclick=()=>{
@@ -3186,6 +3212,7 @@ function renderQsCategories(selectedId){
    };
    options.append(option);
  }
+ filterQsCategoryOptions();
  updateQsInvest(true);
 }
 function updateQsInvest(reset){
@@ -3465,10 +3492,11 @@ el("qsType").onchange=()=>{renderQsCategories();updateQuickAccountHint()};
 el("qsCategoryToggle").onclick=()=>{
  const open=el("qsCategoryOptions").hidden;
  setQsCategoryOptionsOpen(open);
- if(open)el("qsCategoryOptions").querySelector('[aria-pressed="true"]')?.focus();
+ if(open)el("qsCategorySearch").focus({preventScroll:true});
 };
+el("qsCategorySearch").addEventListener("input",filterQsCategoryOptions);
 el("qsCategoryPicker").addEventListener("keydown",event=>{
- if(el("qsCategoryOptions").hidden)return;
+ if(el("qsCategoryOptions").hidden||event.isComposing)return;
  if(event.key==="Escape"){
    event.preventDefault();
    event.stopPropagation();
@@ -3476,11 +3504,15 @@ el("qsCategoryPicker").addEventListener("keydown",event=>{
    el("qsCategoryToggle").focus();
  }
  if(event.key==="ArrowDown"||event.key==="ArrowUp"){
-   const options=[...el("qsCategoryOptions").querySelectorAll("button")];
+   const options=[...el("qsCategoryResults").querySelectorAll("button:not([hidden])")];
    const index=options.indexOf(document.activeElement);
-   const next=index+(event.key==="ArrowDown"?1:-1);
+   const next=index<0?(event.key==="ArrowDown"?0:options.length-1):index+(event.key==="ArrowDown"?1:-1);
    event.preventDefault();
    options[Math.max(0,Math.min(next,options.length-1))]?.focus();
+ }
+ if(event.key==="Enter"&&document.activeElement===el("qsCategorySearch")){
+   event.preventDefault();
+   el("qsCategoryResults").querySelector("button:not([hidden])")?.click();
  }
 });
 document.addEventListener("click",event=>{
