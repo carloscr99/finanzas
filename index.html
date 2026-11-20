@@ -163,7 +163,7 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 .icon-opt{display:flex;align-items:center;justify-content:center;height:48px;border-radius:12px;border:1px solid var(--border);background:var(--soft);color:var(--text);cursor:pointer}.icon-opt.active{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
 .date-row button[aria-pressed="true"]{background:var(--primary);color:var(--on-primary);border-color:var(--primary)}
 #quickSheet{display:flex;flex-direction:column;overflow:hidden}
-#quickSheet :is(.sheet-head,.sheet-handle,.movement-editor-actions){flex-shrink:0}
+#quickSheet :is(.sheet-head,.sheet-handle){flex-shrink:0}
 .movement-editor-fields,.movement-editor-investment,.movement-editor-actions{
  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;
 }
@@ -191,9 +191,10 @@ tr.clickable{cursor:pointer}tr.clickable:hover td{background:var(--soft)}
 #qsCategoryToggle:disabled{opacity:.65}
 #qsCategoryValue,.movement-category-option{display:flex;align-items:center;gap:8px;min-width:0}
 #qsCategoryValue span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-#qsCategoryOptions{max-height:min(280px,45dvh);overflow:auto;margin-top:5px;padding:4px;border:1px solid var(--border);border-radius:12px;background:var(--input-bg)}
-.movement-category-search{position:sticky;top:0;z-index:1;padding:4px 4px 8px;background:var(--input-bg)}
-#qsCategoryEmpty{margin:0;padding:10px;color:var(--muted);font-size:13px}
+#qsCategoryOptions{display:flex;flex-direction:column;max-height:min(280px,45dvh);overflow:hidden;margin-top:5px;padding:4px;border:1px solid var(--border);border-radius:12px;background:var(--input-bg)}
+.movement-category-search{flex-shrink:0;padding:4px 4px 8px;background:var(--input-bg)}
+#qsCategoryResults{min-height:0;max-height:180px;overflow:auto;overscroll-behavior:contain}
+#qsCategoryEmpty{flex-shrink:0;margin:0;padding:10px;color:var(--muted);font-size:13px}
 .movement-category-option[aria-pressed="true"]{font-weight:700}
 .movement-category-option{
  width:100%;min-height:44px;padding:7px 8px;border:0;border-radius:8px;
@@ -1258,11 +1259,11 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
       <label for="qsDate">Fecha</label>
       <div class="date-row"><input id="qsDate" type="date"><button type="button" class="secondary" data-day="0">Hoy</button><button type="button" class="secondary" data-day="-1">Ayer</button></div>
     </div>
-  </div>
-  <div class="movement-editor-actions">
-    <button type="button" class="primary" id="qsSave">Guardar movimiento</button>
-    <button type="button" class="secondary" id="qsSaveMore">Guardar y añadir otro</button>
-    <button type="button" class="danger" id="qsDelete" hidden>Eliminar movimiento</button>
+    <div class="movement-editor-wide movement-editor-actions">
+      <button type="button" class="primary" id="qsSave">Guardar movimiento</button>
+      <button type="button" class="secondary" id="qsSaveMore">Guardar y añadir otro</button>
+      <button type="button" class="danger" id="qsDelete" hidden>Eliminar movimiento</button>
+    </div>
   </div>
 </section>
 <dialog id="movementDiscardDialog" aria-labelledby="movementDiscardTitle" aria-describedby="movementDiscardMessage">
@@ -3172,7 +3173,7 @@ function setQsCategoryOptionsOpen(open){
  if(open){
    el("qsCategorySearch").value="";
    filterQsCategoryOptions();
-   el("qsCategoryOptions").scrollTop=0;
+   el("qsCategoryResults").scrollTop=0;
  }
 }
 function filterQsCategoryOptions(){
