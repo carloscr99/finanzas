@@ -2693,6 +2693,14 @@ async function adjustAssetUnits(id){
  markDataUpdate("portfolio");saveState();renderAll();
  toast(Math.abs(diff)<1e-6?"Participaciones confirmadas: cuadran con lo registrado":`Ajuste: ${diff>0?"+":"−"}${assetDisplayUnits(Math.abs(diff),8)} ${assetUnitLabel(a)} (${diff>0?"+":"−"}${euro.format(Math.abs(diff)*Number(a.unitPrice||0))})`);
 }
+// Cuadra el capital aportado con el «invertido» del bróker (compras que no se apuntaron, comisiones, etc.).
+async function adjustAssetInvested(id){
+ const a=state.assets.find(x=>x.id===id);if(!a)return;
+ const nv=await uiPrompt(`Capital aportado a ${a.name} según tu bróker (la app tiene ${euro.format(a.invested||0)}).`,String(Math.round(Number(a.invested||0)*100)/100).replace(".",","),{title:"Ajustar aportado",inputmode:"decimal",confirmText:"Ajustar"});
+ if(nv===null)return;const n=Number(String(nv).replace(",","."));
+ if(!Number.isFinite(n)||n<0)return uiError("Valor no válido.");
+ a.invested=n;markDataUpdate("portfolio");saveState();renderAll();toast("Aportado ajustado a "+euro.format(n));
+}
 function addAsset(){
  const name=el("aName").value.trim(),type=el("aType").value,value=Number(el("aValue").value||0),invested=el("aInvested").value===""?0:Number(el("aInvested").value),units=el("aUnits").value===""?0:Number(el("aUnits").value),isin=el("aIsin").value.trim().toUpperCase();
  if(!name||!Number.isFinite(value)||(value<0&&(units>0||isin||!/^(Cuenta|Efectivo|Otro)/i.test(type)))||!Number.isFinite(invested)||invested<0||!Number.isFinite(units)||units<0)return uiError("Completa los datos correctamente.");
@@ -2828,6 +2836,7 @@ function showAssetDetail(id){
      <button type="button" class="primary" data-editasset="${key}">Editar activo</button>
      ${units>0&&!account&&!debt?`<button type="button" class="secondary" data-priceasset="${key}">Ajustar precio</button>`:""}
      ${units>0&&isInvestmentAsset(asset)?`<button type="button" class="secondary" data-adjunits="${key}">Ajustar ${unit}</button>`:""}
+     ${isInvestmentAsset(asset)?`<button type="button" class="secondary" data-adjinvested="${key}">Ajustar aportado</button>`:""}
      ${eligible&&!isDefault?`<button type="button" class="secondary" data-defacc="${key}">Usar por defecto</button>`:""}
      <button type="button" class="danger" data-delasset="${key}">Eliminar activo</button>
    </div>`;
@@ -2864,6 +2873,7 @@ function bindAssetActions(root,run){
    const t=await uiSelect(`Tipo de ${a.name}:`,types,a.type,{title:"Cambiar tipo"});if(!t||t===a.type)return;
    a.type=t;markDataUpdate("portfolio");saveState();renderAll()}));
  root.querySelectorAll("[data-adjunits]").forEach(b=>b.onclick=()=>run(()=>adjustAssetUnits(b.dataset.adjunits)));
+ root.querySelectorAll("[data-adjinvested]").forEach(b=>b.onclick=()=>run(()=>adjustAssetInvested(b.dataset.adjinvested)));
  root.querySelectorAll("[data-editasset]").forEach(b=>b.onclick=()=>run(()=>editAsset(b.dataset.editasset)));
  root.querySelectorAll("[data-priceasset]").forEach(b=>b.onclick=()=>run(()=>editAsset(b.dataset.priceasset,true)));
 }
