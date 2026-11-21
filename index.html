@@ -2679,31 +2679,6 @@ function renderRecurring(){
  el("recurringTable").querySelectorAll("[data-delrec]").forEach(b=>b.onclick=async()=>{if(await uiConfirm("Dejará de generarse; los movimientos ya creados se conservan.",{title:"¿Eliminar este recurrente?",danger:true,confirmText:"Eliminar"})){state.recurring=state.recurring.filter(x=>x.id!==b.dataset.delrec);if(editingRecurringId===b.dataset.delrec)cancelRecurringEdit();saveState();renderAll()}});
 }
 
-// Cuadra la posición con la del bróker: participaciones (o títulos) y capital aportado, en un solo diálogo.
-// Las compras con participaciones aún estimadas se dan por buenas, igual que al ajustar solo las participaciones.
-async function adjustAssetPosition(id){
- const a=state.assets.find(x=>x.id===id);if(!a)return;
- const S=swalBase(),label=assetUnitLabel(a,true),Label=label[0].toUpperCase()+label.slice(1),digits=assetUnitLabel(a)==="BTC"?8:6;
- const fmt=(v,d)=>String(Math.round(Number(v||0)*10**d)/10**d).replace(".",",");
- const parse=t=>{const n=Number(String(t).trim().replace(",","."));return String(t).trim()!==""&&Number.isFinite(n)&&n>=0?n:null};
- let units,invested;
- if(S){
-   const r=await S.fire({title:"Ajustar posición",showCancelButton:true,confirmButtonText:"Ajustar",cancelButtonText:"Cancelar",
-     html:`<p class="asset-detail-source">Los datos de ${escapeHtml(a.name)} según tu bróker.</p><div class="asset-edit-fields">
-       <div><label for="adjUnits">${Label}</label><input id="adjUnits" inputmode="decimal" value="${fmt(a.units,8)}"></div>
-       <div><label for="adjInvested">Aportado (€)</label><input id="adjInvested" inputmode="decimal" value="${fmt(a.invested,2)}"></div></div>`,
-     preConfirm:()=>{const u=parse(el("adjUnits").value),i=parse(el("adjInvested").value);
-       if(u===null||i===null){Swal.showValidationMessage("Indica importes válidos.");return false}return{u,i}}});
-   if(!r.isConfirmed)return;units=r.value.u;invested=r.value.i;
- }else{
-   const u=prompt(Label,fmt(a.units,8));if(u===null)return;const i=prompt("Aportado (€)",fmt(a.invested,2));if(i===null)return;
-   units=parse(u);invested=parse(i);if(units===null||invested===null)return uiError("Valor no válido.");
- }
- state.movements.filter(m=>m.assetId===id&&m.unitsEstimated).forEach(m=>{delete m.unitsEstimated});
- a.units=units;a.invested=invested;if(Number(a.unitPrice)>0)a.value=units*Number(a.unitPrice);
- markDataUpdate("portfolio");saveState();renderAll();
- toast(`Posición ajustada: ${assetDisplayUnits(units,digits)} ${assetUnitLabel(a)} · ${euro.format(invested)} aportados`);
-}
 function addAsset(){
  const name=el("aName").value.trim(),type=el("aType").value,value=Number(el("aValue").value||0),invested=el("aInvested").value===""?0:Number(el("aInvested").value),units=el("aUnits").value===""?0:Number(el("aUnits").value),isin=el("aIsin").value.trim().toUpperCase();
  if(!name||!Number.isFinite(value)||(value<0&&(units>0||isin||!/^(Cuenta|Efectivo|Otro)/i.test(type)))||!Number.isFinite(invested)||invested<0||!Number.isFinite(units)||units<0)return uiError("Completa los datos correctamente.");
@@ -2716,35 +2691,44 @@ function addAsset(){
    if(isin&&res?.missing?.includes(asset))uiAlert(`El ISIN ${isin} todavía no está en las cotizaciones. Se añadirá solo en la próxima actualización automática (dos veces al día) y desde entonces su precio se actualizará como el de los demás fondos.`,{icon:"info",title:"Cotización pendiente"});
  });
 }
-async function editAsset(id,priceOnly=false){
+async function editAsset(id){
  const asset=state.assets.find(a=>a.id===id);if(!asset)return;
- const initialName=asset.name,isAccount=isCurrentAccount(asset),hasUnits=Number(asset.units)>0;
+ const initialName=asset.name,isAccount=isCurrentAccount(asset),hasUnits=Number(asset.units)>0,invest=isInvestmentAsset(asset);
  const label=isAccount?"Saldo real de hoy":hasUnits?"Precio por participación o título":"Valor actual";
  const initialAmount=isAccount?currentAccountValue(asset).toFixed(2):String((hasUnits?asset.unitPrice:asset.value)??"");
- const readValues=(nameInput,amountInput)=>{
+ const fmt=(v,d)=>String(Math.round(Number(v||0)*10**d)/10**d).replace(".",",");
+ const num=t=>{const x=String(t).trim();const n=Number(x.replace(",","."));return x!==""&&Number.isFinite(n)&&n>=0?n:null};
+ const unitName=assetUnitLabel(asset,true),UnitName=unitName[0].toUpperCase()+unitName.slice(1);
+ // Fondos y cripto: además del nombre y el precio se cuadran las participaciones y lo aportado con los del bróker.
+ const readValues=(nameInput,amountInput,unitsInput,investedInput)=>{
    const name=nameInput.trim(),text=amountInput.trim();
    if(!name)return "Escribe un nombre para el activo.";
-   if(text===initialAmount)return {name};
-   const amount=Number(text.replace(",","."));
-   if(!text||!Number.isFinite(amount)||(!isAccount&&hasUnits&&amount<0))return "Indica un importe válido.";
-   return {name,amount};
+   const out={name};
+   if(text!==initialAmount){
+     const amount=Number(text.replace(",","."));
+     if(!text||!Number.isFinite(amount)||(!isAccount&&hasUnits&&amount<0))return "Indica un importe válido.";
+     out.amount=amount;
+   }
+   if(invest){
+     const u=num(unitsInput),i=num(investedInput);
+     if(u===null||i===null)return "Indica participaciones y aportado válidos.";
+     if(Math.abs(u-Number(asset.units||0))>1e-9)out.units=u;
+     if(Math.abs(i-Number(asset.invested||0))>0.004)out.invested=i;
+   }
+   return out;
  };
  const S=swalBase();
  let values;
- if(priceOnly){
-   if(!hasUnits||isAccount)return;
-   const amount=await uiPrompt(label,initialAmount,{title:"Ajustar precio",inputmode:"decimal"});
-   if(amount===null)return;
-   values=readValues(initialName,amount);
-   if(typeof values==="string")return uiError(values);
- }else if(S){
+ if(S){
    const result=await S.fire({title:"Editar activo",showCancelButton:true,confirmButtonText:"Guardar",cancelButtonText:"Cancelar",
      html:`<div class="asset-edit-fields">
        <div><label for="editAssetName">Nombre</label><input id="editAssetName" value="${escapeHtml(initialName)}"></div>
        <div><label for="editAssetAmount">${label}</label><input id="editAssetAmount" inputmode="decimal" value="${escapeHtml(initialAmount)}"></div>
+       ${invest?`<div><label for="editAssetUnits">${UnitName}</label><input id="editAssetUnits" inputmode="decimal" value="${fmt(asset.units,8)}"></div>
+       <div><label for="editAssetInvested">Aportado (€)</label><input id="editAssetInvested" inputmode="decimal" value="${fmt(asset.invested,2)}"></div>`:""}
      </div>`,
      preConfirm:()=>{
-       const result=readValues(el("editAssetName").value,el("editAssetAmount").value);
+       const result=readValues(el("editAssetName").value,el("editAssetAmount").value,el("editAssetUnits")?.value,el("editAssetInvested")?.value);
        if(typeof result==="string"){Swal.showValidationMessage(result);return false}
        return result;
      }});
@@ -2753,19 +2737,26 @@ async function editAsset(id,priceOnly=false){
  }else{
    const name=prompt("Nombre del activo",initialName);if(name===null)return;
    const amount=prompt(label,initialAmount);if(amount===null)return;
-   values=readValues(name,amount);
+   values=readValues(name,amount,fmt(asset.units,8),fmt(asset.invested,2));
    if(typeof values==="string")return uiError(values);
  }
  const current=state.assets.find(a=>a.id===id);if(!current)return;
- const {name,amount}=values,nameChanged=name!==initialName&&name!==current.name;
- if(!nameChanged&&amount===undefined)return;
- if(amount!==undefined&&(isCurrentAccount(current)!==isAccount||(!isAccount&&(Number(current.units)>0)!==hasUnits))){
+ const {name,amount,units,invested}=values,nameChanged=name!==initialName&&name!==current.name;
+ if(!nameChanged&&amount===undefined&&units===undefined&&invested===undefined)return;
+ if((amount!==undefined||units!==undefined)&&(isCurrentAccount(current)!==isAccount||(!isAccount&&(Number(current.units)>0)!==hasUnits))){
    return uiError("El activo ha cambiado. Vuelve a abrir la edición.");
  }
  if(nameChanged){
    current.previousNames=[...new Set([...(current.previousNames||[]),current.name])];
    current.name=name;
  }
+ if(units!==undefined){
+   // Las compras con participaciones aún estimadas se dan por buenas para que no vuelvan a mover el total.
+   state.movements.filter(m=>m.assetId===id&&m.unitsEstimated).forEach(m=>{delete m.unitsEstimated});
+   current.units=units;
+   if(Number(current.unitPrice)>0)current.value=units*Number(current.unitPrice);
+ }
+ if(invested!==undefined)current.invested=invested;
  if(amount!==undefined){
    if(isAccount)setAccountReference(current,amount,todayISO());
    else{
@@ -2837,7 +2828,6 @@ function showAssetDetail(id){
    ${isDefault?'<p class="asset-detail-source">Cuenta por defecto de los nuevos movimientos</p>':""}
    <div class="asset-detail-actions">
      <button type="button" class="primary" data-editasset="${key}">Editar activo</button>
-     ${isInvestmentAsset(asset)?`<button type="button" class="secondary" data-adjpos="${key}">Ajustar posición</button>`:""}
      ${eligible&&!isDefault?`<button type="button" class="secondary" data-defacc="${key}">Usar por defecto</button>`:""}
      <button type="button" class="danger" data-delasset="${key}">Eliminar activo</button>
    </div>`;
@@ -2873,7 +2863,6 @@ function bindAssetActions(root,run){
    const types=[...el("aType").options].map(o=>o.value).filter(t=>t!=="Cuenta corriente");
    const t=await uiSelect(`Tipo de ${a.name}:`,types,a.type,{title:"Cambiar tipo"});if(!t||t===a.type)return;
    a.type=t;markDataUpdate("portfolio");saveState();renderAll()}));
- root.querySelectorAll("[data-adjpos]").forEach(b=>b.onclick=()=>run(()=>adjustAssetPosition(b.dataset.adjpos)));
  root.querySelectorAll("[data-editasset]").forEach(b=>b.onclick=()=>run(()=>editAsset(b.dataset.editasset)));
 }
 
