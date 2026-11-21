@@ -975,7 +975,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         <div id="patrimonyRank"></div>
       </div>
       <div class="panel section-gap">
-        <div class="chart-head"><div><h2>Rentabilidad anualizada por activo</h2><p class="chart-sub" id="subReturn"></p></div></div>
+        <div class="chart-head"><div><h2>Rentabilidad por activo</h2><p class="chart-sub" id="subReturn"></p></div></div>
         <div id="returnRank"></div>
         <div class="inline-note" id="returnCalculationNote">Calculada mediante XIRR: tiene en cuenta el importe y la fecha de cada aportación y el valor actual del activo. Se actualiza al añadir, editar o borrar movimientos de inversión y al cambiar el precio actual.</div>
       </div>
@@ -1963,6 +1963,10 @@ function assetAnnualizedReturn(asset){
  flows.push({date:asOf,amount:Number(asset.value)});
  return xirr(flows);
 }
+// Rentabilidad total acumulada (como la muestra MyInvestor): (valor − aportado) ÷ aportado. No se anualiza.
+function assetTotalReturn(asset){const inv=Number(asset?.invested||0);return inv>0?(Number(asset.value||0)-inv)/inv:null}
+// Días desde la primera aportación hasta la última cotización; el anualizado solo tiene sentido pasado un año.
+function assetHoldingDays(asset){const first=assetInvestmentMovements(asset)[0]?.date;if(!first)return 0;const end=asset.updatedAt&&Number.isFinite(dateToMs(asset.updatedAt))?asset.updatedAt:todayISO();return (dateToMs(end)-dateToMs(first))/86400000}
 function portfolioDistributionData(){
  const rows=state.assets.filter(a=>!isDebt(a)).map(a=>({id:a.id,name:a.name||"Activo",value:Math.max(0,Number(a.value||0))})).filter(a=>a.value>0).sort((a,b)=>b.value-a.value);
  const total=rows.reduce((s,a)=>s+a.value,0);if(!total)return[];
@@ -2789,7 +2793,7 @@ function showAssetDetail(id){
  if(!asset)return;
  const detail=el("assetDetail"),key=escapeHtml(id),name=escapeHtml(asset.name);
  const debt=isDebt(asset),account=isCurrentAccount(asset),units=Number(asset.units||0),price=Number(asset.unitPrice||0);
- const gain=Number(asset.value)-Number(asset.invested||0),irr=assetAnnualizedReturn(asset),unit=assetUnitLabel(asset,true);
+ const gain=Number(asset.value)-Number(asset.invested||0),irr=assetAnnualizedReturn(asset),tot=assetTotalReturn(asset),unit=assetUnitLabel(asset,true);
  const metric=(label,value,cls="")=>`<div><small>${label}</small><strong class="${cls}">${value}</strong></div>`;
  const changeClass=value=>value<0?"negative":"positive";
  const source=debt?["Pendiente de pagar. Resta del patrimonio neto. Puedes registrar un pago con un traspaso hacia esta deuda."]:account
@@ -2815,7 +2819,8 @@ function showAssetDetail(id){
      ${metric("Aportado",euro.format(asset.invested||0))}
      ${metric("Diferencia",euro.format(gain),changeClass(gain))}
      ${units>0||isInvestmentAsset(asset)?metric(unit[0].toUpperCase()+unit.slice(1),assetDisplayUnits(units,unit==="BTC"?8:6)):""}
-     ${metric("Rentabilidad anualizada",irr===null?"—":`${(irr*100).toFixed(2).replace(".",",")} %`,irr===null?"":changeClass(irr))}
+     ${metric("Rentabilidad",tot===null?"—":`${tot>=0?"+":""}${(tot*100).toFixed(2).replace(".",",")} %`,tot===null?"":changeClass(tot))}
+     ${irr!==null&&assetHoldingDays(asset)>=365?metric("Anualizada",`${(irr*100).toFixed(2).replace(".",",")} %`,changeClass(irr)):""}
    </div>`}
    ${source.length?`<p class="asset-detail-source">${source.join("<br>")}</p>`:""}
    ${isDefault?'<p class="asset-detail-source">Cuenta por defecto de los nuevos movimientos</p>':""}
@@ -3025,12 +3030,12 @@ function renderPatrimonyRank(){
   total:{label:"Total patrimonio",amt:euro.format(total),cells:["Total patrimonio","","",euro.format(total)]}});
 }
 function renderReturnRank(){
- const data=state.assets.map(a=>({asset:a,name:a.name||"Activo",rate:assetAnnualizedReturn(a),invested:Number(a.invested||0),value:Number(a.value||0),since:assetInvestmentMovements(a)[0]?.date})).filter(x=>x.rate!==null&&Number.isFinite(x.rate)).sort((a,b)=>b.rate-a.rate);
- el("subReturn").textContent=data.length?"Desde la primera aportación de cada activo hasta su última cotización":"Necesito compras de inversión enlazadas a un activo con valor actual";
+ const data=state.assets.map(a=>({asset:a,name:a.name||"Activo",rate:isInvestmentAsset(a)?assetTotalReturn(a):null,invested:Number(a.invested||0),value:Number(a.value||0),since:assetInvestmentMovements(a)[0]?.date})).filter(x=>x.rate!==null&&Number.isFinite(x.rate)).sort((a,b)=>b.rate-a.rate);
+ el("subReturn").textContent=data.length?"Ganancia sobre lo aportado en cada activo (rentabilidad total, sin anualizar)":"Necesito activos con cotización y capital aportado";
  const max=Math.max(...data.map(d=>Math.abs(d.rate)),1e-9),rateTxt=r=>`${r>=0?"+":""}${(r*100).toFixed(2).replace(".",",")} %`;
  const rows=data.map(d=>({key:d.asset.id,icon:assetIconSvg(d.asset),ico:d.rate>=0?"i":"g",name:d.name,d,sub:`${euro.format(d.invested)} → ${euro.format(d.value)}`,bar:[Math.abs(d.rate)/max*100,d.rate>=0?"var(--income)":"var(--expense)"],barText:rateTxt(d.rate),amt:rateTxt(d.rate),amtCls:d.rate>=0?"positive":"negative"}));
  renderRank("returnRank",{rows,empty:emptyRank("Sin datos de rentabilidad."),
-  cols:[colName("Activo"),colBar("Rentabilidad anual"),{h:"Aportado",num:true,cls:()=>"muted",cell:r=>euro.format(r.d.invested)},{h:"Valor",num:true,cell:r=>euro.format(r.d.value)},{h:"Desde",num:true,cls:()=>"muted",cell:r=>r.d.since?formatDate(r.d.since):"—"}]});
+  cols:[colName("Activo"),colBar("Rentabilidad"),{h:"Aportado",num:true,cls:()=>"muted",cell:r=>euro.format(r.d.invested)},{h:"Valor",num:true,cell:r=>euro.format(r.d.value)},{h:"Desde",num:true,cls:()=>"muted",cell:r=>r.d.since?formatDate(r.d.since):"—"}]});
 }
 
 // ---------- Gráficos (Chart.js) ----------
