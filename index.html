@@ -391,10 +391,10 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 .dashboard-period-fields select:disabled{opacity:.65}
 .dashboard-section-title{grid-column:1/-1;margin:0;color:var(--muted);font-size:13px;font-weight:650;letter-spacing:.025em}
 #dashboardNetWorthCard{grid-column:1/-1;background:var(--soft)}
-.dashboard-net-worth-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:4px}
-#dashboardNetWorthCard .dashboard-net-worth-head .metric-label{margin:0}
-#dashboardNetWorthToggle{width:44px;height:44px;flex:none;background:var(--btn2-bg);color:var(--muted)}
-#dashboardNetWorthToggle:hover,#dashboardNetWorthToggle:active{color:var(--text)}
+.dashboard-heading{flex:1;min-width:0}
+.dashboard-heading-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#dashboardPrivacyToggle{width:44px;height:44px;flex:none;background:var(--btn2-bg);color:var(--muted)}
+#dashboardPrivacyToggle:hover,#dashboardPrivacyToggle:active{color:var(--text)}
 #page-dashboard .summary-grid .is-masked{color:var(--muted)!important}
 #page-dashboard .summary-grid .metric-value.is-masked{font-weight:650}
 @media(max-width:1200px), (max-width:1366px) and (any-hover:none){
@@ -902,7 +902,15 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
   <main class="content">
     <section id="page-dashboard" class="page active">
       <div class="page-head">
-        <div><h1>Dashboard</h1><p>Resumen de tus finanzas, ahorro e inversiones.</p></div>
+        <div class="dashboard-heading">
+          <div class="dashboard-heading-top">
+            <h1>Dashboard</h1>
+            <button type="button" class="icon-btn" id="dashboardPrivacyToggle" aria-label="Ocultar valores de las tarjetas de Inicio">
+              <svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg>
+            </button>
+          </div>
+          <p>Resumen de tus finanzas, ahorro e inversiones.</p>
+        </div>
         <button type="button" class="secondary mobile-only dashboard-period-step" id="periodPrev" aria-label="Periodo anterior">‹</button>
         <details class="dashboard-period" id="dashboardPeriod">
           <summary><span id="dashboardPeriodLabel">Periodo</span><svg class="ico sm" aria-hidden="true"><use href="#i-caret-right"/></svg></summary>
@@ -934,12 +942,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
       <div class="summary-grid" id="dashboardFinancialSummary">
         <h2 class="dashboard-section-title">Situación financiera</h2>
         <div class="card" id="dashboardNetWorthCard">
-          <div class="dashboard-net-worth-head">
-            <div class="metric-label">Patrimonio neto</div>
-            <button type="button" class="icon-btn" id="dashboardNetWorthToggle" aria-label="Ocultar valores de las tarjetas de Inicio">
-              <svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg>
-            </button>
-          </div>
+          <div class="metric-label">Patrimonio neto</div>
           <div class="metric-value" id="netWorth">—</div>
           <div class="metric-sub desktop-only">Valor total de tus activos menos deudas</div>
           <div class="metric-sub" id="assetCount">0 activos</div>
@@ -2268,7 +2271,7 @@ function renderDashboardNetWorth({nw,debts,gross}){
  account.textContent=cc?`${cc.name}: ${euro.format(cc.value||0)}`:"";
 }
 function applyDashboardPrivacy(){
- const hidden=dashboardBalancesHidden,toggle=el("dashboardNetWorthToggle");
+ const hidden=dashboardBalancesHidden,toggle=el("dashboardPrivacyToggle");
  const values=[
    ...document.querySelectorAll("#page-dashboard .summary-grid .metric-value"),
    ...["cmpIncome","cmpExpense","cmpInvestment","savingsRate","portfolioReturnPct","assetCount","currentAccountNote","portfolioUpdateDashboard","cushionCash","cushionSpend"].map(el)
@@ -3552,7 +3555,7 @@ document.addEventListener("keydown",e=>{
 el("quickSheet").addEventListener("focusin",keepMovementFieldVisible);
 window.visualViewport?.addEventListener("resize",resizeMovementEditor);
 window.visualViewport?.addEventListener("scroll",resizeMovementEditor);
-el("dashboardNetWorthToggle").onclick=()=>{
+el("dashboardPrivacyToggle").onclick=()=>{
  dashboardBalancesHidden=!dashboardBalancesHidden;
  try{localStorage.setItem(DASHBOARD_BALANCES_KEY,dashboardBalancesHidden?"1":"0")}catch{}
  renderSummary();
