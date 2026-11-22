@@ -395,7 +395,8 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
 #dashboardNetWorthCard .dashboard-net-worth-head .metric-label{margin:0}
 #dashboardNetWorthToggle{width:44px;height:44px;flex:none;background:var(--btn2-bg);color:var(--muted)}
 #dashboardNetWorthToggle:hover,#dashboardNetWorthToggle:active{color:var(--text)}
-#netWorth.is-masked{color:var(--muted);font-weight:650}
+#page-dashboard .summary-grid .is-masked{color:var(--muted)!important}
+#page-dashboard .summary-grid .metric-value.is-masked{font-weight:650}
 @media(max-width:1200px), (max-width:1366px) and (any-hover:none){
  #page-dashboard .page-head{display:grid;grid-template-columns:44px minmax(0,1fr) 44px;gap:8px;position:relative}
  #page-dashboard .page-head > div{grid-column:1/-1}
@@ -935,7 +936,7 @@ hr{border:0;border-top:1px solid var(--border);margin:18px 0}
         <div class="card" id="dashboardNetWorthCard">
           <div class="dashboard-net-worth-head">
             <div class="metric-label">Patrimonio neto</div>
-            <button type="button" class="icon-btn" id="dashboardNetWorthToggle" aria-label="Ocultar importes de Patrimonio neto">
+            <button type="button" class="icon-btn" id="dashboardNetWorthToggle" aria-label="Ocultar valores de las tarjetas de Inicio">
               <svg class="ico" aria-hidden="true"><use href="#i-eye"/></svg>
             </button>
           </div>
@@ -2255,19 +2256,29 @@ function layoutDashboardCards(){
  });
 }
 function renderDashboardNetWorth({nw,debts,gross}){
- const hidden=dashboardBalancesHidden,mask="••••";
- const value=el("netWorth"),account=el("currentAccountNote"),toggle=el("dashboardNetWorthToggle");
- value.textContent=hidden?mask:euro.format(nw);
- value.classList.toggle("is-masked",hidden);
- value.classList.toggle("negative",!hidden&&nw<0);
+ const value=el("netWorth"),account=el("currentAccountNote");
+ value.textContent=euro.format(nw);
+ value.classList.toggle("negative",nw<0);
  const count=state.assets.length;
- el("assetCount").textContent=!hidden&&debts>0
+ el("assetCount").textContent=debts>0
    ?`${euro.format(gross)} en activos − ${euro.format(debts)} de deudas`
    :`${count} activo${count===1?"":"s"}`;
  const cc=defaultAccount();
  account.hidden=!cc;
- account.textContent=cc?`${cc.name}: ${hidden?mask:euro.format(cc.value||0)}`:"";
- const label=hidden?"Mostrar importes de Patrimonio neto":"Ocultar importes de Patrimonio neto";
+ account.textContent=cc?`${cc.name}: ${euro.format(cc.value||0)}`:"";
+}
+function applyDashboardPrivacy(){
+ const hidden=dashboardBalancesHidden,toggle=el("dashboardNetWorthToggle");
+ const values=[
+   ...document.querySelectorAll("#page-dashboard .summary-grid .metric-value"),
+   ...["cmpIncome","cmpExpense","cmpInvestment","savingsRate","portfolioReturnPct","assetCount","currentAccountNote","portfolioUpdateDashboard","cushionCash","cushionSpend"].map(el)
+ ];
+ for(const value of values){
+   const masked=hidden&&/\d/.test(value.textContent);
+   value.classList.toggle("is-masked",masked);
+   if(masked)value.textContent="••••";
+ }
+ const label=hidden?"Mostrar valores de las tarjetas de Inicio":"Ocultar valores de las tarjetas de Inicio";
  toggle.setAttribute("aria-label",label);
  toggle.title=label;
  toggle.querySelector("use").setAttribute("href",hidden?"#i-eye-off":"#i-eye");
@@ -2300,6 +2311,7 @@ function renderSummary(){
  el("portfolioUpdateDashboard").textContent=portfolioRef?`Actualizado ${formatDateTime(portfolioRef)}`:(state.assets.length?"Pendiente de registrar actualización":"Sin patrimonio");
  const all=calcSummary(state.movements);el("cumulativeSavings").textContent=euro.format(all.income-all.expense);
  renderCushion();
+ applyDashboardPrivacy();
  layoutDashboardCards();
 }
 // Colchón de liquidez: cuántos meses de gasto medio cubre el dinero disponible (cuentas y efectivo, sin fondos ni deudas).
@@ -3543,8 +3555,7 @@ window.visualViewport?.addEventListener("scroll",resizeMovementEditor);
 el("dashboardNetWorthToggle").onclick=()=>{
  dashboardBalancesHidden=!dashboardBalancesHidden;
  try{localStorage.setItem(DASHBOARD_BALANCES_KEY,dashboardBalancesHidden?"1":"0")}catch{}
- renderDashboardNetWorth(portfolioTotals());
- layoutDashboardCards();
+ renderSummary();
 };
 el("periodPrev").onclick=()=>shiftPeriod(-1);el("periodNext").onclick=()=>shiftPeriod(1);
 el("toggleFilters").onclick=()=>{
