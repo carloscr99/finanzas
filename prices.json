@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-11-26T16:33:05.937Z",
+  "updatedAt": "2026-11-27T01:17:39.465Z",
   "currency": "EUR",
   "assets": {
     "LU0996182563": {
@@ -102,8 +102,8 @@
     },
     "BTC": {
       "name": "Bitcoin",
-      "price": 55047,
-      "priceDate": "2026-11-26",
+      "price": 55402,
+      "priceDate": "2026-11-27",
       "source": "CoinGecko",
       "history": {
         "2026-10-24": 71794,
@@ -139,7 +139,8 @@
         "2026-11-23": 56662,
         "2026-11-24": 54058,
         "2026-11-25": 53191,
-        "2026-11-26": 55047
+        "2026-11-26": 55047,
+        "2026-11-27": 55402
       }
     },
     "IE00BYX5NX33": {
@@ -176,8 +177,8 @@
     },
     "IE0031786696": {
       "name": "Vanguard Emerging Markets Stock Index Fund EUR Acc",
-      "price": 274.57,
-      "priceDate": "2026-11-25",
+      "price": 277.53,
+      "priceDate": "2026-11-26",
       "source": "Financial Times (markets.ft.com)",
       "history": {
         "2026-10-23": 297.31,
@@ -202,13 +203,14 @@
         "2026-11-20": 272.8,
         "2026-11-23": 274.45,
         "2026-11-24": 282.24,
-        "2026-11-25": 274.57
+        "2026-11-25": 274.57,
+        "2026-11-26": 277.53
       }
     },
     "IE00B4ND3602": {
       "name": "iShares Physical Gold ETC",
       "symbol": "PPFB:GER:EUR",
-      "price": 63.21,
+      "price": 63.13,
       "priceDate": "2026-11-26",
       "source": "Financial Times (markets.ft.com)",
       "history": {
@@ -236,13 +238,13 @@
         "2026-11-23": 65.37,
         "2026-11-24": 63.07,
         "2026-11-25": 61.15,
-        "2026-11-26": 63.21
+        "2026-11-26": 63.13
       }
     },
     "IE00BH65QP47": {
       "name": "Vanguard Global Short-Term Bond Index Fund EUR Hedged Acc",
-      "price": 105.49,
-      "priceDate": "2026-11-25",
+      "price": 105.46,
+      "priceDate": "2026-11-26",
       "source": "Financial Times (markets.ft.com)",
       "history": {
         "2026-10-23": 104.88,
@@ -267,7 +269,8 @@
         "2026-11-20": 105.35,
         "2026-11-23": 105.37,
         "2026-11-24": 105.38,
-        "2026-11-25": 105.49
+        "2026-11-25": 105.49,
+        "2026-11-26": 105.46
       }
     }
   }
